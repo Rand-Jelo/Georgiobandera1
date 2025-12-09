@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
+import { getDB } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getSession();
     if (!session) {
@@ -12,15 +13,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get database from request context
-    const db = (request as any).env?.DB;
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
-
+    const db = getDB();
     const user = await getUserById(db, session.userId);
     if (!user) {
       return NextResponse.json(
@@ -45,4 +38,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

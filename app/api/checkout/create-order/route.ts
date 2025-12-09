@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSession } from '@/lib/auth/session';
+import { getDB } from '@/lib/db/client';
 import { getCartItems } from '@/lib/db/queries/cart';
 import { getProductById, getProductVariant } from '@/lib/db/queries/products';
 import { createOrder } from '@/lib/db/queries/orders';
@@ -27,14 +28,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = createOrderSchema.parse(body);
 
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     // Get cart items
     const sessionId = request.cookies.get('session-id')?.value || undefined;
@@ -135,4 +129,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

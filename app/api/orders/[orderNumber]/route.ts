@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
+import { getDB } from '@/lib/db/client';
 import { getOrderByNumber, getOrderItems } from '@/lib/db/queries/orders';
 
 export async function GET(
@@ -9,14 +10,7 @@ export async function GET(
   try {
     const { orderNumber } = await params;
     const session = await getSession();
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     const order = await getOrderByNumber(db, orderNumber);
     if (!order) {
@@ -50,4 +44,3 @@ export async function GET(
     );
   }
 }
-

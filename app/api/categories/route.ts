@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getDB } from '@/lib/db/client';
 import { getCategories } from '@/lib/db/queries/products';
 import type { Category } from '@/types/database';
 
@@ -8,14 +9,7 @@ interface CategoryWithChildren extends Category {
 
 export async function GET(request: NextRequest) {
   try {
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     // Get all categories
     const allCategories = await getCategories(db);
@@ -47,4 +41,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

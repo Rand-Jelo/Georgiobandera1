@@ -1,17 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { getDB } from '@/lib/db/client';
 import { getShippingRegions } from '@/lib/db/queries/shipping';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
-
+    const db = getDB();
     const regions = await getShippingRegions(db, true); // Only active regions
 
     return NextResponse.json({ regions });
@@ -23,4 +16,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

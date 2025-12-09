@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
+import { getDB } from '@/lib/db/client';
 import { getCartItems } from '@/lib/db/queries/cart';
 
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json({ count: 0 });
-    }
+    const db = getDB();
 
     const sessionId = request.cookies.get('session-id')?.value || undefined;
     const items = await getCartItems(db, session?.userId, sessionId);
@@ -22,4 +19,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ count: 0 });
   }
 }
-

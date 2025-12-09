@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getDB } from '@/lib/db/client';
 import { getCategoryBySlug, getProducts, getProductImages } from '@/lib/db/queries/products';
 
 export async function GET(
@@ -7,14 +8,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     const category = await getCategoryBySlug(db, slug);
     if (!category) {
@@ -53,4 +47,3 @@ export async function GET(
     );
   }
 }
-

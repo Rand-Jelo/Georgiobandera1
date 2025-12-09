@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getSession } from '@/lib/auth/session';
-import { updateUser } from '@/lib/db/queries/users';
-import { getUserById } from '@/lib/db/queries/users';
+import { getDB } from '@/lib/db/client';
+import { updateUser, getUserById } from '@/lib/db/queries/users';
 
 const updateProfileSchema = z.object({
   name: z.string().optional(),
@@ -22,14 +22,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const validated = updateProfileSchema.parse(body);
 
-    // Get database from request context
-    const db = (request as any).env?.DB;
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     await updateUser(db, session.userId, validated);
 
@@ -64,4 +57,3 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
-

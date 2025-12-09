@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { getDB } from '@/lib/db/client';
 import { getShippingRegionByCode, calculateShippingCost } from '@/lib/db/queries/shipping';
 
 const calculateSchema = z.object({
@@ -12,14 +13,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = calculateSchema.parse(body);
 
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     const region = await getShippingRegionByCode(db, validated.regionCode);
     if (!region) {
@@ -55,4 +49,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

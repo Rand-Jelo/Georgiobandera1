@@ -1,36 +1,35 @@
 import { D1Database } from '@cloudflare/workers-types';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export interface Env {
   DB: D1Database;
   IMAGES: R2Bucket;
 }
 
-// This will be used in API routes and server components
-// The actual D1 database will be accessed via the request context
-export function getDB(request: Request): D1Database {
-  // In Cloudflare Pages, we access D1 via the request context
-  // This will be set up in middleware or API routes
-  const env = (request as any).env as Env;
-  if (!env?.DB) {
+// Get the D1 database from Cloudflare context
+export function getDB(): D1Database {
+  const { env } = getCloudflareContext();
+  const db = (env as Env).DB;
+  if (!db) {
     throw new Error('D1 database not available');
   }
-  return env.DB;
+  return db;
 }
 
 // Helper function to execute queries
-export async function queryDB<T = any>(
+export async function queryDB<T = unknown>(
   db: D1Database,
   sql: string,
-  params: any[] = []
+  params: unknown[] = []
 ): Promise<D1Result<T>> {
   return await db.prepare(sql).bind(...params).all<T>();
 }
 
 // Helper function to execute a single row query
-export async function queryOne<T = any>(
+export async function queryOne<T = unknown>(
   db: D1Database,
   sql: string,
-  params: any[] = []
+  params: unknown[] = []
 ): Promise<T | null> {
   const result = await db.prepare(sql).bind(...params).first<T>();
   return result || null;
@@ -40,8 +39,7 @@ export async function queryOne<T = any>(
 export async function executeDB(
   db: D1Database,
   sql: string,
-  params: any[] = []
+  params: unknown[] = []
 ): Promise<D1Result> {
   return await db.prepare(sql).bind(...params).run();
 }
-

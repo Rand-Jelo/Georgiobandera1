@@ -17,16 +17,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = registerSchema.parse(body);
 
-    // Get database from request context
-    // Note: In Cloudflare Pages, we'll need to pass DB through context
-    // For now, this is a placeholder - you'll need to adapt based on your Cloudflare setup
-    const db = (request as any).env?.DB;
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     // Check if user already exists
     const existingUser = await getUserByEmail(db, validated.email);
@@ -79,4 +70,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

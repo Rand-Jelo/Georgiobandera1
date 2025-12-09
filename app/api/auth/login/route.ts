@@ -15,14 +15,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = loginSchema.parse(body);
 
-    // Get database from request context
-    const db = (request as any).env?.DB;
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     // Get user by email
     const user = await getUserByEmail(db, validated.email);
@@ -70,4 +63,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

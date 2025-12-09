@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
+import { getDB } from '@/lib/db/client';
 import {
   getCartItems,
   addCartItem,
   updateCartItem,
   removeCartItem,
-  clearCart,
 } from '@/lib/db/queries/cart';
 import { getProductById, getProductVariant } from '@/lib/db/queries/products';
 import { z } from 'zod';
@@ -19,14 +19,7 @@ const addItemSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession();
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     // Get session ID from cookie for guest carts
     const sessionId = request.cookies.get('session-id')?.value || undefined;
@@ -64,14 +57,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = addItemSchema.parse(body);
     const session = await getSession();
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     // Verify product exists
     const product = await getProductById(db, validated.productId);
@@ -171,14 +157,7 @@ export async function PATCH(request: NextRequest) {
       .parse(body);
 
     const session = await getSession();
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     // Verify item belongs to user
     const sessionId = request.cookies.get('session-id')?.value || undefined;
@@ -223,14 +202,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const session = await getSession();
-    const db = (request as any).env?.DB;
-    
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     // Verify item belongs to user
     const sessionId = request.cookies.get('session-id')?.value || undefined;
@@ -254,4 +226,3 @@ export async function DELETE(request: NextRequest) {
     );
   }
 }
-

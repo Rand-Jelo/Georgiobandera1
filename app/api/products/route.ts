@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getProducts, getCategories, getCategoryById } from '@/lib/db/queries/products';
-import { getProductImages } from '@/lib/db/queries/products';
+import { getDB } from '@/lib/db/client';
+import { getProducts, getCategoryById, getProductImages } from '@/lib/db/queries/products';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,13 +11,7 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
     const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : undefined;
 
-    const db = (request as any).env?.DB;
-    if (!db) {
-      return NextResponse.json(
-        { error: 'Database not available' },
-        { status: 500 }
-      );
-    }
+    const db = getDB();
 
     const products = await getProducts(db, {
       categoryId: categoryId || undefined,
@@ -56,4 +50,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
