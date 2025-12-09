@@ -11,7 +11,8 @@
     "lint": "eslint",
     "db:migrate": "wrangler d1 migrations apply georgiobandera-db",
     "db:create": "wrangler d1 create georgiobandera-db",
-    "cf:deploy": "npm run build:cf && wrangler pages deploy .open-next"
+    "cf:deploy": "npm run build:cf && wrangler pages deploy .open-next",
+    "install:cf": "rm -f package-lock.json && npm install --legacy-peer-deps"
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^8.9.2",
