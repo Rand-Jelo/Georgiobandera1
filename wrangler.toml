@@ -14,7 +14,7 @@ name = "georgiobandera-staging"
 [[d1_databases]]
 binding = "DB"
 database_name = "georgiobandera-db"
-database_id = "" # Will be set after creating the database
+database_id = "75b60e35-e861-4d8a-9bc1-46aaf7eb9424"
 
 [[r2_buckets]]
 binding = "IMAGES"
