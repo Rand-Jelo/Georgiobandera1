@@ -9,7 +9,7 @@ export interface Env {
 // Get the D1 database from Cloudflare context
 export function getDB(): D1Database {
   const { env } = getCloudflareContext();
-  const db = (env as Env).DB;
+  const db = (env as unknown as Env).DB;
   if (!db) {
     throw new Error('D1 database not available');
   }
