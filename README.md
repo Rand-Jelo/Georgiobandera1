@@ -1,36 +1,125 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Georgio Bandera E-commerce Website
+
+Full-featured e-commerce platform built with Next.js 16, Cloudflare D1, Stripe/PayPal payments, and multilingual support (English/Swedish).
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: Tailwind CSS
+- **Database**: Cloudflare D1 (SQLite)
+- **Storage**: Cloudflare R2 (for images)
+- **Payments**: Stripe (Cards + Klarna) & PayPal
+- **Admin Panel**: AdminJS
+- **i18n**: next-intl
+- **Hosting**: Cloudflare Pages
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+ 
+- npm or yarn
+- Cloudflare account
+- Stripe account
+- PayPal account
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd georgiobandera1
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your actual values
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Set up Cloudflare D1 database:
+```bash
+# Create the database
+npm run db:create
 
-## Learn More
+# Run migrations
+npm run db:migrate
+```
 
-To learn more about Next.js, take a look at the following resources:
+5. Update `wrangler.toml` with your database ID after creation.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Development
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run the development server:
+```bash
+npm run dev
+```
 
-## Deploy on Vercel
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Building for Production
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build
+```
+
+### Deployment
+
+Deploy to Cloudflare Pages:
+```bash
+npm run cf:deploy
+```
+
+Or connect your GitHub repository to Cloudflare Pages for automatic deployments.
+
+## Project Structure
+
+```
+georgiobandera1/
+├── app/                    # Next.js App Router
+│   ├── [locale]/          # i18n routes (en, sv)
+│   └── api/               # API routes
+├── components/            # React components
+│   ├── ui/                # Reusable UI components
+│   ├── cart/              # Cart components
+│   ├── product/           # Product components
+│   └── layout/            # Layout components
+├── lib/                   # Utilities and helpers
+│   ├── db/                # D1 database client
+│   ├── stripe/            # Stripe integration
+│   ├── paypal/            # PayPal integration
+│   ├── i18n/              # i18n configuration
+│   └── email/             # Email utilities
+├── admin/                 # AdminJS configuration
+├── public/                # Static assets
+├── migrations/            # D1 database migrations
+└── types/                 # TypeScript types
+```
+
+## Database Migrations
+
+Database migrations are located in the `migrations/` directory. To apply migrations:
+
+```bash
+npm run db:migrate
+```
+
+## Environment Variables
+
+See `.env.example` for all required environment variables.
+
+## Git Workflow
+
+- `main` → Production (auto-deploy to Cloudflare Pages)
+- `dev` → Staging environment
+- `feature/*` → Feature development
+- `hotfix/*` → Urgent fixes
+
+## License
+
+Private - All rights reserved
