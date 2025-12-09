@@ -103,15 +103,15 @@ export default function Header() {
         hiddenOnScroll ? '-translate-y-full' : 'translate-y-0'
       }`}
     >
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-0">
         {/* Logo */}
-        <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+        <Link href="/" className="flex items-center ml-16">
           <Image
             src="/logo-white.png"
-            alt="Georgio Bandera"
-            width={180}
-            height={50}
-            className="h-8 w-auto"
+            alt="Georgio Bandera Logo"
+            width={90}
+            height={16}
+            className="object-contain hover:opacity-80 transition-opacity"
             priority
           />
         </Link>
