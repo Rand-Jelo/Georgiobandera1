@@ -8,15 +8,24 @@ pages_build_output_dir = ".open-next"
 [env.production]
 name = "georgiobandera-prod"
 
-[env.staging]
-name = "georgiobandera-staging"
-
-[[d1_databases]]
+[[env.production.d1_databases]]
 binding = "DB"
 database_name = "georgiobandera-db"
 database_id = "75b60e35-e861-4d8a-9bc1-46aaf7eb9424"
 
-[[r2_buckets]]
+[[env.production.r2_buckets]]
+binding = "IMAGES"
+bucket_name = "georgiobandera-images"
+
+[env.preview]
+name = "georgiobandera-preview"
+
+[[env.preview.d1_databases]]
+binding = "DB"
+database_name = "georgiobandera-db"
+database_id = "75b60e35-e861-4d8a-9bc1-46aaf7eb9424"
+
+[[env.preview.r2_buckets]]
 binding = "IMAGES"
 bucket_name = "georgiobandera-images"
 
