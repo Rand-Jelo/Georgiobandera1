@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:cf": "opennextjs-cloudflare build",
+    "build:cf": "opennextjs-cloudflare build && cp public/_routes.json .open-next/_routes.json 2>/dev/null || echo '{\"version\":1,\"include\":[\"/*\"],\"exclude\":[]}' > .open-next/_routes.json",
     "preview:cf": "opennextjs-cloudflare preview",
     "start": "next start",
     "lint": "eslint",
