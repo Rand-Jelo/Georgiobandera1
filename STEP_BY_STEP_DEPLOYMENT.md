@@ -78,11 +78,27 @@ Click **"Add variable"** and add:
 
 ---
 
-## Step 5: Create D1 Database
+## Step 5: Initial Deploy (We'll Configure Bindings After)
 
-**IMPORTANT**: Do this BEFORE clicking "Save and Deploy"
+**Note**: Cloudflare Pages only has "Save and Deploy" - you can't save without deploying. That's okay! We'll do an initial deployment first, then configure the database and R2 bindings in the project settings afterward.
 
-1. In a new tab, go back to Cloudflare Dashboard
+1. Scroll down to the bottom of the configuration page
+2. Review your build settings one more time:
+   - Framework preset: None
+   - Build command: `npm install && npm run build:cf`
+   - Build output directory: `.open-next`
+   - Node version: 20
+3. Click the big blue **"Save and Deploy"** button
+4. The first deployment will start (this may take 5-10 minutes)
+5. **Note**: This initial deployment may have some errors related to database/R2, but that's expected - we'll fix those next
+
+---
+
+## Step 6: Create D1 Database
+
+While the first deployment is running (or after it completes):
+
+1. In a new tab, go to Cloudflare Dashboard
 2. Navigate to **Workers & Pages** → **D1** (in the left sidebar)
 3. Click **"Create database"** button
 4. Fill in:
@@ -94,7 +110,7 @@ Click **"Add variable"** and add:
 
 ---
 
-## Step 6: Update Wrangler Configuration
+## Step 7: Update Wrangler Configuration
 
 1. Go back to your local project
 2. Open `wrangler.toml` file
@@ -116,7 +132,7 @@ Click **"Add variable"** and add:
 
 ---
 
-## Step 7: Run Database Migrations
+## Step 8: Run Database Migrations
 
 1. Open your terminal in the project directory
 2. Make sure you're logged into Cloudflare:
@@ -139,21 +155,22 @@ Click **"Add variable"** and add:
 
 ---
 
-## Step 8: Configure D1 Database Binding in Pages
+## Step 9: Configure D1 Database Binding in Pages Settings
 
-1. Go back to the Cloudflare Pages project setup page (where you configured build settings)
-2. **DON'T click "Save and Deploy" yet!**
-3. Scroll down to find **"Functions"** section
-4. Look for **"D1 database bindings"** or **"Bindings"**
-5. Click **"Add binding"** or **"Add D1 database"**
-6. Fill in:
+1. Go back to Cloudflare Dashboard
+2. Navigate to your Pages project (click on the project name)
+3. Click on **"Settings"** tab (at the top)
+4. Scroll down to **"Functions"** section
+5. Look for **"D1 database bindings"** or expand **"Bindings"**
+6. Click **"Add binding"** or **"Add D1 database"**
+7. Fill in:
    - **Variable name**: `DB` (must be exactly "DB" - case sensitive)
    - **D1 database**: Select `georgiobandera-db` from the dropdown
-7. Click **"Save"**
+8. Click **"Save"** (this saves the binding configuration)
 
 ---
 
-## Step 9: Create R2 Bucket (for Product Images)
+## Step 10: Create R2 Bucket (for Product Images)
 
 1. In Cloudflare Dashboard, go to **Workers & Pages** → **R2** (in the left sidebar)
 2. Click **"Create bucket"** button
@@ -165,37 +182,51 @@ Click **"Add variable"** and add:
 
 ---
 
-## Step 10: Configure R2 Bucket Binding in Pages
+## Step 11: Configure R2 Bucket Binding in Pages Settings
 
-1. Go back to the Cloudflare Pages project setup page
+1. Go back to your Pages project → **Settings** tab
 2. Still in the **"Functions"** or **"Bindings"** section
 3. Look for **"R2 bucket bindings"**
 4. Click **"Add binding"** or **"Add R2 bucket"**
 5. Fill in:
    - **Variable name**: `IMAGES` (must be exactly "IMAGES" - case sensitive)
    - **R2 bucket**: Select `georgiobandera-images` from the dropdown
-6. Click **"Save"**
+6. Click **"Save"** (this saves the binding configuration)
 
 ---
 
-## Step 11: Final Review and Deploy
+## Step 12: Redeploy with Bindings Configured
 
-Before deploying, double-check:
+Now that bindings are configured, trigger a new deployment:
 
-✅ **Build Settings**:
+1. Go to your Pages project
+2. Click on the **"Deployments"** tab
+3. Click **"Retry deployment"** on the latest deployment, OR
+4. Make a small change and push to GitHub (which will auto-deploy), OR
+5. Go to **Settings** → **Builds & deployments** → **Trigger new deployment**
+
+This new deployment will have access to the D1 database and R2 bucket.
+
+---
+
+## Step 13: Final Review
+
+Before the redeploy completes, verify:
+
+✅ **Build Settings** (in Settings → Builds & deployments):
 - Framework preset: None
 - Build command: `npm install && npm run build:cf`
 - Build output directory: `.open-next`
 - Node version: 20
 
-✅ **Environment Variables**:
-- NODE_VERSION: 20
+✅ **Environment Variables** (in Settings → Environment variables):
+- NODE_VERSION: 20 (for Production environment)
 
-✅ **D1 Database Binding**:
+✅ **D1 Database Binding** (in Settings → Functions):
 - Variable name: `DB`
 - Database: `georgiobandera-db`
 
-✅ **R2 Bucket Binding**:
+✅ **R2 Bucket Binding** (in Settings → Functions):
 - Variable name: `IMAGES`
 - Bucket: `georgiobandera-images`
 
@@ -203,7 +234,7 @@ Before deploying, double-check:
 
 ---
 
-## Step 12: Deploy!
+## Step 14: Wait for Redeployment
 
 1. Scroll to the bottom of the configuration page
 2. Click the big blue **"Save and Deploy"** button
@@ -218,8 +249,6 @@ Before deploying, double-check:
 6. You can watch the build logs in real-time
 
 ---
-
-## Step 13: Wait for Deployment
 
 1. You'll see build logs streaming in
 2. Look for messages like:
@@ -238,7 +267,7 @@ Before deploying, double-check:
 
 ---
 
-## Step 14: Access Your Site
+## Step 15: Access Your Site
 
 1. Once deployment is complete, click on your project name
 2. You'll see the deployment details
@@ -247,7 +276,7 @@ Before deploying, double-check:
 
 ---
 
-## Step 15: Set Up Custom Domain (Optional)
+## Step 16: Set Up Custom Domain (Optional)
 
 1. In your Pages project, go to **"Custom domains"**
 2. Click **"Set up a custom domain"**
