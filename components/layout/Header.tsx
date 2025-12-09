@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/lib/i18n/routing';
 import UserMenu from '@/components/auth/UserMenu';
 import CartIcon from '@/components/cart/CartIcon';
-import Image from 'next/image';
 import type { Category } from '@/types/database';
 
 interface CategoryWithChildren extends Category {
@@ -106,13 +105,12 @@ export default function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-0">
         {/* Logo */}
         <Link href="/" className="flex items-center ml-16">
-          <Image
+          <img
             src="/logo-white.png"
             alt="Georgio Bandera Logo"
             width={90}
             height={16}
             className="object-contain hover:opacity-80 transition-opacity"
-            priority
           />
         </Link>
 
