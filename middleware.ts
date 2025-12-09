@@ -13,3 +13,6 @@ export const config = {
   ]
 };
 
+// Note: For Cloudflare Pages, compatibility flags must be set in:
+// Dashboard → Pages → Settings → Runtime → Compatibility flags: ["nodejs_compat"]
+
