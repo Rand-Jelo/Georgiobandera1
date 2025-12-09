@@ -9,7 +9,6 @@ const nextConfig: NextConfig = {
   // Enable experimental features if needed
   experimental: {
     // Add any experimental features here
-    outputFileTracingRoot: undefined,
   },
 };
 
