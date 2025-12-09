@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/lib/i18n/routing';
 import UserMenu from '@/components/auth/UserMenu';
 import CartIcon from '@/components/cart/CartIcon';
+import Image from 'next/image';
 import type { Category } from '@/types/database';
 
 interface CategoryWithChildren extends Category {
@@ -104,10 +105,16 @@ export default function Header() {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         {/* Logo */}
-        <Link href="/" className="flex items-center">
-          <span className="text-lg font-semibold uppercase tracking-wide text-white hover:opacity-80 transition-opacity">
-            Georgio Bandera
-          </span>
+        <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+          {/* Replace with your actual logo - add logo.png or logo.svg to /public folder */}
+          <Image
+            src="/logo.svg"
+            alt="Georgio Bandera"
+            width={180}
+            height={40}
+            className="h-8 w-auto"
+            priority
+          />
         </Link>
 
         {/* Desktop nav */}
