@@ -1,6 +1,9 @@
 name = "georgiobandera"
 compatibility_date = "2024-12-09"
-pages_build_output_dir = ".next"
+compatibility_flags = ["nodejs_compat"]
+
+# For Cloudflare Pages deployment with OpenNext
+pages_build_output_dir = ".open-next"
 
 [env.production]
 name = "georgiobandera-prod"

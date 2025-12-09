@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cf": "opennextjs-cloudflare build",
+    "preview:cf": "opennextjs-cloudflare preview",
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "wrangler d1 migrations apply georgiobandera-db",
     "db:create": "wrangler d1 create georgiobandera-db",
-    "cf:deploy": "wrangler pages deploy .next"
+    "cf:deploy": "npm run build:cf && wrangler pages deploy .open-next"
   },
   "dependencies": {
     "@paypal/react-paypal-js": "^8.9.2",
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251209.0",
+    "@opennextjs/cloudflare": "^1.14.4",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
