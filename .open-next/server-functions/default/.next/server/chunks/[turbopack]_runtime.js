@@ -778,9 +778,9 @@ module.exports = (sourcePath)=>({
   function requireChunk(chunkPath) {
     switch(chunkPath) {
       case "server/chunks/ssr/[root-of-the-server]__296a25b5._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__296a25b5._.js");
+      case "server/chunks/ssr/[root-of-the-server]__2f9ffa25._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__2f9ffa25._.js");
       case "server/chunks/ssr/[root-of-the-server]__55a738d7._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__55a738d7._.js");
-      case "server/chunks/ssr/[root-of-the-server]__d3a6f9a8._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__d3a6f9a8._.js");
-      case "server/chunks/ssr/[root-of-the-server]__deb7aafc._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__deb7aafc._.js");
+      case "server/chunks/ssr/[root-of-the-server]__ff9d007e._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__ff9d007e._.js");
       case "server/chunks/ssr/[turbopack]_runtime.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[turbopack]_runtime.js");
       case "server/chunks/ssr/_d25179f9._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_d25179f9._.js");
       case "server/chunks/ssr/_next-internal_server_app__not-found_page_actions_554ec2bf.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app__not-found_page_actions_554ec2bf.js");
@@ -791,29 +791,29 @@ module.exports = (sourcePath)=>({
       case "server/chunks/ssr/node_modules_next_dist_dfaf6e5f._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_next_dist_dfaf6e5f._.js");
       case "server/chunks/ssr/node_modules_next_dist_esm_3fe9760a._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_next_dist_esm_3fe9760a._.js");
       case "server/chunks/ssr/node_modules_next_dist_esm_build_templates_app-page_b8e1111a.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_next_dist_esm_build_templates_app-page_b8e1111a.js");
-      case "server/chunks/ssr/[root-of-the-server]__360c64b2._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__360c64b2._.js");
       case "server/chunks/ssr/[root-of-the-server]__465af0da._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__465af0da._.js");
-      case "server/chunks/ssr/[root-of-the-server]__7677e441._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__7677e441._.js");
+      case "server/chunks/ssr/[root-of-the-server]__59d3e85b._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__59d3e85b._.js");
+      case "server/chunks/ssr/[root-of-the-server]__6faedcc1._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__6faedcc1._.js");
+      case "server/chunks/ssr/[root-of-the-server]__95a4ed41._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__95a4ed41._.js");
       case "server/chunks/ssr/[root-of-the-server]__a3fbb63e._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__a3fbb63e._.js");
       case "server/chunks/ssr/[root-of-the-server]__a457c799._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__a457c799._.js");
-      case "server/chunks/ssr/[root-of-the-server]__ca4332d2._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__ca4332d2._.js");
       case "server/chunks/ssr/_05361c1e._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_05361c1e._.js");
-      case "server/chunks/ssr/_4ab649cb._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_4ab649cb._.js");
+      case "server/chunks/ssr/_48b4b021._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_48b4b021._.js");
       case "server/chunks/ssr/_7c3213a0._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_7c3213a0._.js");
       case "server/chunks/ssr/_next-internal_server_app_[locale]_cart_page_actions_c22ff0bb.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app_[locale]_cart_page_actions_c22ff0bb.js");
       case "server/chunks/ssr/app_[locale]_cart_page_tsx_e06e48fc._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/app_[locale]_cart_page_tsx_e06e48fc._.js");
       case "server/chunks/ssr/lib_utils_ts_2428e286._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/lib_utils_ts_2428e286._.js");
-      case "server/chunks/ssr/messages_412a5181._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/messages_412a5181._.js");
       case "server/chunks/ssr/messages_en_json_a7997480._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/messages_en_json_a7997480._.js");
       case "server/chunks/ssr/messages_sv_json_a464ec3c._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/messages_sv_json_a464ec3c._.js");
-      case "server/chunks/ssr/node_modules_dbba2ef5._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_dbba2ef5._.js");
+      case "server/chunks/ssr/node_modules_0268dad6._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_0268dad6._.js");
+      case "server/chunks/ssr/node_modules_3403f4da._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_3403f4da._.js");
       case "server/chunks/ssr/node_modules_next_dist_client_components_builtin_global-error_ece394eb.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_next_dist_client_components_builtin_global-error_ece394eb.js");
       case "server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_15817684.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_15817684.js");
       case "server/chunks/ssr/[root-of-the-server]__679e81de._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__679e81de._.js");
       case "server/chunks/ssr/_427fc340._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_427fc340._.js");
-      case "server/chunks/ssr/_dda5791c._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_dda5791c._.js");
+      case "server/chunks/ssr/_9a39c828._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_9a39c828._.js");
       case "server/chunks/ssr/_next-internal_server_app_[locale]_categories_[slug]_page_actions_8f74d336.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app_[locale]_categories_[slug]_page_actions_8f74d336.js");
-      case "server/chunks/ssr/node_modules_9d274f27._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_9d274f27._.js");
+      case "server/chunks/ssr/node_modules_next_c9a82c8c._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_next_c9a82c8c._.js");
       case "server/chunks/ssr/[root-of-the-server]__560db3d2._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__560db3d2._.js");
       case "server/chunks/ssr/_5d24c73a._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_5d24c73a._.js");
       case "server/chunks/ssr/_next-internal_server_app_[locale]_checkout_page_actions_f7649460.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app_[locale]_checkout_page_actions_f7649460.js");
@@ -831,12 +831,12 @@ module.exports = (sourcePath)=>({
       case "server/chunks/ssr/_next-internal_server_app_[locale]_orders_page_actions_977e3f98.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app_[locale]_orders_page_actions_977e3f98.js");
       case "server/chunks/ssr/app_[locale]_orders_page_tsx_446d48d4._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/app_[locale]_orders_page_tsx_446d48d4._.js");
       case "server/chunks/ssr/[root-of-the-server]__0e90f3f8._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__0e90f3f8._.js");
+      case "server/chunks/ssr/_99e3b19e._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_99e3b19e._.js");
       case "server/chunks/ssr/_a158fce8._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_a158fce8._.js");
-      case "server/chunks/ssr/_ab06db67._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_ab06db67._.js");
       case "server/chunks/ssr/_next-internal_server_app_[locale]_page_actions_53ad19b2.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app_[locale]_page_actions_53ad19b2.js");
       case "server/chunks/ssr/[root-of-the-server]__2687220e._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__2687220e._.js");
-      case "server/chunks/ssr/_6002203b._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_6002203b._.js");
       case "server/chunks/ssr/_9aabc50f._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_9aabc50f._.js");
+      case "server/chunks/ssr/_9cb266f4._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_9cb266f4._.js");
       case "server/chunks/ssr/_next-internal_server_app_[locale]_products_[slug]_page_actions_c8b65650.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app_[locale]_products_[slug]_page_actions_c8b65650.js");
       case "server/chunks/ssr/[root-of-the-server]__920d490a._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__920d490a._.js");
       case "server/chunks/ssr/_340c6b25._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_340c6b25._.js");
@@ -847,10 +847,10 @@ module.exports = (sourcePath)=>({
       case "server/chunks/ssr/_next-internal_server_app_[locale]_register_page_actions_d3df7bcb.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app_[locale]_register_page_actions_d3df7bcb.js");
       case "server/chunks/ssr/app_[locale]_register_page_tsx_da8945ef._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/app_[locale]_register_page_tsx_da8945ef._.js");
       case "server/chunks/ssr/[root-of-the-server]__66ed92e2._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__66ed92e2._.js");
-      case "server/chunks/ssr/_0d478465._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_0d478465._.js");
       case "server/chunks/ssr/_5ae27432._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_5ae27432._.js");
+      case "server/chunks/ssr/_a16ce802._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_a16ce802._.js");
       case "server/chunks/ssr/_next-internal_server_app_[locale]_shop_page_actions_2a0f8bf4.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app_[locale]_shop_page_actions_2a0f8bf4.js");
-      case "server/chunks/ssr/[root-of-the-server]__b9356576._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__b9356576._.js");
+      case "server/chunks/ssr/[root-of-the-server]__336e4c46._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__336e4c46._.js");
       case "server/chunks/ssr/_next-internal_server_app__global-error_page_actions_75761787.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app__global-error_page_actions_75761787.js");
       case "server/chunks/ssr/node_modules_next_dist_f21d913a._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_next_dist_f21d913a._.js");
       case "server/chunks/[root-of-the-server]__512947c3._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/[root-of-the-server]__512947c3._.js");
@@ -896,11 +896,11 @@ module.exports = (sourcePath)=>({
       case "server/chunks/[root-of-the-server]__3e40c974._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/[root-of-the-server]__3e40c974._.js");
       case "server/chunks/_next-internal_server_app_favicon_ico_route_actions_353150a5.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/_next-internal_server_app_favicon_ico_route_actions_353150a5.js");
       case "server/chunks/node_modules_next_dist_esm_build_templates_app-route_d6a474cc.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/node_modules_next_dist_esm_build_templates_app-route_d6a474cc.js");
-      case "server/chunks/ssr/[root-of-the-server]__4642523c._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__4642523c._.js");
-      case "server/chunks/ssr/[root-of-the-server]__7bed8ba1._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__7bed8ba1._.js");
+      case "server/chunks/ssr/[root-of-the-server]__25433502._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__25433502._.js");
+      case "server/chunks/ssr/[root-of-the-server]__f2671576._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/[root-of-the-server]__f2671576._.js");
       case "server/chunks/ssr/_27f38564._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_27f38564._.js");
+      case "server/chunks/ssr/_3f5aec7b._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_3f5aec7b._.js");
       case "server/chunks/ssr/_next-internal_server_app_page_actions_39d4fc33.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/_next-internal_server_app_page_actions_39d4fc33.js");
-      case "server/chunks/ssr/node_modules_b8023cdb._.js": return require("/Users/randjelo/georgiobandera1/.open-next/server-functions/default/.next/server/chunks/ssr/node_modules_b8023cdb._.js");
       default:
         throw new Error(`Not found ${chunkPath}`);
     }

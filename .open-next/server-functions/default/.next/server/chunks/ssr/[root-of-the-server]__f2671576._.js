@@ -1,0 +1,3 @@
+module.exports=[93695,(a,b,c)=>{b.exports=a.x("next/dist/shared/lib/no-fallback-error.external.js",()=>require("next/dist/shared/lib/no-fallback-error.external.js"))},70864,a=>{a.n(a.i(33290))},43619,a=>{a.n(a.i(79962))},13718,a=>{a.n(a.i(85523))},18198,a=>{a.n(a.i(45518))},62212,a=>{a.n(a.i(66114))},50708,a=>{"use strict";a.i(70396);var b=a.i(73727),c=a.i(53770);function d(){(0,b.redirect)(`/${c.routing.defaultLocale}`)}a.s(["default",()=>d])},17741,a=>{a.v(b=>Promise.all(["server/chunks/ssr/messages_en_json_a7997480._.js"].map(b=>a.l(b))).then(()=>b(50929)))},6211,a=>{a.v(b=>Promise.all(["server/chunks/ssr/messages_sv_json_a464ec3c._.js"].map(b=>a.l(b))).then(()=>b(94727)))}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__f2671576._.js.map
