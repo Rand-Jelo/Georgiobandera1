@@ -5,10 +5,6 @@ compatibility_flags = ["nodejs_compat"]
 # For Cloudflare Pages deployment with OpenNext
 pages_build_output_dir = ".open-next"
 
-# Ensure Functions are detected
-[build]
-command = "npm install --legacy-peer-deps && npm run build:cf"
-
 [env.production]
 name = "georgiobandera-prod"
 
