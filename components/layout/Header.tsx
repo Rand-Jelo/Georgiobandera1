@@ -106,12 +106,11 @@ export default function Header() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         {/* Logo */}
         <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-          {/* Replace with your actual logo - add logo.png or logo.svg to /public folder */}
           <Image
-            src="/logo.svg"
+            src="/logo-white.png"
             alt="Georgio Bandera"
             width={180}
-            height={40}
+            height={50}
             className="h-8 w-auto"
             priority
           />
