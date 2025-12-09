@@ -5,11 +5,6 @@ compatibility_flags = ["nodejs_compat"]
 # For Cloudflare Pages deployment with OpenNext
 pages_build_output_dir = ".open-next"
 
-# Function configuration for OpenNext worker
-[[functions]]
-name = "default"  # Matches OpenNext's main Worker
-compatibility_flags = ["nodejs_compat"]
-
 [env.production]
 name = "georgiobandera-prod"
 
