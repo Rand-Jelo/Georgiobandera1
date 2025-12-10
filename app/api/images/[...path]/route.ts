@@ -24,6 +24,9 @@ export async function GET(
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
     }
 
+    // Convert R2 body to ArrayBuffer for NextResponse compatibility
+    const arrayBuffer = await object.arrayBuffer();
+
     // Manually create headers from R2 object metadata
     const headers = new Headers();
     
@@ -42,7 +45,7 @@ export async function GET(
       headers.set('etag', object.httpEtag);
     }
 
-    return new NextResponse(object.body, {
+    return new NextResponse(arrayBuffer, {
       headers,
     });
   } catch (error) {
