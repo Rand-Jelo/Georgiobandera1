@@ -46,10 +46,13 @@ export default function ShopPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading products...</p>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-950 relative">
+        <div className="absolute inset-0 opacity-30">
+          <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
+        </div>
+        <div className="text-center relative z-10">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/30 mx-auto"></div>
+          <p className="mt-4 text-neutral-400">Loading products...</p>
         </div>
       </div>
     );
@@ -57,22 +60,30 @@ export default function ShopPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-950 relative">
+        <div className="absolute inset-0 opacity-30">
+          <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
+        </div>
+        <div className="text-center relative z-10">
+          <p className="text-red-300">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">{t('shop')}</h1>
+    <div className="min-h-screen bg-neutral-950 py-12 relative">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
+      </div>
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <h1 className="text-4xl font-semibold text-white mb-8">{t('shop')}</h1>
 
         {products.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No products available at the moment.</p>
+            <p className="text-neutral-400 text-lg">No products available at the moment.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -85,4 +96,3 @@ export default function ShopPage() {
     </div>
   );
 }
-
