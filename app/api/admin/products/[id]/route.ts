@@ -4,7 +4,26 @@ import { getSession } from '@/lib/auth/session';
 import { getDB } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
 import { queryOne, executeDB } from '@/lib/db/client';
+import { getProductVariants, createProductVariant, updateProductVariant, deleteProductVariant } from '@/lib/db/queries/products';
 import type { Product } from '@/types/database';
+
+const variantSchema = z.object({
+  id: z.string().optional(), // If provided, update existing; if not, create new
+  name_en: z.string().nullable().optional(),
+  name_sv: z.string().nullable().optional(),
+  sku: z.string().nullable().optional(),
+  price: z.number().nullable().optional(),
+  compare_at_price: z.number().nullable().optional(),
+  stock_quantity: z.number().int().min(0).default(0),
+  track_inventory: z.boolean().default(true),
+  option1_name: z.string().nullable().optional(),
+  option1_value: z.string().nullable().optional(),
+  option2_name: z.string().nullable().optional(),
+  option2_value: z.string().nullable().optional(),
+  option3_name: z.string().nullable().optional(),
+  option3_value: z.string().nullable().optional(),
+  _delete: z.boolean().optional(), // Flag to delete variant
+});
 
 const updateProductSchema = z.object({
   name_en: z.string().min(1).optional(),
@@ -20,6 +39,7 @@ const updateProductSchema = z.object({
   featured: z.boolean().optional(),
   stock_quantity: z.number().int().min(0).optional(),
   track_inventory: z.boolean().optional(),
+  variants: z.array(variantSchema).optional(),
 });
 
 export async function GET(
@@ -59,7 +79,10 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ product });
+    // Get variants
+    const variants = await getProductVariants(db, id);
+
+    return NextResponse.json({ product, variants });
   } catch (error) {
     console.error('Get product error:', error);
     return NextResponse.json(
@@ -160,13 +183,80 @@ export async function PATCH(
       values
     );
 
+    // Handle variants if provided
+    if (validated.variants !== undefined) {
+      const existingVariants = await getProductVariants(db, id);
+      const existingVariantIds = new Set(existingVariants.map(v => v.id));
+      const providedVariantIds = new Set(
+        validated.variants
+          .filter(v => v.id && !v._delete)
+          .map(v => v.id!)
+      );
+
+      // Delete variants that are marked for deletion or no longer in the list
+      for (const existingVariant of existingVariants) {
+        if (!providedVariantIds.has(existingVariant.id)) {
+          await deleteProductVariant(db, existingVariant.id);
+        }
+      }
+
+      // Create or update variants
+      for (const variantData of validated.variants) {
+        if (variantData._delete) {
+          if (variantData.id) {
+            await deleteProductVariant(db, variantData.id);
+          }
+          continue;
+        }
+
+        if (variantData.id && existingVariantIds.has(variantData.id)) {
+          // Update existing variant
+          await updateProductVariant(db, variantData.id, {
+            nameEn: variantData.name_en,
+            nameSv: variantData.name_sv,
+            sku: variantData.sku,
+            price: variantData.price,
+            compareAtPrice: variantData.compare_at_price,
+            stockQuantity: variantData.stock_quantity,
+            trackInventory: variantData.track_inventory,
+            option1Name: variantData.option1_name,
+            option1Value: variantData.option1_value,
+            option2Name: variantData.option2_name,
+            option2Value: variantData.option2_value,
+            option3Name: variantData.option3_name,
+            option3Value: variantData.option3_value,
+          });
+        } else {
+          // Create new variant
+          await createProductVariant(db, {
+            productId: id,
+            nameEn: variantData.name_en,
+            nameSv: variantData.name_sv,
+            sku: variantData.sku,
+            price: variantData.price,
+            compareAtPrice: variantData.compare_at_price,
+            stockQuantity: variantData.stock_quantity,
+            trackInventory: variantData.track_inventory,
+            option1Name: variantData.option1_name,
+            option1Value: variantData.option1_value,
+            option2Name: variantData.option2_name,
+            option2Value: variantData.option2_value,
+            option3Name: variantData.option3_name,
+            option3Value: variantData.option3_value,
+          });
+        }
+      }
+    }
+
     const updatedProduct = await queryOne<Product>(
       db,
       'SELECT * FROM products WHERE id = ?',
       [id]
     );
 
-    return NextResponse.json({ product: updatedProduct });
+    const variants = await getProductVariants(db, id);
+
+    return NextResponse.json({ product: updatedProduct, variants });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

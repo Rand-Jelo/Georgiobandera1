@@ -4,7 +4,24 @@ import { getSession } from '@/lib/auth/session';
 import { getDB } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
 import { executeDB, queryOne } from '@/lib/db/client';
+import { createProductVariant } from '@/lib/db/queries/products';
 import type { Product } from '@/types/database';
+
+const variantSchema = z.object({
+  name_en: z.string().nullable().optional(),
+  name_sv: z.string().nullable().optional(),
+  sku: z.string().nullable().optional(),
+  price: z.number().nullable().optional(),
+  compare_at_price: z.number().nullable().optional(),
+  stock_quantity: z.number().int().min(0).default(0),
+  track_inventory: z.boolean().default(true),
+  option1_name: z.string().nullable().optional(),
+  option1_value: z.string().nullable().optional(),
+  option2_name: z.string().nullable().optional(),
+  option2_value: z.string().nullable().optional(),
+  option3_name: z.string().nullable().optional(),
+  option3_value: z.string().nullable().optional(),
+});
 
 const createProductSchema = z.object({
   name_en: z.string().min(1),
@@ -20,6 +37,7 @@ const createProductSchema = z.object({
   featured: z.boolean().default(false),
   stock_quantity: z.number().int().min(0).default(0),
   track_inventory: z.boolean().default(true),
+  variants: z.array(variantSchema).optional().default([]),
 });
 
 export async function POST(request: NextRequest) {
@@ -100,6 +118,28 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to create product' },
         { status: 500 }
       );
+    }
+
+    // Create variants if provided
+    if (validated.variants && validated.variants.length > 0) {
+      for (const variantData of validated.variants) {
+        await createProductVariant(db, {
+          productId: id,
+          nameEn: variantData.name_en,
+          nameSv: variantData.name_sv,
+          sku: variantData.sku,
+          price: variantData.price,
+          compareAtPrice: variantData.compare_at_price,
+          stockQuantity: variantData.stock_quantity,
+          trackInventory: variantData.track_inventory,
+          option1Name: variantData.option1_name,
+          option1Value: variantData.option1_value,
+          option2Name: variantData.option2_name,
+          option2Value: variantData.option2_value,
+          option3Name: variantData.option3_name,
+          option3Value: variantData.option3_value,
+        });
+      }
     }
 
     return NextResponse.json({ product }, { status: 201 });

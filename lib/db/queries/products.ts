@@ -152,3 +152,175 @@ export async function getProductVariant(
   );
 }
 
+export async function createProductVariant(
+  db: D1Database,
+  variantData: {
+    productId: string;
+    nameEn?: string | null;
+    nameSv?: string | null;
+    sku?: string | null;
+    price?: number | null;
+    compareAtPrice?: number | null;
+    stockQuantity?: number;
+    trackInventory?: boolean;
+    option1Name?: string | null;
+    option1Value?: string | null;
+    option2Name?: string | null;
+    option2Value?: string | null;
+    option3Name?: string | null;
+    option3Value?: string | null;
+  }
+): Promise<ProductVariant> {
+  const id = crypto.randomUUID();
+  const now = Math.floor(Date.now() / 1000);
+
+  await executeDB(
+    db,
+    `INSERT INTO product_variants (
+      id, product_id, name_en, name_sv, sku, price, compare_at_price,
+      stock_quantity, track_inventory, option1_name, option1_value,
+      option2_name, option2_value, option3_name, option3_value,
+      created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      variantData.productId,
+      variantData.nameEn || null,
+      variantData.nameSv || null,
+      variantData.sku || null,
+      variantData.price || null,
+      variantData.compareAtPrice || null,
+      variantData.stockQuantity ?? 0,
+      variantData.trackInventory !== false ? 1 : 0,
+      variantData.option1Name || null,
+      variantData.option1Value || null,
+      variantData.option2Name || null,
+      variantData.option2Value || null,
+      variantData.option3Name || null,
+      variantData.option3Value || null,
+      now,
+      now,
+    ]
+  );
+
+  const variant = await getProductVariant(db, id);
+  if (!variant) {
+    throw new Error('Failed to create product variant');
+  }
+
+  return variant;
+}
+
+export async function updateProductVariant(
+  db: D1Database,
+  variantId: string,
+  variantData: {
+    nameEn?: string | null;
+    nameSv?: string | null;
+    sku?: string | null;
+    price?: number | null;
+    compareAtPrice?: number | null;
+    stockQuantity?: number;
+    trackInventory?: boolean;
+    option1Name?: string | null;
+    option1Value?: string | null;
+    option2Name?: string | null;
+    option2Value?: string | null;
+    option3Name?: string | null;
+    option3Value?: string | null;
+  }
+): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const updates: string[] = [];
+  const params: any[] = [];
+
+  if (variantData.nameEn !== undefined) {
+    updates.push('name_en = ?');
+    params.push(variantData.nameEn);
+  }
+  if (variantData.nameSv !== undefined) {
+    updates.push('name_sv = ?');
+    params.push(variantData.nameSv);
+  }
+  if (variantData.sku !== undefined) {
+    updates.push('sku = ?');
+    params.push(variantData.sku);
+  }
+  if (variantData.price !== undefined) {
+    updates.push('price = ?');
+    params.push(variantData.price);
+  }
+  if (variantData.compareAtPrice !== undefined) {
+    updates.push('compare_at_price = ?');
+    params.push(variantData.compareAtPrice);
+  }
+  if (variantData.stockQuantity !== undefined) {
+    updates.push('stock_quantity = ?');
+    params.push(variantData.stockQuantity);
+  }
+  if (variantData.trackInventory !== undefined) {
+    updates.push('track_inventory = ?');
+    params.push(variantData.trackInventory ? 1 : 0);
+  }
+  if (variantData.option1Name !== undefined) {
+    updates.push('option1_name = ?');
+    params.push(variantData.option1Name);
+  }
+  if (variantData.option1Value !== undefined) {
+    updates.push('option1_value = ?');
+    params.push(variantData.option1Value);
+  }
+  if (variantData.option2Name !== undefined) {
+    updates.push('option2_name = ?');
+    params.push(variantData.option2Name);
+  }
+  if (variantData.option2Value !== undefined) {
+    updates.push('option2_value = ?');
+    params.push(variantData.option2Value);
+  }
+  if (variantData.option3Name !== undefined) {
+    updates.push('option3_name = ?');
+    params.push(variantData.option3Name);
+  }
+  if (variantData.option3Value !== undefined) {
+    updates.push('option3_value = ?');
+    params.push(variantData.option3Value);
+  }
+
+  if (updates.length === 0) {
+    return;
+  }
+
+  updates.push('updated_at = ?');
+  params.push(now);
+  params.push(variantId);
+
+  await executeDB(
+    db,
+    `UPDATE product_variants SET ${updates.join(', ')} WHERE id = ?`,
+    params
+  );
+}
+
+export async function deleteProductVariant(
+  db: D1Database,
+  variantId: string
+): Promise<void> {
+  await executeDB(
+    db,
+    'DELETE FROM product_variants WHERE id = ?',
+    [variantId]
+  );
+}
+
+export async function deleteProductVariants(
+  db: D1Database,
+  productId: string
+): Promise<void> {
+  await executeDB(
+    db,
+    'DELETE FROM product_variants WHERE product_id = ?',
+    [productId]
+  );
+}
+
