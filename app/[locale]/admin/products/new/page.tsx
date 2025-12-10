@@ -185,7 +185,12 @@ export default function NewProductPage() {
         return;
       }
 
-      router.push('/admin/products');
+          // Redirect to edit page to allow image upload
+          if (data.product?.id) {
+            router.push(`/admin/products/${data.product.id}/edit`);
+          } else {
+            router.push('/admin/products');
+          }
     } catch (err) {
       setError('An error occurred. Please try again.');
       setSaving(false);

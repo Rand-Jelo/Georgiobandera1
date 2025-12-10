@@ -462,3 +462,112 @@ export async function deleteProductVariants(
   );
 }
 
+export async function createProductImage(
+  db: D1Database,
+  imageData: {
+    productId: string;
+    variantId?: string | null;
+    url: string;
+    altTextEn?: string | null;
+    altTextSv?: string | null;
+    sortOrder?: number;
+  }
+): Promise<ProductImage> {
+  const id = crypto.randomUUID();
+  const now = Math.floor(Date.now() / 1000);
+
+  await executeDB(
+    db,
+    `INSERT INTO product_images (
+      id, product_id, variant_id, url, alt_text_en, alt_text_sv, sort_order, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      imageData.productId,
+      imageData.variantId || null,
+      imageData.url,
+      imageData.altTextEn || null,
+      imageData.altTextSv || null,
+      imageData.sortOrder ?? 0,
+      now,
+    ]
+  );
+
+  const result = await queryOne<ProductImage>(
+    db,
+    'SELECT * FROM product_images WHERE id = ?',
+    [id]
+  );
+
+  if (!result) {
+    throw new Error('Failed to create product image');
+  }
+
+  return result;
+}
+
+export async function updateProductImage(
+  db: D1Database,
+  imageId: string,
+  imageData: {
+    url?: string;
+    altTextEn?: string | null;
+    altTextSv?: string | null;
+    sortOrder?: number;
+  }
+): Promise<void> {
+  const updates: string[] = [];
+  const params: any[] = [];
+
+  if (imageData.url !== undefined) {
+    updates.push('url = ?');
+    params.push(imageData.url);
+  }
+  if (imageData.altTextEn !== undefined) {
+    updates.push('alt_text_en = ?');
+    params.push(imageData.altTextEn);
+  }
+  if (imageData.altTextSv !== undefined) {
+    updates.push('alt_text_sv = ?');
+    params.push(imageData.altTextSv);
+  }
+  if (imageData.sortOrder !== undefined) {
+    updates.push('sort_order = ?');
+    params.push(imageData.sortOrder);
+  }
+
+  if (updates.length === 0) {
+    return;
+  }
+
+  params.push(imageId);
+
+  await executeDB(
+    db,
+    `UPDATE product_images SET ${updates.join(', ')} WHERE id = ?`,
+    params
+  );
+}
+
+export async function deleteProductImage(
+  db: D1Database,
+  imageId: string
+): Promise<void> {
+  await executeDB(
+    db,
+    'DELETE FROM product_images WHERE id = ?',
+    [imageId]
+  );
+}
+
+export async function getProductImageById(
+  db: D1Database,
+  imageId: string
+): Promise<ProductImage | null> {
+  return await queryOne<ProductImage>(
+    db,
+    'SELECT * FROM product_images WHERE id = ?',
+    [imageId]
+  );
+}
+

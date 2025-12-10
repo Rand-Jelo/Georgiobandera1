@@ -1,4 +1,4 @@
-import { D1Database } from '@cloudflare/workers-types';
+import { D1Database, R2Bucket } from '@cloudflare/workers-types';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export interface Env {
@@ -14,6 +14,16 @@ export function getDB(): D1Database {
     throw new Error('D1 database not available');
   }
   return db;
+}
+
+// Get the R2 bucket from Cloudflare context
+export function getR2Bucket(): R2Bucket {
+  const { env } = getCloudflareContext();
+  const bucket = (env as unknown as Env).IMAGES;
+  if (!bucket) {
+    throw new Error('R2 bucket not available');
+  }
+  return bucket;
 }
 
 // Helper function to execute queries

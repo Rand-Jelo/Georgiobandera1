@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
-import type { Category, Product } from '@/types/database';
+import type { Category, Product, ProductImage } from '@/types/database';
 
 interface CategoryWithChildren extends Category {
   children?: CategoryWithChildren[];
@@ -46,6 +46,8 @@ export default function EditProductPage() {
     stock_quantity: string;
     track_inventory: boolean;
   }>>([]);
+  const [images, setImages] = useState<ProductImage[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -66,7 +68,7 @@ export default function EditProductPage() {
       }
 
       setIsAdmin(true);
-      await Promise.all([fetchCategories(), fetchProduct()]);
+      await Promise.all([fetchCategories(), fetchProduct(), fetchImages()]);
     } catch (error) {
       router.push('/login');
     } finally {
@@ -148,6 +150,76 @@ export default function EditProductPage() {
     } catch (error) {
       console.error('Error fetching product:', error);
       setError('Failed to load product');
+    }
+  };
+
+  const fetchImages = async () => {
+    try {
+      const response = await fetch(`/api/admin/products/${productId}/images`);
+      const data = await response.json() as { images?: ProductImage[] };
+      setImages(data.images || []);
+    } catch (error) {
+      console.error('Error fetching images:', error);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('alt_text_en', formData.name_en || '');
+      uploadFormData.append('alt_text_sv', formData.name_sv || '');
+
+      const response = await fetch(`/api/admin/products/${productId}/images`, {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      const data = await response.json() as { error?: string; image?: ProductImage };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to upload image');
+        setUploadingImage(false);
+        return;
+      }
+
+      await fetchImages();
+      setUploadingImage(false);
+      // Reset file input
+      e.target.value = '';
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      alert('An error occurred while uploading the image.');
+      setUploadingImage(false);
+    }
+  };
+
+  const handleDeleteImage = async (imageId: string) => {
+    if (!confirm('Are you sure you want to delete this image?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/products/${productId}/images/${imageId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json() as { error?: string; success?: boolean };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to delete image');
+        return;
+      }
+
+      await fetchImages();
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      alert('An error occurred while deleting the image.');
     }
   };
 
@@ -488,6 +560,63 @@ export default function EditProductPage() {
               />
               <span className="text-sm text-neutral-300">Featured product</span>
             </label>
+          </div>
+
+          {/* Product Images Section */}
+          <div className="pt-6 border-t border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-1">Product Images</h3>
+                <p className="text-sm text-neutral-400">Upload and manage product images</p>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
+                Upload Image
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={uploadingImage}
+                className="block w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-white file:text-black hover:file:bg-neutral-100 file:cursor-pointer disabled:opacity-50"
+              />
+              {uploadingImage && (
+                <p className="mt-2 text-sm text-neutral-400">Uploading...</p>
+              )}
+            </div>
+
+            {images.length === 0 ? (
+              <p className="text-neutral-400 text-sm">No images uploaded yet.</p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {images.map((image) => (
+                  <div key={image.id} className="relative group">
+                    <div className="aspect-square bg-black/30 rounded-lg overflow-hidden border border-white/10">
+                      <img
+                        src={image.url.startsWith('/api/images/') ? image.url : `/api${image.url}`}
+                        alt={image.alt_text_en || 'Product image'}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          // Fallback if image fails to load
+                          (e.target as HTMLImageElement).src = '/placeholder-image.png';
+                        }}
+                      />
+                    </div>
+                    <button
+                      onClick={() => handleDeleteImage(image.id)}
+                      className="absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded bg-red-500/80 text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      Delete
+                    </button>
+                    <div className="mt-1 text-xs text-neutral-400">
+                      Sort: {image.sort_order}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Variants Section */}
