@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getSession } from '@/lib/auth/session';
 import { getDB } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
-import { createCategory, getCategories, getCategoryBySlug } from '@/lib/db/queries/products';
+import { createCategory, getCategories, getCategoryBySlug, getCategoryById } from '@/lib/db/queries/products';
 
 const createCategorySchema = z.object({
   name_en: z.string().min(1, 'English name is required'),
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
 
     // Validate parent_id if provided
     if (validated.parent_id) {
-      const parent = await getCategories(db, validated.parent_id);
-      if (parent.length === 0) {
+      const parent = await getCategoryById(db, validated.parent_id);
+      if (!parent) {
         return NextResponse.json(
           { error: 'Parent category not found' },
           { status: 400 }
