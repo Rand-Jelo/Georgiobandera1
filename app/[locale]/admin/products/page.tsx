@@ -50,6 +50,29 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleDelete = async (productId: string) => {
+    if (!confirm('Are you sure you want to delete this product? It will be archived.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        alert('Failed to delete product');
+        return;
+      }
+
+      // Refresh products list
+      fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Failed to delete product');
+    }
+  };
+
   if (!isAdmin || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-950">
@@ -147,6 +170,12 @@ export default function AdminProductsPage() {
                       >
                         Edit
                       </Link>
+                      <button
+                        onClick={() => handleDelete(product.id)}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 );
