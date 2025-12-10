@@ -1,0 +1,321 @@
+import { D1Database } from '@cloudflare/workers-types';
+
+export interface Migration {
+  name: string;
+  sql: string;
+}
+
+/**
+ * Read migration files from the migrations directory
+ * Note: In production, these files need to be bundled or read differently
+ */
+export function getMigrations(): Migration[] {
+  // In Cloudflare Pages, we'll need to embed the SQL or use a different approach
+  // For now, we'll return the migrations as strings
+  const migrations: Migration[] = [
+    {
+      name: '001_initial_schema.sql',
+      sql: `-- Users table
+CREATE TABLE IF NOT EXISTS users (
+  id TEXT PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  name TEXT,
+  phone TEXT,
+  is_admin BOOLEAN DEFAULT 0,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Categories table
+CREATE TABLE IF NOT EXISTS categories (
+  id TEXT PRIMARY KEY,
+  name_en TEXT NOT NULL,
+  name_sv TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description_en TEXT,
+  description_sv TEXT,
+  image_url TEXT,
+  parent_id TEXT,
+  sort_order INTEGER DEFAULT 0,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL
+);
+
+-- Products table
+CREATE TABLE IF NOT EXISTS products (
+  id TEXT PRIMARY KEY,
+  name_en TEXT NOT NULL,
+  name_sv TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  description_en TEXT,
+  description_sv TEXT,
+  category_id TEXT,
+  price DECIMAL(10, 2) NOT NULL,
+  compare_at_price DECIMAL(10, 2),
+  sku TEXT,
+  status TEXT NOT NULL DEFAULT 'draft',
+  featured BOOLEAN DEFAULT 0,
+  stock_quantity INTEGER DEFAULT 0,
+  track_inventory BOOLEAN DEFAULT 1,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+);
+
+-- Product variants table
+CREATE TABLE IF NOT EXISTS product_variants (
+  id TEXT PRIMARY KEY,
+  product_id TEXT NOT NULL,
+  name_en TEXT,
+  name_sv TEXT,
+  sku TEXT,
+  price DECIMAL(10, 2),
+  compare_at_price DECIMAL(10, 2),
+  stock_quantity INTEGER DEFAULT 0,
+  track_inventory BOOLEAN DEFAULT 1,
+  option1_name TEXT,
+  option1_value TEXT,
+  option2_name TEXT,
+  option2_value TEXT,
+  option3_name TEXT,
+  option3_value TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
+-- Product images table
+CREATE TABLE IF NOT EXISTS product_images (
+  id TEXT PRIMARY KEY,
+  product_id TEXT NOT NULL,
+  variant_id TEXT,
+  url TEXT NOT NULL,
+  alt_text_en TEXT,
+  alt_text_sv TEXT,
+  sort_order INTEGER DEFAULT 0,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
+);
+
+-- Cart items table
+CREATE TABLE IF NOT EXISTS cart_items (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  session_id TEXT,
+  product_id TEXT NOT NULL,
+  variant_id TEXT,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL
+);
+
+-- Shipping regions table
+CREATE TABLE IF NOT EXISTS shipping_regions (
+  id TEXT PRIMARY KEY,
+  name_en TEXT NOT NULL,
+  name_sv TEXT NOT NULL,
+  code TEXT NOT NULL,
+  base_price DECIMAL(10, 2) NOT NULL,
+  free_shipping_threshold DECIMAL(10, 2),
+  active BOOLEAN DEFAULT 1,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Orders table
+CREATE TABLE IF NOT EXISTS orders (
+  id TEXT PRIMARY KEY,
+  order_number TEXT UNIQUE NOT NULL,
+  user_id TEXT,
+  email TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
+  payment_method TEXT,
+  payment_status TEXT NOT NULL DEFAULT 'pending',
+  payment_intent_id TEXT,
+  subtotal DECIMAL(10, 2) NOT NULL,
+  shipping_cost DECIMAL(10, 2) NOT NULL,
+  tax DECIMAL(10, 2) NOT NULL,
+  total DECIMAL(10, 2) NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'SEK',
+  shipping_region_id TEXT,
+  shipping_name TEXT NOT NULL,
+  shipping_address_line1 TEXT NOT NULL,
+  shipping_address_line2 TEXT,
+  shipping_city TEXT NOT NULL,
+  shipping_postal_code TEXT NOT NULL,
+  shipping_country TEXT NOT NULL,
+  shipping_phone TEXT,
+  tracking_number TEXT,
+  notes TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (shipping_region_id) REFERENCES shipping_regions(id) ON DELETE SET NULL
+);
+
+-- Order items table
+CREATE TABLE IF NOT EXISTS order_items (
+  id TEXT PRIMARY KEY,
+  order_id TEXT NOT NULL,
+  product_id TEXT NOT NULL,
+  variant_id TEXT,
+  product_name TEXT NOT NULL,
+  variant_name TEXT,
+  sku TEXT,
+  price DECIMAL(10, 2) NOT NULL,
+  quantity INTEGER NOT NULL,
+  total DECIMAL(10, 2) NOT NULL,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL
+);
+
+-- Messages table (contact form)
+CREATE TABLE IF NOT EXISTS messages (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  subject TEXT,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'unread',
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
+CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
+CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
+CREATE INDEX IF NOT EXISTS idx_variants_product ON product_variants(product_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_user ON cart_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_session ON cart_items(session_id);
+CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+CREATE INDEX IF NOT EXISTS idx_orders_number ON orders(order_number);
+CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_messages_status ON messages(status);`,
+    },
+    {
+      name: '003_add_admin_role.sql',
+      sql: `-- Add is_admin column to users table if it doesn't exist
+-- Note: SQLite doesn't support IF NOT EXISTS for ALTER TABLE ADD COLUMN
+-- So we'll use a workaround by checking if the column exists first
+-- This migration is safe to run multiple times`,
+    },
+  ];
+
+  return migrations;
+}
+
+/**
+ * Run a specific migration to add is_admin column
+ * This is safe to run multiple times
+ */
+export async function addAdminColumnIfNeeded(db: D1Database): Promise<void> {
+  try {
+    // Check if column exists by trying to select it
+    await db.prepare('SELECT is_admin FROM users LIMIT 1').first();
+  } catch (error: any) {
+    // Column doesn't exist, add it
+    if (error?.message?.includes('no such column')) {
+      await db.exec('ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0');
+    } else {
+      throw error;
+    }
+  }
+}
+
+/**
+ * Check if a table exists in the database
+ */
+export async function tableExists(db: D1Database, tableName: string): Promise<boolean> {
+  try {
+    const result = await db
+      .prepare(
+        `SELECT name FROM sqlite_master WHERE type='table' AND name=?`
+      )
+      .bind(tableName)
+      .first<{ name: string }>();
+    return !!result;
+  } catch (error) {
+    console.error(`Error checking if table ${tableName} exists:`, error);
+    return false;
+  }
+}
+
+/**
+ * Check if the database has been migrated (users table exists)
+ */
+export async function isDatabaseMigrated(db: D1Database): Promise<boolean> {
+  return await tableExists(db, 'users');
+}
+
+/**
+ * Run all migrations
+ */
+export async function runMigrations(db: D1Database): Promise<{ success: boolean; message: string }> {
+  try {
+    const migrations = getMigrations();
+    const results: string[] = [];
+
+    for (const migration of migrations) {
+      // Handle special migrations
+      if (migration.name === '003_add_admin_role.sql') {
+        try {
+          await addAdminColumnIfNeeded(db);
+          results.push(`✅ Applied ${migration.name}`);
+        } catch (error: any) {
+          // Ignore if column already exists
+          if (error?.message?.includes('duplicate column')) {
+            results.push(`⏭️  Skipped ${migration.name} (already applied)`);
+          } else {
+            throw error;
+          }
+        }
+        continue;
+      }
+
+      // Split SQL by semicolons and execute each statement
+      const statements = migration.sql
+        .split(';')
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0 && !s.startsWith('--'));
+
+      for (const statement of statements) {
+        if (statement.trim()) {
+          try {
+            await db.exec(statement);
+          } catch (error: any) {
+            // Ignore "table already exists" errors
+            if (!error?.message?.includes('already exists') && 
+                !error?.message?.includes('duplicate column')) {
+              console.error(`Error executing migration statement:`, error);
+              throw error;
+            }
+          }
+        }
+      }
+
+      results.push(`✅ Applied ${migration.name}`);
+    }
+
+    return {
+      success: true,
+      message: results.join('\n'),
+    };
+  } catch (error: any) {
+    console.error('Migration error:', error);
+    return {
+      success: false,
+      message: error?.message || 'Unknown error during migration',
+    };
+  }
+}
+
