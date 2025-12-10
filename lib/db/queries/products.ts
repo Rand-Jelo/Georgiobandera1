@@ -141,6 +141,144 @@ export async function getCategoryById(
   );
 }
 
+export async function createCategory(
+  db: D1Database,
+  categoryData: {
+    nameEn: string;
+    nameSv: string;
+    slug: string;
+    descriptionEn?: string | null;
+    descriptionSv?: string | null;
+    imageUrl?: string | null;
+    parentId?: string | null;
+    sortOrder?: number;
+  }
+): Promise<Category> {
+  const id = crypto.randomUUID();
+  const now = Math.floor(Date.now() / 1000);
+
+  await executeDB(
+    db,
+    `INSERT INTO categories (
+      id, name_en, name_sv, slug, description_en, description_sv,
+      image_url, parent_id, sort_order, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      categoryData.nameEn,
+      categoryData.nameSv,
+      categoryData.slug,
+      categoryData.descriptionEn || null,
+      categoryData.descriptionSv || null,
+      categoryData.imageUrl || null,
+      categoryData.parentId || null,
+      categoryData.sortOrder ?? 0,
+      now,
+      now,
+    ]
+  );
+
+  const category = await getCategoryById(db, id);
+  if (!category) {
+    throw new Error('Failed to create category');
+  }
+
+  return category;
+}
+
+export async function updateCategory(
+  db: D1Database,
+  id: string,
+  categoryData: {
+    nameEn?: string;
+    nameSv?: string;
+    slug?: string;
+    descriptionEn?: string | null;
+    descriptionSv?: string | null;
+    imageUrl?: string | null;
+    parentId?: string | null;
+    sortOrder?: number;
+  }
+): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const updates: string[] = [];
+  const params: any[] = [];
+
+  if (categoryData.nameEn !== undefined) {
+    updates.push('name_en = ?');
+    params.push(categoryData.nameEn);
+  }
+  if (categoryData.nameSv !== undefined) {
+    updates.push('name_sv = ?');
+    params.push(categoryData.nameSv);
+  }
+  if (categoryData.slug !== undefined) {
+    updates.push('slug = ?');
+    params.push(categoryData.slug);
+  }
+  if (categoryData.descriptionEn !== undefined) {
+    updates.push('description_en = ?');
+    params.push(categoryData.descriptionEn);
+  }
+  if (categoryData.descriptionSv !== undefined) {
+    updates.push('description_sv = ?');
+    params.push(categoryData.descriptionSv);
+  }
+  if (categoryData.imageUrl !== undefined) {
+    updates.push('image_url = ?');
+    params.push(categoryData.imageUrl);
+  }
+  if (categoryData.parentId !== undefined) {
+    updates.push('parent_id = ?');
+    params.push(categoryData.parentId);
+  }
+  if (categoryData.sortOrder !== undefined) {
+    updates.push('sort_order = ?');
+    params.push(categoryData.sortOrder);
+  }
+
+  if (updates.length === 0) {
+    return;
+  }
+
+  updates.push('updated_at = ?');
+  params.push(now);
+  params.push(id);
+
+  await executeDB(
+    db,
+    `UPDATE categories SET ${updates.join(', ')} WHERE id = ?`,
+    params
+  );
+}
+
+export async function deleteCategory(
+  db: D1Database,
+  id: string
+): Promise<void> {
+  // Check if category has children
+  const children = await getCategories(db, id);
+  if (children.length > 0) {
+    throw new Error('Cannot delete category with subcategories. Please delete or move subcategories first.');
+  }
+
+  // Check if category has products
+  const products = await queryDB(
+    db,
+    'SELECT id FROM products WHERE category_id = ? LIMIT 1',
+    [id]
+  );
+  if (products.results && products.results.length > 0) {
+    throw new Error('Cannot delete category with products. Please move or delete products first.');
+  }
+
+  await executeDB(
+    db,
+    'DELETE FROM categories WHERE id = ?',
+    [id]
+  );
+}
+
 export async function getProductVariant(
   db: D1Database,
   variantId: string
