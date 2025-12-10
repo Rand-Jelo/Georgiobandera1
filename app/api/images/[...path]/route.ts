@@ -24,9 +24,23 @@ export async function GET(
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
     }
 
+    // Manually create headers from R2 object metadata
     const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set('etag', object.httpEtag);
+    
+    // Set content type if available
+    if (object.httpMetadata?.contentType) {
+      headers.set('content-type', object.httpMetadata.contentType);
+    }
+    
+    // Set cache control if available
+    if (object.httpMetadata?.cacheControl) {
+      headers.set('cache-control', object.httpMetadata.cacheControl);
+    }
+    
+    // Set etag
+    if (object.httpEtag) {
+      headers.set('etag', object.httpEtag);
+    }
 
     return new NextResponse(object.body, {
       headers,
