@@ -25,7 +25,11 @@ export async function PATCH(
     }
 
     const { imageId } = await params;
-    const body = await request.json();
+    const body = await request.json() as {
+      alt_text_en?: string | null;
+      alt_text_sv?: string | null;
+      sort_order?: number;
+    };
 
     await updateProductImage(db, imageId, {
       altTextEn: body.alt_text_en,
@@ -72,11 +76,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Image not found' }, { status: 404 });
     }
 
-    // Delete from R2 if URL starts with /images/ (our R2 path)
-    if (image.url.startsWith('/images/')) {
+    // Delete from R2 if URL starts with /api/images/ (our R2 path)
+    if (image.url.startsWith('/api/images/')) {
       try {
         const bucket = getR2Bucket();
-        const key = image.url.replace('/images/', '');
+        const key = image.url.replace('/api/images/', '');
         await bucket.delete(key);
       } catch (error) {
         console.error('Error deleting from R2:', error);
