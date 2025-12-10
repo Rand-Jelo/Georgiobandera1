@@ -150,6 +150,16 @@ export default function NewProductPage() {
     );
   };
 
+  const fetchImages = async (productId: string) => {
+    try {
+      const response = await fetch(`/api/admin/products/${productId}/images`);
+      const data = await response.json() as { images?: ProductImage[] };
+      setImages(data.images || []);
+    } catch (error) {
+      console.error('Error fetching images:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -199,6 +209,78 @@ export default function NewProductPage() {
     } catch (err) {
       setError('An error occurred. Please try again.');
       setSaving(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!createdProductId) return;
+    
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      uploadFormData.append('alt_text_en', formData.name_en || '');
+      uploadFormData.append('alt_text_sv', formData.name_sv || '');
+
+      const response = await fetch(`/api/admin/products/${createdProductId}/images`, {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      const data = await response.json() as { error?: string; image?: ProductImage };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to upload image');
+        setUploadingImage(false);
+        return;
+      }
+
+      await fetchImages(createdProductId);
+      setUploadingImage(false);
+      // Reset file input
+      e.target.value = '';
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      alert('An error occurred while uploading the image.');
+      setUploadingImage(false);
+    }
+  };
+
+  const handleDeleteImage = async (imageId: string) => {
+    if (!createdProductId) return;
+    
+    if (!confirm('Are you sure you want to delete this image?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/products/${createdProductId}/images/${imageId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json() as { error?: string; success?: boolean };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to delete image');
+        return;
+      }
+
+      await fetchImages(createdProductId);
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      alert('An error occurred while deleting the image.');
+    }
+  };
+
+  const handleContinue = () => {
+    if (createdProductId) {
+      router.push(`/admin/products/${createdProductId}/edit`);
+    } else {
+      router.push('/admin/products');
     }
   };
 
