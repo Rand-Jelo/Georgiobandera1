@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
-import type { Category } from '@/types/database';
+import type { Category, ProductImage } from '@/types/database';
 
 interface CategoryWithChildren extends Category {
   children?: CategoryWithChildren[];
@@ -33,6 +33,9 @@ export default function NewProductPage() {
   });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [createdProductId, setCreatedProductId] = useState<string | null>(null);
+  const [images, setImages] = useState<ProductImage[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [variants, setVariants] = useState<Array<{
     id?: string;
     option1_name: string;
@@ -185,12 +188,14 @@ export default function NewProductPage() {
         return;
       }
 
-          // Redirect to edit page to allow image upload
-          if (data.product?.id) {
-            router.push(`/admin/products/${data.product.id}/edit`);
-          } else {
-            router.push('/admin/products');
-          }
+      // Set created product ID to enable image upload
+      if (data.product?.id) {
+        setCreatedProductId(data.product.id);
+        // Fetch images (will be empty initially)
+        await fetchImages(data.product.id);
+      } else {
+        router.push('/admin/products');
+      }
     } catch (err) {
       setError('An error occurred. Please try again.');
       setSaving(false);
@@ -443,6 +448,65 @@ export default function NewProductPage() {
             </label>
           </div>
 
+          {/* Product Images Section - Only shown after product is created */}
+          {createdProductId && (
+            <div className="pt-6 border-t border-white/10">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">Product Images</h3>
+                  <p className="text-sm text-neutral-400">Upload images for your product</p>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                  Upload Image
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={uploadingImage}
+                  className="block w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-white file:text-black hover:file:bg-neutral-100 file:cursor-pointer disabled:opacity-50"
+                />
+                {uploadingImage && (
+                  <p className="mt-2 text-sm text-neutral-400">Uploading...</p>
+                )}
+              </div>
+
+              {images.length === 0 ? (
+                <p className="text-neutral-400 text-sm">No images uploaded yet.</p>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {images.map((image) => (
+                    <div key={image.id} className="relative group">
+                      <div className="aspect-square bg-black/30 rounded-lg overflow-hidden border border-white/10">
+                        <img
+                          src={image.url.startsWith('/api/images/') ? image.url : `/api${image.url}`}
+                          alt={image.alt_text_en || 'Product image'}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback if image fails to load
+                            (e.target as HTMLImageElement).src = '/placeholder-image.png';
+                          }}
+                        />
+                      </div>
+                      <button
+                        onClick={() => handleDeleteImage(image.id)}
+                        className="absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded bg-red-500/80 text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        Delete
+                      </button>
+                      <div className="mt-1 text-xs text-neutral-400">
+                        Sort: {image.sort_order}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Variants Section */}
           <div className="pt-6 border-t border-white/10">
             <div className="flex items-center justify-between mb-4">
@@ -587,19 +651,39 @@ export default function NewProductPage() {
           </div>
 
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
-            <Link
-              href="/admin/products"
-              className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {saving ? 'Creating...' : 'Create Product'}
-            </button>
+            {createdProductId ? (
+              <>
+                <Link
+                  href="/admin/products"
+                  className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+                >
+                  Back to Products
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleContinue}
+                  className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 transition-all"
+                >
+                  Continue to Edit Page
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/admin/products"
+                  className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+                >
+                  Cancel
+                </Link>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {saving ? 'Creating...' : 'Create Product'}
+                </button>
+              </>
+            )}
           </div>
         </form>
       </div>
