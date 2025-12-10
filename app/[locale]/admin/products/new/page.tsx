@@ -6,6 +6,10 @@ import { useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Category } from '@/types/database';
 
+interface CategoryWithChildren extends Category {
+  children?: CategoryWithChildren[];
+}
+
 export default function NewProductPage() {
   const router = useRouter();
   const locale = useLocale();
@@ -60,14 +64,14 @@ export default function NewProductPage() {
   const fetchCategories = async () => {
     try {
       const response = await fetch('/api/categories');
-      const data = await response.json() as { categories?: Category[] };
+      const data = await response.json() as { categories?: CategoryWithChildren[] };
       // Flatten categories for dropdown
-      const flattenCategories = (cats: Category[]): Category[] => {
+      const flattenCategories = (cats: CategoryWithChildren[]): Category[] => {
         const result: Category[] = [];
         cats.forEach((cat) => {
           result.push(cat);
           if (cat.children) {
-            result.push(...cat.children);
+            result.push(...flattenCategories(cat.children));
           }
         });
         return result;

@@ -6,6 +6,10 @@ import { useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Category, Product } from '@/types/database';
 
+interface CategoryWithChildren extends Category {
+  children?: CategoryWithChildren[];
+}
+
 export default function EditProductPage() {
   const router = useRouter();
   const locale = useLocale();
@@ -62,13 +66,13 @@ export default function EditProductPage() {
   const fetchCategories = async () => {
     try {
       const response = await fetch('/api/categories');
-      const data = await response.json() as { categories?: Category[] };
-      const flattenCategories = (cats: Category[]): Category[] => {
+      const data = await response.json() as { categories?: CategoryWithChildren[] };
+      const flattenCategories = (cats: CategoryWithChildren[]): Category[] => {
         const result: Category[] = [];
         cats.forEach((cat) => {
           result.push(cat);
           if (cat.children) {
-            result.push(...cat.children);
+            result.push(...flattenCategories(cat.children));
           }
         });
         return result;
