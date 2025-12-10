@@ -4,6 +4,8 @@
   "exclude": [
     "/_next/static/*",
     "/favicon.ico",
+    "/logo-white.png",
+    "/logo.svg",
     "/file.svg",
     "/globe.svg",
     "/next.svg",
