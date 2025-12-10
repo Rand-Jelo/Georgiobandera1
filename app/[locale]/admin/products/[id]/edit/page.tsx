@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { Link, useParams } from '@/lib/i18n/routing';
+import { Link } from '@/lib/i18n/routing';
 import type { Category, Product } from '@/types/database';
 
 export default function EditProductPage() {
