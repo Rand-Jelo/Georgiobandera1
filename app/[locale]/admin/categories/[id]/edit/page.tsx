@@ -27,6 +27,15 @@ export default function EditCategoryPage() {
   });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [childCategories, setChildCategories] = useState<Category[]>([]);
+  const [showAddChild, setShowAddChild] = useState(false);
+  const [newChildData, setNewChildData] = useState({
+    name_en: '',
+    name_sv: '',
+    slug: '',
+    sort_order: '0',
+  });
+  const [addingChild, setAddingChild] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -47,7 +56,7 @@ export default function EditCategoryPage() {
       }
 
       setIsAdmin(true);
-      await Promise.all([fetchCategories(), fetchCategory()]);
+      await Promise.all([fetchCategories(), fetchCategory(), fetchChildCategories()]);
     } catch (error) {
       router.push('/login');
     } finally {
@@ -90,6 +99,18 @@ export default function EditCategoryPage() {
     } catch (error) {
       console.error('Error fetching category:', error);
       setError('Failed to load category');
+    }
+  };
+
+  const fetchChildCategories = async () => {
+    try {
+      const response = await fetch('/api/admin/categories');
+      const data = await response.json() as { categories?: Category[] };
+      // Get categories that have this category as parent
+      const children = (data.categories || []).filter(c => c.parent_id === categoryId);
+      setChildCategories(children);
+    } catch (error) {
+      console.error('Error fetching child categories:', error);
     }
   };
 
@@ -139,6 +160,75 @@ export default function EditCategoryPage() {
     } catch (err) {
       setError('An error occurred. Please try again.');
       setSaving(false);
+    }
+  };
+
+  const handleAddChild = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddingChild(true);
+
+    try {
+      const response = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...newChildData,
+          parent_id: categoryId,
+          sort_order: parseInt(newChildData.sort_order) || 0,
+        }),
+      });
+
+      const data = await response.json() as { error?: string; details?: any; category?: any };
+
+      if (!response.ok) {
+        let errorMessage = data.error || 'Failed to create subcategory';
+        if (data.details && Array.isArray(data.details)) {
+          errorMessage += '\n\nValidation errors:\n' + data.details.map((d: any) => `${d.path.join('.')}: ${d.message}`).join('\n');
+        }
+        alert(errorMessage);
+        setAddingChild(false);
+        return;
+      }
+
+      // Reset form and refresh child categories
+      setNewChildData({
+        name_en: '',
+        name_sv: '',
+        slug: '',
+        sort_order: '0',
+      });
+      setShowAddChild(false);
+      await fetchChildCategories();
+      setAddingChild(false);
+    } catch (err) {
+      alert('An error occurred. Please try again.');
+      setAddingChild(false);
+    }
+  };
+
+  const handleDeleteChild = async (childId: string, childName: string) => {
+    if (!confirm(`Are you sure you want to delete "${childName}"?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/categories/${childId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json() as { error?: string; success?: boolean };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to delete subcategory');
+        return;
+      }
+
+      await fetchChildCategories();
+    } catch (err) {
+      console.error('Error deleting child category:', err);
+      alert('An error occurred while deleting the subcategory.');
     }
   };
 
