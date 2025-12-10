@@ -192,9 +192,9 @@ export default function EditProductPage() {
         },
         body: JSON.stringify({
           ...formData,
-          price: parseFloat(formData.price),
-          compare_at_price: formData.compare_at_price ? parseFloat(formData.compare_at_price) : null,
-          stock_quantity: parseInt(formData.stock_quantity),
+          price: parseFloat(formData.price) || 0,
+          compare_at_price: formData.compare_at_price ? (parseFloat(formData.compare_at_price) || null) : null,
+          stock_quantity: parseInt(formData.stock_quantity) || 0,
           category_id: formData.category_id || null,
           variants: variants.map(v => ({
             id: v.id,
@@ -203,7 +203,7 @@ export default function EditProductPage() {
             option2_name: v.option2_name || null,
             option2_value: v.option2_value || null,
             sku: v.sku || null,
-            price: v.price ? parseFloat(v.price) : null,
+            price: v.price && !isNaN(parseFloat(v.price)) ? parseFloat(v.price) : null,
             stock_quantity: parseInt(v.stock_quantity) || 0,
             track_inventory: v.track_inventory,
           })),

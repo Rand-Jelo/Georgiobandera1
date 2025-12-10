@@ -12,8 +12,8 @@ const variantSchema = z.object({
   name_en: z.string().nullable().optional(),
   name_sv: z.string().nullable().optional(),
   sku: z.string().nullable().optional(),
-  price: z.number().nullable().optional(),
-  compare_at_price: z.number().nullable().optional(),
+  price: z.number().min(0).nullable().optional(), // Allow 0 or null
+  compare_at_price: z.number().min(0).nullable().optional(),
   stock_quantity: z.number().int().min(0).default(0),
   track_inventory: z.boolean().default(true),
   option1_name: z.string().nullable().optional(),
@@ -32,8 +32,8 @@ const updateProductSchema = z.object({
   description_en: z.string().nullable().optional(),
   description_sv: z.string().nullable().optional(),
   category_id: z.string().nullable().optional(),
-  price: z.number().positive().optional(),
-  compare_at_price: z.number().positive().nullable().optional(),
+  price: z.number().min(0).optional(), // Allow 0, just not negative
+  compare_at_price: z.number().min(0).nullable().optional(), // Allow 0 or null
   sku: z.string().nullable().optional(),
   status: z.enum(['draft', 'active', 'archived']).optional(),
   featured: z.boolean().optional(),
@@ -259,6 +259,7 @@ export async function PATCH(
     return NextResponse.json({ product: updatedProduct, variants });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Validation error:', error.issues);
       return NextResponse.json(
         { error: 'Validation failed', details: error.issues },
         { status: 400 }
