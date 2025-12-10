@@ -165,6 +165,13 @@ export default function EditCategoryPage() {
 
   const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    if (!newChildData.name_en || !newChildData.name_sv || !newChildData.slug) {
+      alert('Please fill in all required fields (Name EN, Name SV, and Slug)');
+      return;
+    }
+
     setAddingChild(true);
 
     try {
@@ -174,7 +181,9 @@ export default function EditCategoryPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...newChildData,
+          name_en: newChildData.name_en,
+          name_sv: newChildData.name_sv,
+          slug: newChildData.slug,
           parent_id: categoryId,
           sort_order: parseInt(newChildData.sort_order) || 0,
         }),
@@ -203,6 +212,7 @@ export default function EditCategoryPage() {
       await fetchChildCategories();
       setAddingChild(false);
     } catch (err) {
+      console.error('Error creating subcategory:', err);
       alert('An error occurred. Please try again.');
       setAddingChild(false);
     }
@@ -397,129 +407,6 @@ export default function EditCategoryPage() {
               placeholder="https://example.com/image.jpg"
               className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
             />
-          </div>
-
-          {/* Child Categories Section */}
-          <div className="pt-6 border-t border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Subcategories</h3>
-                <p className="text-sm text-neutral-400">Manage child categories under this category</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAddChild(!showAddChild)}
-                className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
-              >
-                {showAddChild ? 'Cancel' : '+ Add Subcategory'}
-              </button>
-            </div>
-
-            {showAddChild && (
-              <form onSubmit={handleAddChild} className="mb-6 p-4 rounded-lg border border-white/10 bg-black/30">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-300 mb-1">
-                      Name (English) *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newChildData.name_en}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setNewChildData((prev) => ({
-                          ...prev,
-                          name_en: value,
-                          slug: prev.slug || slugify(value),
-                        }));
-                      }}
-                      className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-300 mb-1">
-                      Name (Swedish) *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newChildData.name_sv}
-                      onChange={(e) => setNewChildData((prev) => ({ ...prev, name_sv: e.target.value }))}
-                      className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-300 mb-1">
-                      Slug *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newChildData.slug}
-                      onChange={(e) => setNewChildData((prev) => ({ ...prev, slug: e.target.value }))}
-                      className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-300 mb-1">
-                      Sort Order
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={newChildData.sort_order}
-                      onChange={(e) => setNewChildData((prev) => ({ ...prev, sort_order: e.target.value }))}
-                      className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={addingChild}
-                    className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    {addingChild ? 'Creating...' : 'Create Subcategory'}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {childCategories.length === 0 ? (
-              <p className="text-neutral-400 text-sm">No subcategories yet. Click "Add Subcategory" to create one.</p>
-            ) : (
-              <div className="space-y-2">
-                {childCategories.map((child) => {
-                  const name = locale === 'sv' ? child.name_sv : child.name_en;
-                  return (
-                    <div
-                      key={child.id}
-                      className="flex items-center justify-between p-3 rounded-lg border border-white/10 bg-black/30"
-                    >
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-white">{name}</div>
-                        <div className="text-xs text-neutral-400 mt-1">{child.slug}</div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/admin/categories/${child.id}/edit`}
-                          className="px-3 py-1 text-xs font-medium text-white hover:text-neutral-300 transition-colors"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDeleteChild(child.id, name)}
-                          className="px-3 py-1 text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
           <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
