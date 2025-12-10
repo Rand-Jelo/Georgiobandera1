@@ -31,20 +31,22 @@ export async function createUser(
     passwordHash: string;
     name?: string;
     phone?: string;
+    isAdmin?: boolean;
   }
 ): Promise<User> {
   const id = crypto.randomUUID();
   
   await executeDB(
     db,
-    `INSERT INTO users (id, email, password_hash, name, phone)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO users (id, email, password_hash, name, phone, is_admin)
+     VALUES (?, ?, ?, ?, ?, ?)`,
     [
       id,
       userData.email,
       userData.passwordHash,
       userData.name || null,
       userData.phone || null,
+      userData.isAdmin ? 1 : 0,
     ]
   );
 
@@ -63,6 +65,7 @@ export async function updateUser(
     name?: string;
     phone?: string;
     email?: string;
+    isAdmin?: boolean;
   }
 ): Promise<void> {
   const fields: string[] = [];
@@ -81,6 +84,11 @@ export async function updateUser(
   if (updates.email !== undefined) {
     fields.push('email = ?');
     values.push(updates.email);
+  }
+
+  if (updates.isAdmin !== undefined) {
+    fields.push('is_admin = ?');
+    values.push(updates.isAdmin ? 1 : 0);
   }
 
   if (fields.length === 0) {

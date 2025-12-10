@@ -23,14 +23,17 @@ export default function AdminDashboard() {
         return;
       }
 
-      const data = await response.json() as { user?: any };
+      const data = await response.json() as { user?: { is_admin?: boolean } };
       if (!data.user) {
         router.push('/login');
         return;
       }
 
-      // TODO: Check if user is admin (you'll need to add an admin field to users table)
-      // For now, we'll allow any logged-in user (you should restrict this)
+      if (!data.user.is_admin) {
+        router.push('/');
+        return;
+      }
+
       setIsAdmin(true);
     } catch (error) {
       console.error('Admin access check failed:', error);

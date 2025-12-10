@@ -22,6 +22,13 @@ export default function AdminMessagesPage() {
         router.push('/login');
         return;
       }
+
+      const data = await response.json() as { user?: { is_admin?: boolean } };
+      if (!data.user || !data.user.is_admin) {
+        router.push('/');
+        return;
+      }
+
       setIsAdmin(true);
       fetchMessages();
     } catch (error) {

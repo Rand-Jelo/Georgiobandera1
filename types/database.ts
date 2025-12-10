@@ -4,6 +4,7 @@ export interface User {
   password_hash: string;
   name: string | null;
   phone: string | null;
+  is_admin: boolean;
   created_at: number;
   updated_at: number;
 }
