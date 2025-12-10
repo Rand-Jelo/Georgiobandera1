@@ -262,14 +262,14 @@ export async function deleteCategory(
     throw new Error('Cannot delete category with subcategories. Please delete or move subcategories first.');
   }
 
-  // Check if category has products
+  // Check if category has active products (not archived)
   const products = await queryDB(
     db,
-    'SELECT id FROM products WHERE category_id = ? LIMIT 1',
-    [id]
+    'SELECT id FROM products WHERE category_id = ? AND status != ? LIMIT 1',
+    [id, 'archived']
   );
   if (products.results && products.results.length > 0) {
-    throw new Error('Cannot delete category with products. Please move or delete products first.');
+    throw new Error('Cannot delete category with active products. Please move or archive products first.');
   }
 
   await executeDB(
