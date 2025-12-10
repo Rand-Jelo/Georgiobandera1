@@ -104,6 +104,14 @@ export default function EditProductPage() {
 
       const data = await response.json() as { product?: Product; variants?: any[] };
       if (data.product) {
+        // Convert database boolean values (0/1) to actual booleans
+        const featured = typeof data.product.featured === 'number' 
+          ? data.product.featured === 1 
+          : Boolean(data.product.featured);
+        const trackInventory = typeof data.product.track_inventory === 'number'
+          ? data.product.track_inventory === 1
+          : Boolean(data.product.track_inventory);
+
         setFormData({
           name_en: data.product.name_en,
           name_sv: data.product.name_sv,
@@ -115,9 +123,9 @@ export default function EditProductPage() {
           compare_at_price: data.product.compare_at_price?.toString() || '',
           sku: data.product.sku || '',
           status: data.product.status,
-          featured: data.product.featured || false,
+          featured: featured,
           stock_quantity: data.product.stock_quantity.toString(),
-          track_inventory: data.product.track_inventory,
+          track_inventory: trackInventory,
         });
 
         // Load variants
@@ -201,9 +209,9 @@ export default function EditProductPage() {
           compare_at_price: formData.compare_at_price ? (parseFloat(formData.compare_at_price) || null) : null,
           sku: formData.sku || null,
           status: formData.status,
-          featured: formData.featured,
+          featured: Boolean(formData.featured),
           stock_quantity: parseInt(formData.stock_quantity) || 0,
-          track_inventory: formData.track_inventory,
+          track_inventory: Boolean(formData.track_inventory),
           variants: variants.map(v => ({
             id: v.id,
             option1_name: v.option1_name || null,
@@ -213,7 +221,7 @@ export default function EditProductPage() {
             sku: v.sku || null,
             price: v.price && !isNaN(parseFloat(v.price)) ? parseFloat(v.price) : null,
             stock_quantity: parseInt(v.stock_quantity) || 0,
-            track_inventory: v.track_inventory,
+            track_inventory: Boolean(v.track_inventory),
           })),
         }),
       });
