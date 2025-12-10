@@ -191,11 +191,19 @@ export default function EditProductPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
+          name_en: formData.name_en,
+          name_sv: formData.name_sv,
+          slug: formData.slug,
+          description_en: formData.description_en || null,
+          description_sv: formData.description_sv || null,
+          category_id: formData.category_id || null,
           price: parseFloat(formData.price) || 0,
           compare_at_price: formData.compare_at_price ? (parseFloat(formData.compare_at_price) || null) : null,
+          sku: formData.sku || null,
+          status: formData.status,
+          featured: formData.featured,
           stock_quantity: parseInt(formData.stock_quantity) || 0,
-          category_id: formData.category_id || null,
+          track_inventory: formData.track_inventory,
           variants: variants.map(v => ({
             id: v.id,
             option1_name: v.option1_name || null,
@@ -210,10 +218,14 @@ export default function EditProductPage() {
         }),
       });
 
-      const data = await response.json() as { error?: string; product?: any };
+      const data = await response.json() as { error?: string; details?: any; product?: any };
 
       if (!response.ok) {
-        setError(data.error || 'Failed to update product');
+        let errorMessage = data.error || 'Failed to update product';
+        if (data.details && Array.isArray(data.details)) {
+          errorMessage += '\n\nValidation errors:\n' + data.details.map((d: any) => `${d.path.join('.')}: ${d.message}`).join('\n');
+        }
+        setError(errorMessage);
         setSaving(false);
         return;
       }

@@ -117,6 +117,10 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
+    
+    // Log the request body for debugging
+    console.log('Update product request body:', JSON.stringify(body, null, 2));
+    
     const validated = updateProductSchema.parse(body);
 
     // Check if product exists
