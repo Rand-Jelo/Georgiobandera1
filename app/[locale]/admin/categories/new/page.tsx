@@ -69,7 +69,7 @@ export default function NewCategoryPage() {
       const updated = { ...prev, [name]: value };
       // Auto-generate slug from English name if slug is empty
       if (name === 'name_en' && !prev.slug) {
-        updated.slug = slugify(value, { lower: true, strict: true });
+        updated.slug = slugify(value);
       }
       return updated;
     });
