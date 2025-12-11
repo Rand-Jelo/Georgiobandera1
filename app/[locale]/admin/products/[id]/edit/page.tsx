@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Category, Product, ProductImage } from '@/types/database';
+import { optimizeImage, formatFileSize } from '@/lib/utils/imageOptimization';
 
 interface CategoryWithChildren extends Category {
   children?: CategoryWithChildren[];
@@ -170,8 +171,29 @@ export default function EditProductPage() {
     setUploadingImage(true);
 
     try {
+      // Optimize image before upload
+      const originalSize = file.size;
+      console.log(`Original image size: ${formatFileSize(originalSize)}`);
+      
+      const optimizedBlob = await optimizeImage(file, {
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 0.85,
+        maxSizeKB: 500, // Max 500KB
+      });
+
+      const optimizedSize = optimizedBlob.size;
+      const compressionRatio = ((1 - optimizedSize / originalSize) * 100).toFixed(1);
+      console.log(`Optimized image size: ${formatFileSize(optimizedSize)} (${compressionRatio}% reduction)`);
+
+      // Create a File from the optimized Blob
+      const optimizedFile = new File([optimizedBlob], file.name, {
+        type: file.type || 'image/jpeg',
+        lastModified: Date.now(),
+      });
+
       const uploadFormData = new FormData();
-      uploadFormData.append('file', file);
+      uploadFormData.append('file', optimizedFile);
       uploadFormData.append('alt_text_en', formData.name_en || '');
       uploadFormData.append('alt_text_sv', formData.name_sv || '');
 
