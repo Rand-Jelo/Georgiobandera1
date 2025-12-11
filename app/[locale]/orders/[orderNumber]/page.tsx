@@ -192,18 +192,19 @@ export default function OrderConfirmationPage() {
 
           {/* Order Summary */}
           <div className="border-t border-gray-200 pt-8 mt-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-gray-600">Subtotal</dt>
+                <dt className="text-gray-600">Subtotal (incl. VAT)</dt>
                 <dd className="text-gray-900">{formatPrice(order.subtotal, order.currency)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-gray-600">Shipping</dt>
                 <dd className="text-gray-900">{formatPrice(order.shipping_cost, order.currency)}</dd>
               </div>
-              <div className="flex justify-between">
-                <dt className="text-gray-600">Tax</dt>
-                <dd className="text-gray-900">{formatPrice(order.tax, order.currency)}</dd>
+              <div className="flex justify-between text-xs text-gray-500">
+                <dt>VAT included in subtotal</dt>
+                <dd>{formatPrice(order.tax, order.currency)}</dd>
               </div>
               <div className="flex justify-between text-base font-semibold border-t border-gray-200 pt-2">
                 <dt className="text-gray-900">Total</dt>
