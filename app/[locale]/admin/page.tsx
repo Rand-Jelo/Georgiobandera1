@@ -306,16 +306,24 @@ export default function AdminDashboard() {
             <p className="text-neutral-400 text-sm">Contact form messages</p>
           </Link>
 
-          <Link
-            href="/admin/users"
-            className="block p-6 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
-          >
-            <h3 className="text-xl font-semibold text-white mb-2">Users</h3>
-            <p className="text-neutral-400 text-sm">Manage user accounts</p>
-          </Link>
+              <Link
+                href="/admin/users"
+                className="block p-6 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
+              >
+                <h3 className="text-xl font-semibold text-white mb-2">Users</h3>
+                <p className="text-neutral-400 text-sm">Manage user accounts</p>
+              </Link>
+
+              <Link
+                href="/admin/settings"
+                className="block p-6 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
+              >
+                <h3 className="text-xl font-semibold text-white mb-2">Settings</h3>
+                <p className="text-neutral-400 text-sm">Store information, shipping, and general settings</p>
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  );
-}
+      );
+    }
 
