@@ -12,6 +12,7 @@ export default function AdminUsersPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -199,12 +200,27 @@ export default function AdminUsersPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-neutral-400">{formatDate(user.created_at)}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="relative inline-block">
                           <button
+                            ref={(el) => {
+                              if (el && openMenuId === user.id && !menuPosition) {
+                                const rect = el.getBoundingClientRect();
+                                setMenuPosition({
+                                  top: rect.bottom + 8,
+                                  right: window.innerWidth - rect.right,
+                                });
+                              }
+                            }}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setOpenMenuId(openMenuId === user.id ? null : user.id);
+                              if (openMenuId === user.id) {
+                                setOpenMenuId(null);
+                                setMenuPosition(null);
+                              } else {
+                                setOpenMenuId(user.id);
+                                setMenuPosition(null); // Reset to trigger ref callback
+                              }
                             }}
                             className="p-2 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
                             aria-label="User actions"
@@ -223,55 +239,6 @@ export default function AdminUsersPage() {
                               />
                             </svg>
                           </button>
-
-                          {openMenuId === user.id && (
-                            <>
-                              {/* Backdrop to close menu */}
-                              <div
-                                className="fixed inset-0 z-[100]"
-                                onClick={() => setOpenMenuId(null)}
-                              />
-                              {/* Dropdown menu */}
-                              <div className="absolute right-0 mt-2 w-48 rounded-lg border border-white/10 bg-black/95 backdrop-blur-sm shadow-xl z-[101]">
-                                <div className="py-1">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setOpenMenuId(null);
-                                      handleToggleAdmin(user.id, user.is_admin);
-                                    }}
-                                    disabled={isCurrentUser}
-                                    className={`w-full text-left px-4 py-2 text-sm transition-colors ${
-                                      user.is_admin
-                                        ? 'text-yellow-400 hover:bg-yellow-400/10'
-                                        : 'text-purple-400 hover:bg-purple-400/10'
-                                    } ${
-                                      isCurrentUser
-                                        ? 'opacity-50 cursor-not-allowed'
-                                        : ''
-                                    }`}
-                                  >
-                                    {user.is_admin ? 'Remove Admin' : 'Make Admin'}
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setOpenMenuId(null);
-                                      handleDelete(user.id, user.email);
-                                    }}
-                                    disabled={isCurrentUser}
-                                    className={`w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors ${
-                                      isCurrentUser
-                                        ? 'opacity-50 cursor-not-allowed'
-                                        : ''
-                                    }`}
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
-                              </div>
-                            </>
-                          )}
                         </div>
                       </td>
                     </tr>
@@ -282,6 +249,72 @@ export default function AdminUsersPage() {
           </table>
           </div>
         </div>
+
+        {/* Dropdown menu - rendered outside table to avoid clipping */}
+        {openMenuId && menuPosition && (() => {
+          const user = users.find(u => u.id === openMenuId);
+          if (!user) return null;
+          const isCurrentUser = user.id === currentUserId;
+          return (
+            <>
+              {/* Backdrop to close menu */}
+              <div
+                className="fixed inset-0 z-[100]"
+                onClick={() => {
+                  setOpenMenuId(null);
+                  setMenuPosition(null);
+                }}
+              />
+              {/* Dropdown menu */}
+              <div
+                className="fixed w-48 rounded-lg border border-white/10 bg-black/95 backdrop-blur-sm shadow-xl z-[101]"
+                style={{
+                  top: `${menuPosition.top}px`,
+                  right: `${menuPosition.right}px`,
+                }}
+              >
+                <div className="py-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      setMenuPosition(null);
+                      handleToggleAdmin(user.id, user.is_admin);
+                    }}
+                    disabled={isCurrentUser}
+                    className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                      user.is_admin
+                        ? 'text-yellow-400 hover:bg-yellow-400/10'
+                        : 'text-purple-400 hover:bg-purple-400/10'
+                    } ${
+                      isCurrentUser
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    {user.is_admin ? 'Remove Admin' : 'Make Admin'}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      setMenuPosition(null);
+                      handleDelete(user.id, user.email);
+                    }}
+                    disabled={isCurrentUser}
+                    className={`w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors ${
+                      isCurrentUser
+                        ? 'opacity-50 cursor-not-allowed'
+                        : ''
+                    }`}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </>
+          );
+        })()}
       </div>
     </div>
   );
