@@ -89,6 +89,7 @@ export async function getTopProducts(
 
 /**
  * Get revenue by status for a time period
+ * Uses both order status and payment_status to determine revenue categories
  */
 export async function getRevenueByStatus(
   db: D1Database,
@@ -100,17 +101,19 @@ export async function getRevenueByStatus(
 }> {
   const startDate = Math.floor(Date.now() / 1000) - (days * 24 * 60 * 60);
   
+  // Get all orders in the time period
   const result = await queryDB<{
+    status: string;
     payment_status: string;
     total: number;
   }>(
     db,
     `SELECT 
+      status,
       payment_status,
-      SUM(total) as total
+      total
     FROM orders
-    WHERE created_at >= ?
-    GROUP BY payment_status`,
+    WHERE created_at >= ?`,
     [startDate]
   );
 
@@ -121,13 +124,24 @@ export async function getRevenueByStatus(
   };
 
   (result.results || []).forEach((row) => {
-    const status = row.payment_status.toLowerCase();
-    if (status === 'paid') {
-      revenue.paid = Number(row.total) || 0;
-    } else if (status === 'pending') {
-      revenue.pending = Number(row.total) || 0;
-    } else if (status === 'refunded') {
-      revenue.refunded = Number(row.total) || 0;
+    const orderStatus = row.status.toLowerCase();
+    const paymentStatus = row.payment_status.toLowerCase();
+    const total = Number(row.total) || 0;
+
+    // Determine category based on order status (what admins change) and payment_status
+    if (orderStatus === 'refunded' || paymentStatus === 'refunded') {
+      revenue.refunded += total;
+    } else if (orderStatus === 'paid' || paymentStatus === 'paid' || 
+               orderStatus === 'processing' || orderStatus === 'shipped' || 
+               orderStatus === 'delivered') {
+      // Consider these as "paid" for revenue purposes
+      revenue.paid += total;
+    } else if (orderStatus === 'pending' || paymentStatus === 'pending' || 
+               orderStatus === 'cancelled') {
+      // Pending or cancelled orders
+      if (orderStatus !== 'cancelled') {
+        revenue.pending += total;
+      }
     }
   });
 
