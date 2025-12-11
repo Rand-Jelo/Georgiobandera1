@@ -11,6 +11,7 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -198,26 +199,79 @@ export default function AdminUsersPage() {
                         <div className="text-sm text-neutral-400">{formatDate(user.created_at)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleToggleAdmin(user.id, user.is_admin)}
-                          disabled={isCurrentUser}
-                          className={`mr-4 ${
-                            user.is_admin
-                              ? 'text-yellow-400 hover:text-yellow-300'
-                              : 'text-purple-400 hover:text-purple-300'
-                          } ${isCurrentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          title={isCurrentUser ? 'Cannot modify your own admin status' : user.is_admin ? 'Remove admin status' : 'Make admin'}
-                        >
-                          {user.is_admin ? 'Remove Admin' : 'Make Admin'}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(user.id, user.email)}
-                          disabled={isCurrentUser}
-                          className={`text-red-400 hover:text-red-300 ${isCurrentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          title={isCurrentUser ? 'Cannot delete your own account' : 'Delete user'}
-                        >
-                          Delete
-                        </button>
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(openMenuId === user.id ? null : user.id);
+                            }}
+                            className="p-2 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                            aria-label="User actions"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                              />
+                            </svg>
+                          </button>
+
+                          {openMenuId === user.id && (
+                            <>
+                              {/* Backdrop to close menu */}
+                              <div
+                                className="fixed inset-0 z-10"
+                                onClick={() => setOpenMenuId(null)}
+                              />
+                              {/* Dropdown menu */}
+                              <div className="absolute right-0 mt-2 w-48 rounded-lg border border-white/10 bg-black/90 backdrop-blur-sm shadow-lg z-20">
+                                <div className="py-1">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenMenuId(null);
+                                      handleToggleAdmin(user.id, user.is_admin);
+                                    }}
+                                    disabled={isCurrentUser}
+                                    className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                                      user.is_admin
+                                        ? 'text-yellow-400 hover:bg-yellow-400/10'
+                                        : 'text-purple-400 hover:bg-purple-400/10'
+                                    } ${
+                                      isCurrentUser
+                                        ? 'opacity-50 cursor-not-allowed'
+                                        : ''
+                                    }`}
+                                  >
+                                    {user.is_admin ? 'Remove Admin' : 'Make Admin'}
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setOpenMenuId(null);
+                                      handleDelete(user.id, user.email);
+                                    }}
+                                    disabled={isCurrentUser}
+                                    className={`w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors ${
+                                      isCurrentUser
+                                        ? 'opacity-50 cursor-not-allowed'
+                                        : ''
+                                    }`}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
