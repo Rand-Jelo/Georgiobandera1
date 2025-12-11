@@ -151,6 +151,7 @@ export default function AdminOrdersPage() {
               </button>
             ))}
           </div>
+          </div>
         </div>
 
         {orders.length === 0 && !loading ? (
