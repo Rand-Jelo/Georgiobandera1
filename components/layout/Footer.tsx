@@ -1,8 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/lib/i18n/routing';
-import { productCategories } from '@/lib/data/categories';
+import type { Category } from '@/types/database';
 
 function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -58,6 +59,23 @@ export default function Footer() {
   const tCommon = useTranslations('common');
   const pathname = usePathname();
   const currentLocale = pathname.startsWith('/sv') ? 'sv' : 'en';
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    // Fetch only parent categories (no parent_id)
+    fetch('/api/categories')
+      .then((res) => res.json())
+      .then((data: { categories?: Array<Category & { children?: Category[] }> }) => {
+        // Filter to only parent categories (no parent_id) and limit to top 5-6 for footer
+        const parentCategories = (data.categories || [])
+          .filter((cat) => !cat.parent_id)
+          .slice(0, 6);
+        setCategories(parentCategories);
+      })
+      .catch((err) => {
+        console.error('Error fetching categories for footer:', err);
+      });
+  }, []);
 
   return (
     <footer className="relative border-t border-white/10 bg-black text-neutral-300 before:absolute before:-top-px before:left-0 before:h-[1px] before:w-full before:bg-gradient-to-r before:from-black/0 before:via-black/40 before:to-black/0">
@@ -77,20 +95,27 @@ export default function Footer() {
           {/* Products column */}
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
-              {tCommon('categories')}
+              {tCommon('products')}
             </p>
 
             <ul className="mt-1 grid grid-cols-1 md:grid-cols-2 gap-y-1.5 gap-x-6">
-              {productCategories.map((category) => (
-                <li key={category.id}>
-                  <Link
-                    href={category.href}
-                    className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
-                  >
-                    {category.label}
-                  </Link>
-                </li>
-              ))}
+              {categories.length > 0 ? (
+                categories.map((category) => {
+                  const name = currentLocale === 'sv' ? category.name_sv : category.name_en;
+                  return (
+                    <li key={category.id}>
+                      <Link
+                        href={`/products?category=${category.slug}`}
+                        className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
+                      >
+                        {name}
+                      </Link>
+                    </li>
+                  );
+                })
+              ) : (
+                <li className="text-neutral-500 text-xs">Loading categories...</li>
+              )}
             </ul>
           </div>
 
