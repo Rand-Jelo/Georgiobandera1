@@ -31,13 +31,28 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Get all sample order IDs first
+    const sampleOrdersResult = await queryDB<{ id: string }>(
+      db,
+      `SELECT id FROM orders WHERE email LIKE 'customer%@example.com'`
+    );
+    
+    const sampleOrderIds = (sampleOrdersResult.results || []).map(order => order.id);
+
+    if (sampleOrderIds.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: 'No sample sales data found to delete',
+        deletedOrders: 0,
+      });
+    }
+
     // Delete order items first (CASCADE should handle this, but being explicit)
+    const placeholders = sampleOrderIds.map(() => '?').join(',');
     await executeDB(
       db,
-      `DELETE FROM order_items 
-       WHERE order_id IN (
-         SELECT id FROM orders WHERE email LIKE 'customer%@example.com'
-       )`
+      `DELETE FROM order_items WHERE order_id IN (${placeholders})`,
+      sampleOrderIds
     );
 
     // Delete sample orders (identified by email pattern)
