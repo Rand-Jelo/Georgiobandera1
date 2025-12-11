@@ -8,6 +8,59 @@ import { generateOrderNumber } from '@/lib/utils';
 import { calculateTaxFromInclusive, getDefaultTaxRate } from '@/lib/utils/tax';
 
 /**
+ * DELETE /api/admin/seed-sales
+ * Delete sample sales data (orders with customer*@example.com emails) (admin only)
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const db = getDB();
+    const user = await getUserById(db, session.userId);
+
+    if (!user || !user.is_admin) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Delete order items first (CASCADE should handle this, but being explicit)
+    await executeDB(
+      db,
+      `DELETE FROM order_items 
+       WHERE order_id IN (
+         SELECT id FROM orders WHERE email LIKE 'customer%@example.com'
+       )`
+    );
+
+    // Delete sample orders (identified by email pattern)
+    const result = await executeDB(
+      db,
+      `DELETE FROM orders WHERE email LIKE 'customer%@example.com'`
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: 'Sample sales data deleted successfully',
+      deletedOrders: result.meta?.changes || 0,
+    });
+  } catch (error) {
+    console.error('Delete seed sales error:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete sample sales data' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * POST /api/admin/seed-sales
  * Generate random sales data for testing analytics (admin only)
  */

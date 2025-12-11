@@ -49,6 +49,8 @@ export default function AdminAnalyticsPage() {
     refunded: 0,
   });
   const [seeding, setSeeding] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -122,6 +124,31 @@ export default function AdminAnalyticsPage() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  const handleDeleteSampleData = async () => {
+    if (!confirm('Are you sure you want to delete all sample sales data? This will only delete orders with customer*@example.com emails.')) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const response = await fetch('/api/admin/seed-sales', { method: 'DELETE' });
+      const data = await response.json() as { error?: string; message?: string; deletedOrders?: number };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to delete sample sales data');
+        return;
+      }
+
+      alert(data.message || `Deleted ${data.deletedOrders || 0} sample orders successfully!`);
+      await fetchAnalytics(); // Refresh analytics
+    } catch (error) {
+      console.error('Error deleting sample sales:', error);
+      alert('An error occurred while deleting sample sales data.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleSeedSales = async () => {
     if (!confirm('This will create 20 random orders for testing. Continue?')) {
       return;
@@ -148,6 +175,48 @@ export default function AdminAnalyticsPage() {
       console.error('Error seeding sales:', error);
       alert('An error occurred while generating sales data.');
     } finally {
+      setSeeding(false);
+    }
+  };
+
+  const handleDeleteAndRegenerate = async () => {
+    if (!confirm('This will delete all sample sales data and generate new data. Continue?')) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      // Delete existing sample data
+      const deleteResponse = await fetch('/api/admin/seed-sales', { method: 'DELETE' });
+      const deleteData = await deleteResponse.json() as { error?: string; message?: string };
+
+      if (!deleteResponse.ok) {
+        alert(deleteData.error || 'Failed to delete sample sales data');
+        setDeleting(false);
+        return;
+      }
+
+      // Generate new data
+      setSeeding(true);
+      const seedResponse = await fetch('/api/admin/seed-sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count: 20 }),
+      });
+      const seedData = await seedResponse.json() as { error?: string; message?: string };
+
+      if (!seedResponse.ok) {
+        alert(seedData.error || 'Failed to generate sales data');
+        return;
+      }
+
+      alert('Sample sales data deleted and regenerated successfully!');
+      await fetchAnalytics(); // Refresh analytics
+    } catch (error) {
+      console.error('Error deleting and regenerating sales:', error);
+      alert('An error occurred while processing sales data.');
+    } finally {
+      setDeleting(false);
       setSeeding(false);
     }
   };
@@ -192,11 +261,25 @@ export default function AdminAnalyticsPage() {
                 <option value="365">Last year</option>
               </select>
               <button
+                onClick={handleDeleteSampleData}
+                disabled={deleting || seeding}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {deleting ? 'Deleting...' : 'Delete Sample Data'}
+              </button>
+              <button
                 onClick={handleSeedSales}
-                disabled={seeding}
+                disabled={seeding || deleting}
                 className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {seeding ? 'Generating...' : 'Generate Sample Data'}
+              </button>
+              <button
+                onClick={handleDeleteAndRegenerate}
+                disabled={seeding || deleting}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {(deleting || seeding) ? 'Processing...' : 'Delete & Regenerate'}
               </button>
             </div>
           </div>
