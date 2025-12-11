@@ -141,7 +141,7 @@ export async function PATCH(
     if (validated.slug && validated.slug !== existingProduct.slug) {
       const slugExists = await queryOne<Product>(
         db,
-        "SELECT id FROM products WHERE slug = ? AND id != ? AND (status = 'draft' OR status = 'active')",
+        "SELECT id FROM products WHERE slug = ? AND id != ? AND status IN ('draft', 'active')",
         [validated.slug, id]
       );
 

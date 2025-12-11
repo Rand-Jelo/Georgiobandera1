@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     try {
       const existingProduct = await queryOne<Product>(
         db,
-        "SELECT id FROM products WHERE slug = ? AND (status = 'draft' OR status = 'active')",
+        "SELECT id FROM products WHERE slug = ? AND status IN ('draft', 'active')",
         [validated.slug]
       );
       console.log('Slug check result:', existingProduct);
