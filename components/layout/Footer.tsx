@@ -67,10 +67,9 @@ export default function Footer() {
       .then((res) => res.json())
       .then((data: unknown) => {
         const response = data as { categories?: Array<Category & { children?: Category[] }> };
-        // Filter to only parent categories (no parent_id) and limit to top 5-6 for footer
+        // Filter to only parent categories (no parent_id) - show all parent categories
         const parentCategories = (response.categories || [])
-          .filter((cat) => !cat.parent_id)
-          .slice(0, 6);
+          .filter((cat) => !cat.parent_id);
         setCategories(parentCategories);
       })
       .catch((err) => {
