@@ -225,46 +225,75 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Sales Chart */}
-        <div className="bg-black/50 border border-white/10 rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-semibold text-white mb-6">Sales Over Time</h2>
+        <div className="bg-black/50 border border-white/10 rounded-lg p-8 mb-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-white mb-2">Sales Over Time</h2>
+            <p className="text-sm text-neutral-400">Revenue and order trends for the selected period</p>
+          </div>
           {salesData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-neutral-400">
-              No sales data available for this period
+            <div className="h-96 flex items-center justify-center text-neutral-400">
+              <div className="text-center">
+                <svg className="w-16 h-16 mx-auto mb-4 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <p>No sales data available for this period</p>
+              </div>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+            <ResponsiveContainer width="100%" height={450}>
+              <LineChart data={salesData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <defs>
+                  <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="ordersGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
                 <XAxis
                   dataKey="date"
-                  stroke="#ffffff60"
+                  stroke="#ffffff40"
                   tickFormatter={formatDate}
-                  style={{ fontSize: '12px' }}
+                  tick={{ fill: '#ffffff60', fontSize: 12 }}
+                  axisLine={{ stroke: '#ffffff20' }}
+                  tickLine={{ stroke: '#ffffff20' }}
                 />
                 <YAxis
                   yAxisId="left"
                   stroke="#10b981"
-                  tickFormatter={(value) => formatCurrency(value)}
-                  style={{ fontSize: '12px' }}
-                  label={{ value: 'Revenue (SEK)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#10b981' } }}
+                  tickFormatter={(value) => {
+                    if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+                    return value.toString();
+                  }}
+                  tick={{ fill: '#10b981', fontSize: 12 }}
+                  axisLine={{ stroke: '#10b98140' }}
+                  tickLine={{ stroke: '#10b98140' }}
+                  label={{ value: 'Revenue (SEK)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#10b981', fontSize: 12 } }}
                 />
                 <YAxis
                   yAxisId="right"
                   orientation="right"
                   stroke="#3b82f6"
-                  style={{ fontSize: '12px' }}
-                  label={{ value: 'Orders', angle: 90, position: 'insideRight', style: { textAnchor: 'middle', fill: '#3b82f6' } }}
+                  tick={{ fill: '#3b82f6', fontSize: 12 }}
+                  axisLine={{ stroke: '#3b82f640' }}
+                  tickLine={{ stroke: '#3b82f640' }}
+                  label={{ value: 'Orders', angle: 90, position: 'insideRight', style: { textAnchor: 'middle', fill: '#3b82f6', fontSize: 12 } }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#000000',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
                     borderRadius: '8px',
                     color: '#ffffff',
+                    padding: '12px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
                   }}
                   formatter={(value: number, name: string) => {
                     if (name === 'revenue') {
-                      return [formatCurrency(value), 'Revenue (SEK)'];
+                      return [formatCurrency(value), 'Revenue'];
                     }
                     if (name === 'orders') {
                       return [value, 'Orders'];
@@ -272,28 +301,34 @@ export default function AdminAnalyticsPage() {
                     return [value, name];
                   }}
                   labelFormatter={(label) => formatDate(label)}
+                  cursor={{ stroke: '#ffffff30', strokeWidth: 1 }}
                 />
                 <Legend
-                  wrapperStyle={{ color: '#ffffff' }}
+                  wrapperStyle={{ color: '#ffffff', paddingTop: '20px' }}
                   iconType="line"
+                  iconSize={16}
                 />
                 <Line
                   yAxisId="left"
                   type="monotone"
                   dataKey="revenue"
                   stroke="#10b981"
-                  strokeWidth={2}
-                  dot={{ fill: '#10b981', r: 4 }}
-                  name="Revenue (SEK)"
+                  strokeWidth={3}
+                  dot={{ fill: '#10b981', r: 5, strokeWidth: 2, stroke: '#000000' }}
+                  activeDot={{ r: 7, stroke: '#10b981', strokeWidth: 2 }}
+                  name="Revenue"
+                  fill="url(#revenueGradient)"
                 />
                 <Line
                   yAxisId="right"
                   type="monotone"
                   dataKey="orders"
                   stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ fill: '#3b82f6', r: 4 }}
+                  strokeWidth={3}
+                  dot={{ fill: '#3b82f6', r: 5, strokeWidth: 2, stroke: '#000000' }}
+                  activeDot={{ r: 7, stroke: '#3b82f6', strokeWidth: 2 }}
                   name="Orders"
+                  fill="url(#ordersGradient)"
                 />
               </LineChart>
             </ResponsiveContainer>
