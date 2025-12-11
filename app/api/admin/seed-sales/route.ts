@@ -99,7 +99,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json() as { count?: number } | undefined;
+    let body: { count?: number } | undefined;
+    try {
+      const text = await request.text();
+      body = text ? JSON.parse(text) : undefined;
+    } catch (e) {
+      // Request might not have a body, use defaults
+      body = undefined;
+    }
     const count = body?.count || 20; // Default to 20 orders
 
     // Get all active products
@@ -256,8 +263,14 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Seed sales error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : String(error);
+    console.error('Error details:', { errorMessage, errorStack });
     return NextResponse.json(
-      { error: 'Failed to generate sales data' },
+      { 
+        error: 'Failed to generate sales data',
+        details: errorMessage,
+      },
       { status: 500 }
     );
   }
