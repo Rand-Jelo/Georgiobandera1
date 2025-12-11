@@ -93,13 +93,47 @@ export async function POST(
     const fileName = `${id}/${crypto.randomUUID()}.${fileExtension}`;
 
     // Upload to R2
-    const bucket = getR2Bucket();
-    const arrayBuffer = await file.arrayBuffer();
-    await bucket.put(fileName, arrayBuffer, {
-      httpMetadata: {
-        contentType: file.type,
-      },
-    });
+    let bucket;
+    try {
+      bucket = getR2Bucket();
+      console.log('R2 bucket retrieved successfully');
+    } catch (error) {
+      console.error('Failed to get R2 bucket:', error);
+      return NextResponse.json(
+        { error: 'R2 bucket not available. Please check Cloudflare configuration.' },
+        { status: 500 }
+      );
+    }
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      console.log(`Uploading file to R2: ${fileName}, size: ${arrayBuffer.byteLength} bytes`);
+      
+      const putResult = await bucket.put(fileName, arrayBuffer, {
+        httpMetadata: {
+          contentType: file.type,
+        },
+      });
+      
+      console.log('File uploaded to R2 successfully:', putResult);
+      
+      // Verify the file was uploaded
+      const verifyObject = await bucket.get(fileName);
+      if (!verifyObject) {
+        console.error('File upload verification failed - file not found in R2');
+        return NextResponse.json(
+          { error: 'File upload verification failed' },
+          { status: 500 }
+        );
+      }
+      console.log('File upload verified in R2');
+    } catch (error) {
+      console.error('Error uploading to R2:', error);
+      return NextResponse.json(
+        { error: `Failed to upload to R2: ${error instanceof Error ? error.message : 'Unknown error'}` },
+        { status: 500 }
+      );
+    }
 
     // Generate public URL - use API route to serve images
     const imageUrl = `/api/images/${fileName}`;
