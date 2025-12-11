@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
   experimental: {
     // Add any experimental features here
   },
+  images: {
+    // Disable image optimization for Cloudflare Pages compatibility
+    // Next.js Image optimization doesn't work well with Cloudflare Pages
+    unoptimized: true,
+  },
 };
 
 export default withNextIntl(nextConfig);
