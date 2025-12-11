@@ -177,42 +177,35 @@ export default function AdminMessagesPage() {
           </div>
         </div>
 
-        <div className="bg-black/50 border border-white/10 rounded-lg overflow-visible">
-          <div className="overflow-x-auto">
-          {messages.length === 0 ? (
-            <div className="p-12 text-center">
-              <p className="text-neutral-400">No messages yet.</p>
-            </div>
-          ) : (
-            <table className="min-w-full divide-y divide-white/10">
-              <thead className="bg-black/70">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    From
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Subject
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/10">
-                {messages.length === 0 ? (
+        {messages.length === 0 && !loading ? (
+          <div className="bg-black/50 border border-white/10 rounded-lg p-12 text-center">
+            <p className="text-neutral-400 text-lg">No messages found</p>
+          </div>
+        ) : (
+          <div className="bg-black/50 border border-white/10 rounded-lg overflow-visible">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-white/10">
+                <thead className="bg-black/70">
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-neutral-400">
-                      No messages found
-                    </td>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                      From
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                      Subject
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                      Date
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ) : (
-                  messages.map((message) => {
+                </thead>
+                <tbody className="divide-y divide-white/10">
+                  {messages.map((message) => {
                     const getStatusColor = (status: Message['status']) => {
                       switch (status) {
                         case 'unread':
@@ -278,12 +271,12 @@ export default function AdminMessagesPage() {
                         </td>
                       </tr>
                     );
-                  })
-                )}
-              </tbody>
-            </table>
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
