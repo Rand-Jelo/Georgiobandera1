@@ -139,8 +139,9 @@ export default function AdminUsersPage() {
           <p className="text-neutral-400">Manage user accounts</p>
         </div>
 
-        <div className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-white/10">
+        <div className="bg-black/50 border border-white/10 rounded-lg overflow-visible">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-white/10">
             <thead className="bg-black/70">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
@@ -198,8 +199,8 @@ export default function AdminUsersPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-neutral-400">{formatDate(user.created_at)}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="relative">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
+                        <div className="relative inline-block">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -227,11 +228,11 @@ export default function AdminUsersPage() {
                             <>
                               {/* Backdrop to close menu */}
                               <div
-                                className="fixed inset-0 z-10"
+                                className="fixed inset-0 z-[100]"
                                 onClick={() => setOpenMenuId(null)}
                               />
                               {/* Dropdown menu */}
-                              <div className="absolute right-0 mt-2 w-48 rounded-lg border border-white/10 bg-black/90 backdrop-blur-sm shadow-lg z-20">
+                              <div className="absolute right-0 mt-2 w-48 rounded-lg border border-white/10 bg-black/95 backdrop-blur-sm shadow-xl z-[101]">
                                 <div className="py-1">
                                   <button
                                     onClick={(e) => {
@@ -279,6 +280,7 @@ export default function AdminUsersPage() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </div>
