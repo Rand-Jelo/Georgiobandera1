@@ -61,14 +61,30 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    console.log('Creating product with data:', JSON.stringify(body, null, 2));
+    
     const validated = createProductSchema.parse(body);
+    console.log('Validated product data:', JSON.stringify(validated, null, 2));
 
     // Check if slug already exists (only for active products, not archived)
-    const existingProduct = await queryOne<Product>(
-      db,
-      "SELECT id FROM products WHERE slug = ? AND (status = 'draft' OR status = 'active')",
-      [validated.slug]
-    );
+    try {
+      const existingProduct = await queryOne<Product>(
+        db,
+        "SELECT id FROM products WHERE slug = ? AND (status = 'draft' OR status = 'active')",
+        [validated.slug]
+      );
+      console.log('Slug check result:', existingProduct);
+      
+      if (existingProduct) {
+        return NextResponse.json(
+          { error: 'Product with this slug already exists' },
+          { status: 400 }
+        );
+      }
+    } catch (queryError) {
+      console.error('Error checking slug:', queryError);
+      // Continue anyway - if query fails, we'll catch it later
+    }
 
     if (existingProduct) {
       return NextResponse.json(
@@ -145,6 +161,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ product }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Validation error:', error.issues);
       return NextResponse.json(
         { error: 'Validation failed', details: error.issues },
         { status: 400 }
@@ -152,8 +169,15 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Create product error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack });
+    
     return NextResponse.json(
-      { error: 'Failed to create product' },
+      { 
+        error: 'Failed to create product',
+        details: errorMessage,
+      },
       { status: 500 }
     );
   }
