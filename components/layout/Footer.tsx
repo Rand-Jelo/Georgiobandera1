@@ -65,9 +65,10 @@ export default function Footer() {
     // Fetch only parent categories (no parent_id)
     fetch('/api/categories')
       .then((res) => res.json())
-      .then((data: { categories?: Array<Category & { children?: Category[] }> }) => {
+      .then((data: unknown) => {
+        const response = data as { categories?: Array<Category & { children?: Category[] }> };
         // Filter to only parent categories (no parent_id) and limit to top 5-6 for footer
-        const parentCategories = (data.categories || [])
+        const parentCategories = (response.categories || [])
           .filter((cat) => !cat.parent_id)
           .slice(0, 6);
         setCategories(parentCategories);
