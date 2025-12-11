@@ -223,7 +223,7 @@ export default function AdminOrdersPage() {
                       <div className="text-xs text-neutral-500">{order.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">{formatCurrency(order.total)}</div>
+                      <div className="text-sm font-medium text-white">{formatCurrency(order.subtotal + order.shipping_cost)}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span

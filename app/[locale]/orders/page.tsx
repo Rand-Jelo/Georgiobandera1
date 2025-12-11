@@ -9,6 +9,8 @@ interface Order {
   id: string;
   order_number: string;
   status: string;
+  subtotal: number;
+  shipping_cost: number;
   total: number;
   currency: string;
   created_at: number;
@@ -119,7 +121,7 @@ export default function OrdersPage() {
                       </div>
                       <div className="ml-4">
                         <p className="text-lg font-semibold text-gray-900">
-                          {formatPrice(order.total, order.currency)}
+                          {formatPrice(order.subtotal + order.shipping_cost, order.currency)}
                         </p>
                       </div>
                     </div>
