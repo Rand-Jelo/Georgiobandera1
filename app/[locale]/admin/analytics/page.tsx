@@ -301,35 +301,73 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Top Products Chart */}
-        <div className="bg-black/50 border border-white/10 rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-semibold text-white mb-6">Top Products</h2>
+        <div className="bg-black/50 border border-white/10 rounded-lg p-8 mb-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-white mb-2">Top Products</h2>
+            <p className="text-sm text-neutral-400">Best performing products by units sold and revenue</p>
+          </div>
           {topProducts.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-neutral-400">
-              No product sales data available
+            <div className="h-96 flex items-center justify-center text-neutral-400">
+              <div className="text-center">
+                <svg className="w-16 h-16 mx-auto mb-4 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <p>No product sales data available</p>
+              </div>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={topProducts}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+            <ResponsiveContainer width="100%" height={450}>
+              <BarChart data={topProducts} margin={{ top: 20, right: 30, left: 20, bottom: 80 }}>
+                <defs>
+                  <linearGradient id="quantityGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.4}/>
+                  </linearGradient>
+                  <linearGradient id="revenueBarGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.4}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff08" vertical={false} />
                 <XAxis
                   dataKey="product_name"
-                  stroke="#ffffff60"
+                  stroke="#ffffff40"
                   angle={-45}
                   textAnchor="end"
                   height={100}
-                  style={{ fontSize: '12px' }}
+                  tick={{ fill: '#ffffff60', fontSize: 11 }}
+                  axisLine={{ stroke: '#ffffff20' }}
+                  tickLine={{ stroke: '#ffffff20' }}
                 />
                 <YAxis
-                  stroke="#ffffff60"
-                  tickFormatter={(value) => value.toString()}
-                  style={{ fontSize: '12px' }}
+                  yAxisId="left"
+                  stroke="#3b82f6"
+                  tick={{ fill: '#3b82f6', fontSize: 12 }}
+                  axisLine={{ stroke: '#3b82f640' }}
+                  tickLine={{ stroke: '#3b82f640' }}
+                  label={{ value: 'Units Sold', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#3b82f6', fontSize: 12 } }}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="#10b981"
+                  tickFormatter={(value) => {
+                    if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+                    return value.toString();
+                  }}
+                  tick={{ fill: '#10b981', fontSize: 12 }}
+                  axisLine={{ stroke: '#10b98140' }}
+                  tickLine={{ stroke: '#10b98140' }}
+                  label={{ value: 'Revenue (SEK)', angle: 90, position: 'insideRight', style: { textAnchor: 'middle', fill: '#10b981', fontSize: 12 } }}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#000000',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
                     borderRadius: '8px',
                     color: '#ffffff',
+                    padding: '12px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
                   }}
                   formatter={(value: number, name: string) => {
                     if (name === 'total_revenue') {
@@ -340,12 +378,26 @@ export default function AdminAnalyticsPage() {
                     }
                     return [value, name];
                   }}
+                  cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                 />
                 <Legend
-                  wrapperStyle={{ color: '#ffffff' }}
+                  wrapperStyle={{ color: '#ffffff', paddingTop: '20px' }}
+                  iconSize={16}
                 />
-                <Bar dataKey="total_quantity" fill="#3b82f6" name="Units Sold" />
-                <Bar dataKey="total_revenue" fill="#10b981" name="Revenue" />
+                <Bar
+                  yAxisId="left"
+                  dataKey="total_quantity"
+                  fill="url(#quantityGradient)"
+                  name="Units Sold"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  yAxisId="right"
+                  dataKey="total_revenue"
+                  fill="url(#revenueBarGradient)"
+                  name="Revenue"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           )}
