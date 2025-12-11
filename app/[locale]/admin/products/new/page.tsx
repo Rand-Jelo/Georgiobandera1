@@ -191,10 +191,14 @@ export default function NewProductPage() {
         }),
       });
 
-      const data = await response.json() as { error?: string; product?: any };
+      const data = await response.json() as { error?: string; product?: any; details?: any };
 
       if (!response.ok) {
-        setError(data.error || 'Failed to create product');
+        let errorMessage = data.error || 'Failed to create product';
+        if (data.details && Array.isArray(data.details)) {
+          errorMessage += '\n\nValidation errors:\n' + data.details.map((d: any) => `${d.path.join('.')}: ${d.message}`).join('\n');
+        }
+        setError(errorMessage);
         setSaving(false);
         return;
       }
@@ -208,7 +212,8 @@ export default function NewProductPage() {
         router.push('/admin/products');
       }
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      console.error('Error creating product:', err);
+      setError(`An error occurred: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setSaving(false);
     }
   };

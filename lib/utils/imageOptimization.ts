@@ -20,6 +20,11 @@ export async function optimizeImage(
   file: File,
   options: ImageOptimizationOptions = {}
 ): Promise<Blob> {
+  // Check if we're in a browser environment
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    throw new Error('Image optimization can only be used in the browser');
+  }
+
   const {
     maxWidth = 1920,
     maxHeight = 1920,
