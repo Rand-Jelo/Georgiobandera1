@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
@@ -13,7 +13,7 @@ interface CategoryWithChildren extends Category {
 export default function AdminCategoriesPage() {
   const router = useRouter();
   const locale = useLocale();
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState('');
@@ -45,8 +45,9 @@ export default function AdminCategoriesPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/admin/categories');
-      const data = await response.json() as { categories?: Category[]; error?: string };
+      // Fetch nested categories structure
+      const response = await fetch('/api/categories');
+      const data = await response.json() as { categories?: CategoryWithChildren[]; error?: string };
       if (data.error) {
         setError(data.error);
       } else {
@@ -83,6 +84,85 @@ export default function AdminCategoriesPage() {
       console.error('Error deleting category:', err);
       alert('An error occurred while deleting the category.');
     }
+  };
+
+  const renderCategoryRow = (category: CategoryWithChildren, level: number = 0) => {
+    const name = locale === 'sv' ? category.name_sv : category.name_en;
+    const isSubcategory = level > 0;
+
+    return (
+      <React.Fragment key={category.id}>
+        <tr className={`hover:bg-black/30 transition-colors ${isSubcategory ? 'bg-black/20' : ''}`}>
+          <td className="px-6 py-4 whitespace-nowrap">
+            <div className="flex items-center gap-2" style={{ paddingLeft: `${level * 1.5}rem` }}>
+              {isSubcategory && (
+                <span className="text-neutral-500 text-xs">└─</span>
+              )}
+              <div className={`text-sm ${isSubcategory ? 'text-neutral-300' : 'font-medium text-white'}`}>
+                {name}
+              </div>
+              {isSubcategory && (
+                <span className="text-xs text-neutral-500 bg-neutral-800/50 px-2 py-0.5 rounded">
+                  Subcategory
+                </span>
+              )}
+            </div>
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap">
+            <div className={`text-sm ${isSubcategory ? 'text-neutral-500' : 'text-neutral-400'}`}>
+              {category.slug}
+            </div>
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap">
+            <div className="text-sm text-neutral-400">
+              {category.parent_id ? (
+                (() => {
+                  const findParentName = (cats: CategoryWithChildren[], parentId: string): string => {
+                    for (const cat of cats) {
+                      if (cat.id === parentId) {
+                        return locale === 'sv' ? cat.name_sv : cat.name_en;
+                      }
+                      if (cat.children) {
+                        const found = findParentName(cat.children, parentId);
+                        if (found) return found;
+                      }
+                    }
+                    return '-';
+                  };
+                  return findParentName(categories, category.parent_id);
+                })()
+              ) : (
+                '-'
+              )}
+            </div>
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap">
+            <div className={`text-sm ${isSubcategory ? 'text-neutral-500' : 'text-neutral-400'}`}>
+              {category.sort_order}
+            </div>
+          </td>
+          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <Link
+              href={`/admin/categories/${category.id}/edit`}
+              className="text-white hover:text-neutral-300 mr-4"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => handleDelete(category.id, name)}
+              className="text-red-400 hover:text-red-300"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+        {category.children && category.children.length > 0 && (
+          <>
+            {category.children.map((child) => renderCategoryRow(child, level + 1))}
+          </>
+        )}
+      </React.Fragment>
+    );
   };
 
   if (!isAdmin || loading) {
@@ -158,46 +238,7 @@ export default function AdminCategoriesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
-                {categories.map((category) => {
-                  const name = locale === 'sv' ? category.name_sv : category.name_en;
-                  const parentCategory = category.parent_id 
-                    ? categories.find(c => c.id === category.parent_id)
-                    : null;
-                  const parentName = parentCategory 
-                    ? (locale === 'sv' ? parentCategory.name_sv : parentCategory.name_en)
-                    : '-';
-
-                  return (
-                    <tr key={category.id} className="hover:bg-black/30 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-white">{name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-neutral-400">{category.slug}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-neutral-400">{parentName}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-neutral-400">{category.sort_order}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Link
-                          href={`/admin/categories/${category.id}/edit`}
-                          className="text-white hover:text-neutral-300 mr-4"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(category.id, name)}
-                          className="text-red-400 hover:text-red-300"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                {categories.map((category) => renderCategoryRow(category, 0))}
               </tbody>
             </table>
           </div>
