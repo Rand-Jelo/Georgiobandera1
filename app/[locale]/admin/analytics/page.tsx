@@ -48,6 +48,7 @@ export default function AdminAnalyticsPage() {
     pending: 0,
     refunded: 0,
   });
+  const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -121,6 +122,36 @@ export default function AdminAnalyticsPage() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
+  const handleSeedSales = async () => {
+    if (!confirm('This will create 20 random orders for testing. Continue?')) {
+      return;
+    }
+
+    setSeeding(true);
+    try {
+      const response = await fetch('/api/admin/seed-sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ count: 20 }),
+      });
+
+      const data = await response.json() as { success?: boolean; error?: string; message?: string };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to generate sales data');
+        return;
+      }
+
+      alert(data.message || 'Sales data generated successfully!');
+      await fetchAnalytics(); // Refresh analytics
+    } catch (error) {
+      console.error('Error seeding sales:', error);
+      alert('An error occurred while generating sales data.');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   if (!isAdmin || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-950">
@@ -160,6 +191,13 @@ export default function AdminAnalyticsPage() {
                 <option value="90">Last 90 days</option>
                 <option value="365">Last year</option>
               </select>
+              <button
+                onClick={handleSeedSales}
+                disabled={seeding}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 border border-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {seeding ? 'Generating...' : 'Generate Sample Data'}
+              </button>
             </div>
           </div>
         </div>
