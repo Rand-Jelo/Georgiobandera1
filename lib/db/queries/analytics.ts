@@ -49,12 +49,15 @@ export async function getSalesData(
 }
 
 /**
- * Get top selling products
+ * Get top selling products for a time period
  */
 export async function getTopProducts(
   db: D1Database,
-  limit: number = 10
+  limit: number = 10,
+  days: number = 30
 ): Promise<TopProduct[]> {
+  const startDate = Math.floor(Date.now() / 1000) - (days * 24 * 60 * 60);
+  
   const result = await queryDB<{
     product_id: string;
     product_name: string;
@@ -71,11 +74,11 @@ export async function getTopProducts(
       COUNT(DISTINCT oi.order_id) as order_count
     FROM order_items oi
     INNER JOIN orders o ON oi.order_id = o.id
-    WHERE o.payment_status = 'paid'
+    WHERE o.payment_status = 'paid' AND o.created_at >= ?
     GROUP BY oi.product_id, oi.product_name
     ORDER BY total_quantity DESC
     LIMIT ?`,
-    [limit]
+    [startDate, limit]
   );
 
   return (result.results || []).map((row) => ({

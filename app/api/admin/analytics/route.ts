@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     const [salesData, topProducts, revenueByStatus] = await Promise.all([
       getSalesData(db, days),
-      getTopProducts(db, limit),
+      getTopProducts(db, limit, days),
       getRevenueByStatus(db, days),
     ]);
 
