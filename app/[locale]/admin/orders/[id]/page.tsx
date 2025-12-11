@@ -262,15 +262,15 @@ export default function AdminOrderDetailsPage() {
               <h2 className="text-xl font-semibold text-white mb-4">Order Summary</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-neutral-400">
-                  <span>Subtotal:</span>
+                  <span>Subtotal (incl. VAT):</span>
                   <span>{formatCurrency(order.subtotal, order.currency)}</span>
                 </div>
                 <div className="flex justify-between text-neutral-400">
                   <span>Shipping:</span>
                   <span>{formatCurrency(order.shipping_cost, order.currency)}</span>
                 </div>
-                <div className="flex justify-between text-neutral-400">
-                  <span>Tax:</span>
+                <div className="flex justify-between text-xs text-neutral-500">
+                  <span>VAT included in subtotal:</span>
                   <span>{formatCurrency(order.tax, order.currency)}</span>
                 </div>
                 <div className="border-t border-white/10 pt-2 flex justify-between text-white font-semibold">
