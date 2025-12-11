@@ -13,6 +13,8 @@ export default function AdminUsersPage() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     checkAdminAccess();
@@ -42,7 +44,13 @@ export default function AdminUsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users');
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
+      }
+      const url = `/api/admin/users${params.toString() ? '?' + params.toString() : ''}`;
+      const response = await fetch(url);
       const data = await response.json() as { users?: User[] };
       setUsers(data.users || []);
     } catch (error) {
@@ -51,6 +59,22 @@ export default function AdminUsersPage() {
       setLoading(false);
     }
   };
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      fetchUsers();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, isAdmin]);
 
   const handleToggleAdmin = async (userId: string, currentIsAdmin: boolean) => {
     if (!confirm(`Are you sure you want to ${currentIsAdmin ? 'remove admin status from' : 'make'} this user?`)) {
@@ -138,6 +162,35 @@ export default function AdminUsersPage() {
           </Link>
           <h1 className="text-4xl font-semibold text-white mb-2">Users</h1>
           <p className="text-neutral-400">Manage user accounts</p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6 relative">
+          <input
+            type="text"
+            placeholder="Search users by email, name, or phone..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 pl-10 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+          />
+          <svg
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
 
         <div className="bg-black/50 border border-white/10 rounded-lg overflow-visible">

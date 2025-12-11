@@ -29,11 +29,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = await queryDB<User>(
-      db,
-      'SELECT id, email, name, phone, is_admin, created_at, updated_at FROM users ORDER BY created_at DESC',
-      []
-    );
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search') || undefined;
+
+    let sql = 'SELECT id, email, name, phone, is_admin, created_at, updated_at FROM users WHERE 1=1';
+    const params: any[] = [];
+
+    if (search) {
+      sql += ' AND (email LIKE ? OR name LIKE ? OR phone LIKE ?)';
+      const searchTerm = `%${search}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
+    }
+
+    sql += ' ORDER BY created_at DESC';
+
+    const result = await queryDB<User>(db, sql, params);
 
     return NextResponse.json({ users: result.results || [] });
   } catch (error) {

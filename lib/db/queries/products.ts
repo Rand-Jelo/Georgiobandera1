@@ -8,6 +8,7 @@ export async function getProducts(
     categoryId?: string;
     status?: 'draft' | 'active' | 'archived';
     featured?: boolean;
+    search?: string;
     limit?: number;
     offset?: number;
   } = {}
@@ -28,6 +29,12 @@ export async function getProducts(
   if (options.featured !== undefined) {
     sql += ' AND featured = ?';
     params.push(options.featured ? 1 : 0);
+  }
+
+  if (options.search) {
+    sql += ' AND (name_en LIKE ? OR name_sv LIKE ? OR slug LIKE ? OR sku LIKE ? OR description_en LIKE ? OR description_sv LIKE ?)';
+    const searchTerm = `%${options.search}%`;
+    params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
   }
 
   sql += ' ORDER BY created_at DESC';

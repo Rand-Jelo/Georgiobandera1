@@ -187,6 +187,7 @@ export async function getAllOrders(
   db: D1Database,
   options: {
     status?: Order['status'];
+    search?: string;
     limit?: number;
     offset?: number;
   } = {}
@@ -197,6 +198,12 @@ export async function getAllOrders(
   if (options.status) {
     sql += ' AND status = ?';
     params.push(options.status);
+  }
+
+  if (options.search) {
+    sql += ' AND (order_number LIKE ? OR email LIKE ? OR shipping_name LIKE ? OR shipping_address_line1 LIKE ? OR shipping_city LIKE ?)';
+    const searchTerm = `%${options.search}%`;
+    params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
   }
 
   sql += ' ORDER BY created_at DESC';

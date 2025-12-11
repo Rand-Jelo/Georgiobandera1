@@ -29,13 +29,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get status filter from query params
+    // Get filters from query params
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') as 'draft' | 'active' | 'archived' | null;
+    const search = searchParams.get('search') || undefined;
 
     // Get all products (no status filter means all statuses)
     const products = await getProducts(db, {
       status: status || undefined,
+      search: search,
     });
 
     return NextResponse.json({ products });

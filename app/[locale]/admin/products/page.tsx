@@ -13,6 +13,8 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'active' | 'archived'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     checkAdminAccess();
@@ -42,9 +44,14 @@ export default function AdminProductsPage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const url = statusFilter === 'all' 
-        ? '/api/admin/products/list'
-        : `/api/admin/products/list?status=${statusFilter}`;
+      const params = new URLSearchParams();
+      if (statusFilter !== 'all') {
+        params.append('status', statusFilter);
+      }
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
+      }
+      const url = `/api/admin/products/list${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
       const data = await response.json() as { products?: Product[] };
       setProducts(data.products || []);
@@ -55,12 +62,21 @@ export default function AdminProductsPage() {
     }
   };
 
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     if (isAdmin) {
       fetchProducts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, isAdmin]);
+  }, [statusFilter, debouncedSearch, isAdmin]);
 
   const handleDelete = async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product? It will be archived.')) {
@@ -119,23 +135,55 @@ export default function AdminProductsPage() {
           </Link>
         </div>
 
-        {/* Status Filter */}
-        <div className="mb-6 flex items-center gap-4">
-          <span className="text-sm text-neutral-400">Filter by status:</span>
-          <div className="flex gap-2">
-            {(['all', 'draft', 'active', 'archived'] as const).map((status) => (
+        {/* Search and Filters */}
+        <div className="mb-6 space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search products by name, SKU, or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 pl-10 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+            />
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            {searchQuery && (
               <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  statusFilter === status
-                    ? 'bg-white text-black'
-                    : 'bg-black/50 text-neutral-300 hover:bg-black/70 border border-white/10'
-                }`}
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-white"
               >
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
-            ))}
+            )}
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-neutral-400">Filter by status:</span>
+            <div className="flex gap-2 flex-wrap">
+              {(['all', 'draft', 'active', 'archived'] as const).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status)}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    statusFilter === status
+                      ? 'bg-white text-black'
+                      : 'bg-black/50 text-neutral-300 hover:bg-black/70 border border-white/10'
+                  }`}
+                >
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

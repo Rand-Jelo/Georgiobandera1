@@ -31,9 +31,11 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') as Order['status'] | null;
+    const search = searchParams.get('search') || undefined;
 
     const orders = await getAllOrders(db, {
       status: status || undefined,
+      search: search,
     });
 
     return NextResponse.json({ orders });
