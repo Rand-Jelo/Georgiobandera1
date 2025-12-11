@@ -137,12 +137,12 @@ export async function PATCH(
       );
     }
 
-    // Check if slug is being changed and if new slug already exists
+    // Check if slug is being changed and if new slug already exists (only for active products, not archived)
     if (validated.slug && validated.slug !== existingProduct.slug) {
       const slugExists = await queryOne<Product>(
         db,
-        'SELECT id FROM products WHERE slug = ? AND id != ?',
-        [validated.slug, id]
+        'SELECT id FROM products WHERE slug = ? AND id != ? AND status != ?',
+        [validated.slug, id, 'archived']
       );
 
       if (slugExists) {

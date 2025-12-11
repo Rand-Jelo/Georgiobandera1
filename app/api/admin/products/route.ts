@@ -63,11 +63,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = createProductSchema.parse(body);
 
-    // Check if slug already exists
+    // Check if slug already exists (only for active products, not archived)
     const existingProduct = await queryOne<Product>(
       db,
-      'SELECT id FROM products WHERE slug = ?',
-      [validated.slug]
+      'SELECT id FROM products WHERE slug = ? AND status != ?',
+      [validated.slug, 'archived']
     );
 
     if (existingProduct) {
