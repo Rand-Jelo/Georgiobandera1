@@ -200,9 +200,17 @@ export async function POST(request: NextRequest) {
 
       const shippingCost = shippingRegionId ? 50 : 0; // Random shipping cost
       
-      // Get tax rate from settings
-      const settings = await getStoreSettings(db);
-      const taxRate = settings?.tax_rate ? settings.tax_rate / 100 : getDefaultTaxRate(); // Convert percentage to decimal
+      // Get tax rate from settings (handle case where table doesn't exist)
+      let taxRate = getDefaultTaxRate(); // Default to 25%
+      try {
+        const settings = await getStoreSettings(db);
+        if (settings?.tax_rate) {
+          taxRate = settings.tax_rate / 100; // Convert percentage to decimal
+        }
+      } catch (settingsError) {
+        // Store settings table might not exist yet, use default
+        console.log('Could not fetch store settings, using default tax rate:', taxRate);
+      }
       
       // Calculate tax from tax-inclusive prices
       const tax = calculateTaxFromInclusive(subtotal, taxRate);
