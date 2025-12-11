@@ -12,6 +12,7 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'active' | 'archived'>('all');
 
   useEffect(() => {
     checkAdminAccess();
@@ -40,7 +41,10 @@ export default function AdminProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('/api/products');
+      const url = statusFilter === 'all' 
+        ? '/api/admin/products/list'
+        : `/api/admin/products/list?status=${statusFilter}`;
+      const response = await fetch(url);
       const data = await response.json() as { products?: Product[] };
       setProducts(data.products || []);
     } catch (error) {
@@ -49,6 +53,13 @@ export default function AdminProductsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isAdmin) {
+      setLoading(true);
+      fetchProducts();
+    }
+  }, [statusFilter, isAdmin]);
 
   const handleDelete = async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product? It will be archived.')) {
@@ -105,6 +116,26 @@ export default function AdminProductsPage() {
           >
             Add Product
           </Link>
+        </div>
+
+        {/* Status Filter */}
+        <div className="mb-6 flex items-center gap-4">
+          <span className="text-sm text-neutral-400">Filter by status:</span>
+          <div className="flex gap-2">
+            {(['all', 'draft', 'active', 'archived'] as const).map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  statusFilter === status
+                    ? 'bg-white text-black'
+                    : 'bg-black/50 text-neutral-300 hover:bg-black/70 border border-white/10'
+                }`}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
