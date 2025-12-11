@@ -67,23 +67,24 @@ export async function POST(request: NextRequest) {
     console.log('Validated product data:', JSON.stringify(validated, null, 2));
 
     // Check if slug already exists (only for active products, not archived)
+    let existingProduct: Product | null = null;
     try {
-      const existingProduct = await queryOne<Product>(
+      existingProduct = await queryOne<Product>(
         db,
         "SELECT id FROM products WHERE slug = ? AND status IN ('draft', 'active')",
         [validated.slug]
       );
       console.log('Slug check result:', existingProduct);
-      
-      if (existingProduct) {
-        return NextResponse.json(
-          { error: 'Product with this slug already exists' },
-          { status: 400 }
-        );
-      }
     } catch (queryError) {
       console.error('Error checking slug:', queryError);
       // Continue anyway - if query fails, we'll catch it later
+    }
+    
+    if (existingProduct) {
+      return NextResponse.json(
+        { error: 'Product with this slug already exists' },
+        { status: 400 }
+      );
     }
 
     if (existingProduct) {
