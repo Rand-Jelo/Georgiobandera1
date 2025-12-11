@@ -321,6 +321,14 @@ export default function AdminDashboard() {
                 <h3 className="text-xl font-semibold text-white mb-2">Settings</h3>
                 <p className="text-neutral-400 text-sm">Store information, shipping, and general settings</p>
               </Link>
+
+              <Link
+                href="/admin/analytics"
+                className="block p-6 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
+              >
+                <h3 className="text-xl font-semibold text-white mb-2">Analytics</h3>
+                <p className="text-neutral-400 text-sm">Sales charts and top products</p>
+              </Link>
             </div>
           </div>
         </div>
