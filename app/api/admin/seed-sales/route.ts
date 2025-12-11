@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
 import { getDB } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
+import { getStoreSettings } from '@/lib/db/queries/settings';
 import { queryDB, executeDB } from '@/lib/db/client';
 import { generateOrderNumber } from '@/lib/utils';
+import { calculateTaxFromInclusive, getDefaultTaxRate } from '@/lib/utils/tax';
 
 /**
  * POST /api/admin/seed-sales
@@ -109,8 +111,16 @@ export async function POST(request: NextRequest) {
       });
 
       const shippingCost = shippingRegionId ? 50 : 0; // Random shipping cost
-      const tax = subtotal * 0.25; // 25% tax
-      const total = subtotal + shippingCost + tax;
+      
+      // Get tax rate from settings
+      const settings = await getStoreSettings(db);
+      const taxRate = settings?.tax_rate ? settings.tax_rate / 100 : getDefaultTaxRate(); // Convert percentage to decimal
+      
+      // Calculate tax from tax-inclusive prices
+      const tax = calculateTaxFromInclusive(subtotal, taxRate);
+      
+      // Total = subtotal (tax-inclusive) + shipping
+      const total = subtotal + shippingCost;
 
       // Random payment status (mostly paid, some pending)
       const paymentStatuses = ['paid', 'paid', 'paid', 'paid', 'pending'] as const;

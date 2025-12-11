@@ -78,9 +78,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Calculate tax (simplified - 25% VAT for Sweden)
-    const tax = subtotal * 0.25;
-    const total = subtotal + shippingCost + tax;
+    // Get tax rate from settings
+    const settings = await getStoreSettings(db);
+    const taxRate = settings?.tax_rate ? settings.tax_rate / 100 : getDefaultTaxRate(); // Convert percentage to decimal
+
+    // Calculate tax from tax-inclusive prices
+    // Prices already include tax, so we extract it: tax = subtotal * (tax_rate / (1 + tax_rate))
+    const tax = calculateTaxFromInclusive(subtotal, taxRate);
+    
+    // Total = subtotal (tax-inclusive) + shipping
+    // Tax is stored separately for record-keeping
+    const total = subtotal + shippingCost;
 
     // Create order
     const order = await createOrder(db, {

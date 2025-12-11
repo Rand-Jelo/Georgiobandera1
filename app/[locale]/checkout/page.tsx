@@ -59,10 +59,24 @@ export default function CheckoutPage() {
 
   const [shippingCost, setShippingCost] = useState(0);
   const [selectedRegion, setSelectedRegion] = useState<ShippingRegion | null>(null);
+  const [taxRate, setTaxRate] = useState(0.25); // Default 25%
 
   useEffect(() => {
     fetchData();
+    fetchTaxRate();
   }, []);
+
+  const fetchTaxRate = async () => {
+    try {
+      const response = await fetch('/api/checkout/tax');
+      const data = await response.json() as { taxRate?: number };
+      if (data.taxRate) {
+        setTaxRate(data.taxRate);
+      }
+    } catch (err) {
+      console.error('Error fetching tax rate:', err);
+    }
+  };
 
   const subtotal = cartItems.reduce((sum, item) => {
     const price = item.variant?.price ?? item.product?.price ?? 0;
@@ -131,8 +145,12 @@ export default function CheckoutPage() {
     }
   };
 
-  const tax = subtotal * 0.25; // 25% VAT
-  const total = subtotal + shippingCost + tax;
+  // Calculate tax from tax-inclusive prices
+  // Tax = subtotal * (tax_rate / (1 + tax_rate))
+  const tax = taxRate > 0 ? subtotal * (taxRate / (1 + taxRate)) : 0;
+  // Subtotal already includes tax, so total = subtotal + shipping
+  // Tax is shown separately for transparency
+  const total = subtotal + shippingCost;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -439,7 +457,7 @@ export default function CheckoutPage() {
               {/* Totals */}
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-gray-600">{tCart('subtotal')}</dt>
+                  <dt className="text-gray-600">Subtotal (incl. VAT)</dt>
                   <dd className="text-gray-900">{formatPrice(subtotal, 'SEK')}</dd>
                 </div>
                 <div className="flex justify-between">
@@ -452,9 +470,9 @@ export default function CheckoutPage() {
                     )}
                   </dd>
                 </div>
-                <div className="flex justify-between">
-                  <dt className="text-gray-600">Tax (VAT)</dt>
-                  <dd className="text-gray-900">{formatPrice(tax, 'SEK')}</dd>
+                <div className="flex justify-between text-xs text-gray-500">
+                  <dt>VAT included in subtotal</dt>
+                  <dd>{formatPrice(tax, 'SEK')}</dd>
                 </div>
                 <div className="flex justify-between text-base font-semibold border-t border-gray-200 pt-2">
                   <dt className="text-gray-900">{tCart('total')}</dt>
