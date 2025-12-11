@@ -63,7 +63,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const body = await request.json() as {
+      store_name: string;
+      store_email: string;
+      store_phone?: string | null;
+      store_address?: string | null;
+      store_city?: string | null;
+      store_postal_code?: string | null;
+      store_country?: string | null;
+      currency?: string;
+      tax_rate?: number;
+    };
     const settings = await upsertStoreSettings(db, body);
 
     return NextResponse.json({ settings });

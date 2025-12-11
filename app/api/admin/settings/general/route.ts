@@ -63,7 +63,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const body = await request.json() as {
+      maintenance_mode?: boolean;
+      allow_registrations?: boolean;
+      default_language?: string;
+    };
     const settings = await upsertGeneralSettings(db, body);
 
     return NextResponse.json({ settings });
