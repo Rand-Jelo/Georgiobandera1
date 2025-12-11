@@ -183,3 +183,35 @@ export async function updateTrackingNumber(
   );
 }
 
+export async function getAllOrders(
+  db: D1Database,
+  options: {
+    status?: Order['status'];
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<Order[]> {
+  let sql = 'SELECT * FROM orders WHERE 1=1';
+  const params: any[] = [];
+
+  if (options.status) {
+    sql += ' AND status = ?';
+    params.push(options.status);
+  }
+
+  sql += ' ORDER BY created_at DESC';
+
+  if (options.limit) {
+    sql += ' LIMIT ?';
+    params.push(options.limit);
+  }
+
+  if (options.offset) {
+    sql += ' OFFSET ?';
+    params.push(options.offset);
+  }
+
+  const result = await queryDB<Order>(db, sql, params);
+  return result.results || [];
+}
+
