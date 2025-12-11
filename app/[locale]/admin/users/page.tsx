@@ -10,6 +10,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -23,13 +24,14 @@ export default function AdminUsersPage() {
         return;
       }
 
-      const data = await response.json() as { user?: { is_admin?: boolean } };
+      const data = await response.json() as { user?: { id?: string; is_admin?: boolean } };
       if (!data.user || !data.user.is_admin) {
         router.push('/');
         return;
       }
 
       setIsAdmin(true);
+      setCurrentUserId(data.user.id || null);
       fetchUsers();
     } catch (error) {
       router.push('/login');
@@ -45,6 +47,60 @@ export default function AdminUsersPage() {
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleAdmin = async (userId: string, currentIsAdmin: boolean) => {
+    if (!confirm(`Are you sure you want to ${currentIsAdmin ? 'remove admin status from' : 'make'} this user?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_admin: !currentIsAdmin }),
+      });
+
+      const data = await response.json() as { error?: string; user?: User };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to update user');
+        return;
+      }
+
+      // Refresh users list
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error toggling admin status:', error);
+      alert('An error occurred while updating the user.');
+    }
+  };
+
+  const handleDelete = async (userId: string, userEmail: string) => {
+    if (!confirm(`Are you sure you want to delete user "${userEmail}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json() as { error?: string; success?: boolean };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to delete user');
+        return;
+      }
+
+      // Refresh users list
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('An error occurred while deleting the user.');
     }
   };
 
@@ -101,43 +157,71 @@ export default function AdminUsersPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
                   Created
                 </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-neutral-400">
+                  <td colSpan={6} className="px-6 py-8 text-center text-neutral-400">
                     No users found
                   </td>
                 </tr>
               ) : (
-                users.map((user) => (
-                  <tr key={user.id} className="hover:bg-black/30 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">{user.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-neutral-400">{user.name || '-'}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-neutral-400">{user.phone || '-'}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          user.is_admin
-                            ? 'bg-purple-500/20 text-purple-300'
-                            : 'bg-neutral-500/20 text-neutral-300'
-                        }`}
-                      >
-                        {user.is_admin ? 'Admin' : 'User'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-neutral-400">{formatDate(user.created_at)}</div>
-                    </td>
-                  </tr>
-                ))
+                users.map((user) => {
+                  const isCurrentUser = user.id === currentUserId;
+                  return (
+                    <tr key={user.id} className="hover:bg-black/30 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-white">{user.email}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-neutral-400">{user.name || '-'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-neutral-400">{user.phone || '-'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            user.is_admin
+                              ? 'bg-purple-500/20 text-purple-300'
+                              : 'bg-neutral-500/20 text-neutral-300'
+                          }`}
+                        >
+                          {user.is_admin ? 'Admin' : 'User'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-neutral-400">{formatDate(user.created_at)}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleToggleAdmin(user.id, user.is_admin)}
+                          disabled={isCurrentUser}
+                          className={`mr-4 ${
+                            user.is_admin
+                              ? 'text-yellow-400 hover:text-yellow-300'
+                              : 'text-purple-400 hover:text-purple-300'
+                          } ${isCurrentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={isCurrentUser ? 'Cannot modify your own admin status' : user.is_admin ? 'Remove admin status' : 'Make admin'}
+                        >
+                          {user.is_admin ? 'Remove Admin' : 'Make Admin'}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user.id, user.email)}
+                          disabled={isCurrentUser}
+                          className={`text-red-400 hover:text-red-300 ${isCurrentUser ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          title={isCurrentUser ? 'Cannot delete your own account' : 'Delete user'}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
