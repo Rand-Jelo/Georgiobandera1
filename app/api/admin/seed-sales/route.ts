@@ -99,15 +99,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let body: { count?: number } | undefined;
+    let count = 20; // Default to 20 orders
     try {
-      const text = await request.text();
-      body = text ? JSON.parse(text) : undefined;
+      const contentType = request.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        const body = await request.json() as { count?: number } | undefined;
+        count = body?.count || 20;
+      }
     } catch (e) {
       // Request might not have a body, use defaults
-      body = undefined;
+      console.log('No request body or invalid JSON, using default count:', count);
     }
-    const count = body?.count || 20; // Default to 20 orders
 
     // Get all active products
     const productsResult = await queryDB<{
@@ -174,16 +176,27 @@ export async function POST(request: NextRequest) {
 
       selectedProducts.forEach((product) => {
         const quantity = Math.floor(Math.random() * 3) + 1; // 1-3 items
-        const itemTotal = product.price * quantity;
+        const price = Number(product.price) || 0; // Ensure price is a number
+        if (price <= 0) {
+          console.warn(`Product ${product.id} has invalid price: ${product.price}`);
+          return; // Skip products with invalid prices
+        }
+        const itemTotal = price * quantity;
         subtotal += itemTotal;
         
         orderItems.push({
           productId: product.id,
-          productName: product.name_en,
-          price: product.price,
+          productName: product.name_en || 'Unknown Product',
+          price: price,
           quantity,
         });
       });
+      
+      // Skip order if no valid items
+      if (orderItems.length === 0) {
+        console.warn('Skipping order with no valid items');
+        continue;
+      }
 
       const shippingCost = shippingRegionId ? 50 : 0; // Random shipping cost
       

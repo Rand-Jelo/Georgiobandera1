@@ -161,10 +161,14 @@ export default function AdminAnalyticsPage() {
         body: JSON.stringify({ count: 20 }),
       });
 
-      const data = await response.json() as { success?: boolean; error?: string; message?: string };
+      const data = await response.json() as { success?: boolean; error?: string; message?: string; details?: string };
 
       if (!response.ok) {
-        alert(data.error || 'Failed to generate sales data');
+        const errorMsg = data.details 
+          ? `${data.error || 'Failed to generate sales data'}: ${data.details}`
+          : data.error || 'Failed to generate sales data';
+        console.error('Seed sales error:', data);
+        alert(errorMsg);
         return;
       }
 
@@ -202,10 +206,14 @@ export default function AdminAnalyticsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ count: 20 }),
       });
-      const seedData = await seedResponse.json() as { error?: string; message?: string };
+      const seedData = await seedResponse.json() as { error?: string; message?: string; details?: string };
 
       if (!seedResponse.ok) {
-        alert(seedData.error || 'Failed to generate sales data');
+        const errorMsg = seedData.details 
+          ? `${seedData.error || 'Failed to generate sales data'}: ${seedData.details}`
+          : seedData.error || 'Failed to generate sales data';
+        console.error('Seed sales error:', seedData);
+        alert(errorMsg);
         return;
       }
 
