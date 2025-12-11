@@ -105,7 +105,7 @@ export default function Footer() {
                   return (
                     <li key={category.id}>
                       <Link
-                        href={`/products?category=${category.slug}`}
+                        href={`/categories/${category.slug}`}
                         className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
                       >
                         {name}
