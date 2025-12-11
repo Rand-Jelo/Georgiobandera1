@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Order } from '@/types/database';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/lib/i18n/routing';
 import type { Order } from '@/types/database';
