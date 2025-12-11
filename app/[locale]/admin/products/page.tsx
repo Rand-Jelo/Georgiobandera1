@@ -41,6 +41,7 @@ export default function AdminProductsPage() {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const url = statusFilter === 'all' 
         ? '/api/admin/products/list'
         : `/api/admin/products/list?status=${statusFilter}`;
@@ -56,9 +57,9 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     if (isAdmin) {
-      setLoading(true);
       fetchProducts();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, isAdmin]);
 
   const handleDelete = async (productId: string) => {
