@@ -79,7 +79,14 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const body = await request.json();
+    const body = await request.json() as {
+      name_en?: string;
+      name_sv?: string;
+      code?: string;
+      base_price?: number;
+      free_shipping_threshold?: number | null;
+      active?: boolean;
+    };
     const region = await updateShippingRegion(db, id, body);
 
     return NextResponse.json({ region });

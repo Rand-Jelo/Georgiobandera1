@@ -63,7 +63,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const body = await request.json() as {
+      name_en: string;
+      name_sv: string;
+      code: string;
+      base_price: number;
+      free_shipping_threshold?: number | null;
+      active?: boolean;
+    };
     const region = await createShippingRegion(db, body);
 
     return NextResponse.json({ region });
