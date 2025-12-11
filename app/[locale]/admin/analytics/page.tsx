@@ -243,15 +243,17 @@ export default function AdminAnalyticsPage() {
                 />
                 <YAxis
                   yAxisId="left"
-                  stroke="#ffffff60"
+                  stroke="#10b981"
                   tickFormatter={(value) => formatCurrency(value)}
                   style={{ fontSize: '12px' }}
+                  label={{ value: 'Revenue (SEK)', angle: -90, position: 'insideLeft', style: { textAnchor: 'middle', fill: '#10b981' } }}
                 />
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  stroke="#ffffff60"
+                  stroke="#3b82f6"
                   style={{ fontSize: '12px' }}
+                  label={{ value: 'Orders', angle: 90, position: 'insideRight', style: { textAnchor: 'middle', fill: '#3b82f6' } }}
                 />
                 <Tooltip
                   contentStyle={{
@@ -262,9 +264,12 @@ export default function AdminAnalyticsPage() {
                   }}
                   formatter={(value: number, name: string) => {
                     if (name === 'revenue') {
-                      return [formatCurrency(value), 'Revenue'];
+                      return [formatCurrency(value), 'Revenue (SEK)'];
                     }
-                    return [value, 'Orders'];
+                    if (name === 'orders') {
+                      return [value, 'Orders'];
+                    }
+                    return [value, name];
                   }}
                   labelFormatter={(label) => formatDate(label)}
                 />
@@ -279,7 +284,7 @@ export default function AdminAnalyticsPage() {
                   stroke="#10b981"
                   strokeWidth={2}
                   dot={{ fill: '#10b981', r: 4 }}
-                  name="Revenue"
+                  name="Revenue (SEK)"
                 />
                 <Line
                   yAxisId="right"

@@ -88,13 +88,18 @@ export async function getTopProducts(
 }
 
 /**
- * Get revenue by status
+ * Get revenue by status for a time period
  */
-export async function getRevenueByStatus(db: D1Database): Promise<{
+export async function getRevenueByStatus(
+  db: D1Database,
+  days: number = 30
+): Promise<{
   paid: number;
   pending: number;
   refunded: number;
 }> {
+  const startDate = Math.floor(Date.now() / 1000) - (days * 24 * 60 * 60);
+  
   const result = await queryDB<{
     payment_status: string;
     total: number;
@@ -104,7 +109,9 @@ export async function getRevenueByStatus(db: D1Database): Promise<{
       payment_status,
       SUM(total) as total
     FROM orders
-    GROUP BY payment_status`
+    WHERE created_at >= ?
+    GROUP BY payment_status`,
+    [startDate]
   );
 
   const revenue = {
