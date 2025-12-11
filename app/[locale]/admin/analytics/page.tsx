@@ -204,8 +204,15 @@ export default function AdminAnalyticsPage() {
                   style={{ fontSize: '12px' }}
                 />
                 <YAxis
+                  yAxisId="left"
                   stroke="#ffffff60"
                   tickFormatter={(value) => formatCurrency(value)}
+                  style={{ fontSize: '12px' }}
+                />
+                <YAxis
+                  yAxisId="right"
+                  orientation="right"
+                  stroke="#ffffff60"
                   style={{ fontSize: '12px' }}
                 />
                 <Tooltip
@@ -228,6 +235,7 @@ export default function AdminAnalyticsPage() {
                   iconType="line"
                 />
                 <Line
+                  yAxisId="left"
                   type="monotone"
                   dataKey="revenue"
                   stroke="#10b981"
@@ -236,13 +244,13 @@ export default function AdminAnalyticsPage() {
                   name="Revenue"
                 />
                 <Line
+                  yAxisId="right"
                   type="monotone"
                   dataKey="orders"
                   stroke="#3b82f6"
                   strokeWidth={2}
                   dot={{ fill: '#3b82f6', r: 4 }}
                   name="Orders"
-                  yAxisId="right"
                 />
               </LineChart>
             </ResponsiveContainer>
