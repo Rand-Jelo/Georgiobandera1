@@ -50,7 +50,6 @@ export default function AdminAnalyticsPage() {
   });
   const [seeding, setSeeding] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
