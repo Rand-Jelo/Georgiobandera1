@@ -208,7 +208,7 @@ export default function OrderConfirmationPage() {
               </div>
               <div className="flex justify-between text-base font-semibold border-t border-gray-200 pt-2">
                 <dt className="text-gray-900">Total</dt>
-                <dd className="text-gray-900">{formatPrice(order.total, order.currency)}</dd>
+                <dd className="text-gray-900">{formatPrice(order.subtotal + order.shipping_cost, order.currency)}</dd>
               </div>
             </dl>
           </div>

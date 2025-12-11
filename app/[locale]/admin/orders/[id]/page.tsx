@@ -275,7 +275,7 @@ export default function AdminOrderDetailsPage() {
                 </div>
                 <div className="border-t border-white/10 pt-2 flex justify-between text-white font-semibold">
                   <span>Total:</span>
-                  <span>{formatCurrency(order.total, order.currency)}</span>
+                  <span>{formatCurrency(order.subtotal + order.shipping_cost, order.currency)}</span>
                 </div>
               </div>
             </div>
