@@ -13,7 +13,7 @@ export async function getProducts(
     offset?: number;
   } = {}
 ): Promise<Product[]> {
-  let sql = 'SELECT * FROM products WHERE 1=1';
+  let sql = 'SELECT DISTINCT * FROM products WHERE 1=1';
   const params: any[] = [];
 
   if (options.categoryId) {

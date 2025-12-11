@@ -33,7 +33,12 @@ export default function HomePage() {
       // Fetch featured products
       const productsResponse = await fetch('/api/products?featured=true&status=active&limit=6');
       const productsData = await productsResponse.json() as { products?: Product[] };
-      setFeaturedProducts(productsData.products || []);
+      const products = productsData.products || [];
+      // Deduplicate by product ID to ensure no duplicates
+      const uniqueProducts = Array.from(
+        new Map(products.map(product => [product.id, product])).values()
+      );
+      setFeaturedProducts(uniqueProducts);
     } catch (err) {
       console.error('Error fetching homepage data:', err);
     } finally {
