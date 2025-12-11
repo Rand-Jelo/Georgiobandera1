@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         "SELECT id FROM products WHERE slug = ? AND status IN ('draft', 'active')",
         [validated.slug]
       );
-      console.log('Slug check result:', existingProduct);
+      console.log('Slug check result (active):', existingProduct);
     } catch (queryError) {
       console.error('Error checking slug:', queryError);
       // Continue anyway - if query fails, we'll catch it later
@@ -85,6 +85,30 @@ export async function POST(request: NextRequest) {
         { error: 'Product with this slug already exists' },
         { status: 400 }
       );
+    }
+
+    // Check if an archived product has this slug and update it to free the slug
+    try {
+      const archivedProduct = await queryOne<Product>(
+        db,
+        "SELECT id, slug FROM products WHERE slug = ? AND status = 'archived'",
+        [validated.slug]
+      );
+      
+      if (archivedProduct) {
+        console.log('Found archived product with same slug, updating it:', archivedProduct.id);
+        // Update the archived product's slug to free it up
+        const newSlug = `${archivedProduct.slug}-archived-${Date.now()}`;
+        await executeDB(
+          db,
+          "UPDATE products SET slug = ?, updated_at = unixepoch() WHERE id = ?",
+          [newSlug, archivedProduct.id]
+        );
+        console.log(`Updated archived product slug from '${archivedProduct.slug}' to '${newSlug}'`);
+      }
+    } catch (queryError) {
+      console.error('Error checking/updating archived product slug:', queryError);
+      // Continue anyway - if this fails, the INSERT will fail with a clearer error
     }
 
     if (existingProduct) {
