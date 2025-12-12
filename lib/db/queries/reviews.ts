@@ -14,27 +14,35 @@ export async function getProductReviews(
     offset?: number;
   } = {}
 ): Promise<ProductReview[]> {
-  let sql = 'SELECT * FROM product_reviews WHERE product_id = ?';
-  const params: any[] = [productId];
+  try {
+    let sql = 'SELECT * FROM product_reviews WHERE product_id = ?';
+    const params: any[] = [productId];
 
-  if (options.status) {
-    sql += ' AND status = ?';
-    params.push(options.status);
-  }
-
-  sql += ' ORDER BY created_at DESC';
-
-  if (options.limit) {
-    sql += ' LIMIT ?';
-    params.push(options.limit);
-    if (options.offset) {
-      sql += ' OFFSET ?';
-      params.push(options.offset);
+    if (options.status) {
+      sql += ' AND status = ?';
+      params.push(options.status);
     }
-  }
 
-  const result = await queryDB<ProductReview>(db, sql, params);
-  return result.results || [];
+    sql += ' ORDER BY created_at DESC';
+
+    if (options.limit) {
+      sql += ' LIMIT ?';
+      params.push(options.limit);
+      if (options.offset) {
+        sql += ' OFFSET ?';
+        params.push(options.offset);
+      }
+    }
+
+    const result = await queryDB<ProductReview>(db, sql, params);
+    return result.results || [];
+  } catch (error: any) {
+    // If table doesn't exist, return empty array
+    if (error?.message?.includes('no such table: product_reviews')) {
+      return [];
+    }
+    throw error;
+  }
 }
 
 /**
@@ -50,38 +58,46 @@ export async function getAllReviews(
     offset?: number;
   } = {}
 ): Promise<ProductReview[]> {
-  let sql = 'SELECT * FROM product_reviews WHERE 1=1';
-  const params: any[] = [];
+  try {
+    let sql = 'SELECT * FROM product_reviews WHERE 1=1';
+    const params: any[] = [];
 
-  if (options.status) {
-    sql += ' AND status = ?';
-    params.push(options.status);
-  }
-
-  if (options.productId) {
-    sql += ' AND product_id = ?';
-    params.push(options.productId);
-  }
-
-  if (options.search) {
-    sql += ' AND (name LIKE ? OR email LIKE ? OR review_text LIKE ?)';
-    const searchTerm = `%${options.search}%`;
-    params.push(searchTerm, searchTerm, searchTerm);
-  }
-
-  sql += ' ORDER BY created_at DESC';
-
-  if (options.limit) {
-    sql += ' LIMIT ?';
-    params.push(options.limit);
-    if (options.offset) {
-      sql += ' OFFSET ?';
-      params.push(options.offset);
+    if (options.status) {
+      sql += ' AND status = ?';
+      params.push(options.status);
     }
-  }
 
-  const result = await queryDB<ProductReview>(db, sql, params);
-  return result.results || [];
+    if (options.productId) {
+      sql += ' AND product_id = ?';
+      params.push(options.productId);
+    }
+
+    if (options.search) {
+      sql += ' AND (name LIKE ? OR email LIKE ? OR review_text LIKE ?)';
+      const searchTerm = `%${options.search}%`;
+      params.push(searchTerm, searchTerm, searchTerm);
+    }
+
+    sql += ' ORDER BY created_at DESC';
+
+    if (options.limit) {
+      sql += ' LIMIT ?';
+      params.push(options.limit);
+      if (options.offset) {
+        sql += ' OFFSET ?';
+        params.push(options.offset);
+      }
+    }
+
+    const result = await queryDB<ProductReview>(db, sql, params);
+    return result.results || [];
+  } catch (error: any) {
+    // If table doesn't exist, return empty array
+    if (error?.message?.includes('no such table: product_reviews')) {
+      return [];
+    }
+    throw error;
+  }
 }
 
 /**
@@ -109,48 +125,66 @@ export async function getProductReviewStats(
   average: number;
   ratingDistribution: { rating: number; count: number }[];
 }> {
-  const reviewsResult = await queryDB<{ rating: number }>(
-    db,
-    'SELECT rating FROM product_reviews WHERE product_id = ? AND status = ?',
-    [productId, 'approved']
-  );
+  try {
+    const reviewsResult = await queryDB<{ rating: number }>(
+      db,
+      'SELECT rating FROM product_reviews WHERE product_id = ? AND status = ?',
+      [productId, 'approved']
+    );
 
-  const reviews = reviewsResult.results || [];
-  const total = reviews.length;
+    const reviews = reviewsResult.results || [];
+    const total = reviews.length;
 
-  if (total === 0) {
+    if (total === 0) {
+      return {
+        total: 0,
+        average: 0,
+        ratingDistribution: [
+          { rating: 5, count: 0 },
+          { rating: 4, count: 0 },
+          { rating: 3, count: 0 },
+          { rating: 2, count: 0 },
+          { rating: 1, count: 0 },
+        ],
+      };
+    }
+
+    const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
+    const average = sum / total;
+
+    // Count ratings
+    const distribution: { [key: number]: number } = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviews.forEach((r) => {
+      distribution[r.rating] = (distribution[r.rating] || 0) + 1;
+    });
+
+    const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
+      rating,
+      count: distribution[rating] || 0,
+    }));
+
     return {
-      total: 0,
-      average: 0,
-      ratingDistribution: [
-        { rating: 5, count: 0 },
-        { rating: 4, count: 0 },
-        { rating: 3, count: 0 },
-        { rating: 2, count: 0 },
-        { rating: 1, count: 0 },
-      ],
+      total,
+      average: Math.round(average * 10) / 10, // Round to 1 decimal
+      ratingDistribution,
     };
+  } catch (error: any) {
+    // If table doesn't exist, return default stats
+    if (error?.message?.includes('no such table: product_reviews')) {
+      return {
+        total: 0,
+        average: 0,
+        ratingDistribution: [
+          { rating: 5, count: 0 },
+          { rating: 4, count: 0 },
+          { rating: 3, count: 0 },
+          { rating: 2, count: 0 },
+          { rating: 1, count: 0 },
+        ],
+      };
+    }
+    throw error;
   }
-
-  const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
-  const average = sum / total;
-
-  // Count ratings
-  const distribution: { [key: number]: number } = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-  reviews.forEach((r) => {
-    distribution[r.rating] = (distribution[r.rating] || 0) + 1;
-  });
-
-  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
-    rating,
-    count: distribution[rating] || 0,
-  }));
-
-  return {
-    total,
-    average: Math.round(average * 10) / 10, // Round to 1 decimal
-    ratingDistribution,
-  };
 }
 
 /**

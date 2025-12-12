@@ -39,25 +39,66 @@ export async function GET(
     }
 
     // Get approved reviews only for public endpoint
-    const reviews = await getProductReviews(db, id, {
-      status: 'approved',
-      limit: 50,
-    });
+    // Handle case where reviews table doesn't exist yet (migrations not run)
+    let reviews: typeof reviews = [];
+    try {
+      reviews = await getProductReviews(db, id, {
+        status: 'approved',
+        limit: 50,
+      });
+    } catch (error: any) {
+      // If table doesn't exist, return empty reviews
+      if (error?.message?.includes('no such table: product_reviews')) {
+        reviews = [];
+      } else {
+        throw error;
+      }
+    }
 
     const response: { reviews: typeof reviews; stats?: any } = { reviews };
 
     if (includeStats) {
-      const stats = await getProductReviewStats(db, id);
-      response.stats = stats;
+      try {
+        const stats = await getProductReviewStats(db, id);
+        response.stats = stats;
+      } catch (error: any) {
+        // If table doesn't exist, return default stats
+        if (error?.message?.includes('no such table: product_reviews')) {
+          response.stats = {
+            total: 0,
+            average: 0,
+            ratingDistribution: [
+              { rating: 5, count: 0 },
+              { rating: 4, count: 0 },
+              { rating: 3, count: 0 },
+              { rating: 2, count: 0 },
+              { rating: 1, count: 0 },
+            ],
+          };
+        } else {
+          throw error;
+        }
+      }
     }
 
     return NextResponse.json(response);
   } catch (error) {
     console.error('Get reviews error:', error);
-    return NextResponse.json(
-      { error: 'Failed to get reviews' },
-      { status: 500 }
-    );
+    // Return empty reviews if there's an error (e.g., table doesn't exist)
+    return NextResponse.json({
+      reviews: [],
+      stats: includeStats ? {
+        total: 0,
+        average: 0,
+        ratingDistribution: [
+          { rating: 5, count: 0 },
+          { rating: 4, count: 0 },
+          { rating: 3, count: 0 },
+          { rating: 2, count: 0 },
+          { rating: 1, count: 0 },
+        ],
+      } : undefined,
+    });
   }
 }
 
