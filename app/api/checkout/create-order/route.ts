@@ -10,6 +10,11 @@ import { getShippingRegionById } from '@/lib/db/queries/shipping';
 import { calculateShippingCost } from '@/lib/db/queries/shipping';
 import { getStoreSettings } from '@/lib/db/queries/settings';
 import { calculateTaxFromInclusive, getDefaultTaxRate } from '@/lib/utils/tax';
+import {
+  validateDiscountCode,
+  calculateDiscountAmount,
+  recordDiscountCodeUsage,
+} from '@/lib/db/queries/discount-codes';
 
 const createOrderSchema = z.object({
   shippingName: z.string().min(1),
@@ -22,6 +27,7 @@ const createOrderSchema = z.object({
   shippingRegionId: z.string().optional(),
   paymentMethod: z.enum(['stripe', 'paypal']).optional(),
   paymentIntentId: z.string().optional(),
+  discountCode: z.string().nullable().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -71,7 +77,32 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Calculate shipping
+    // Validate and apply discount code if provided
+    let discountAmount = 0;
+    let discountCodeId: string | null = null;
+    if (validated.discountCode) {
+      const userEmail = session?.email || validated.shippingName; // Fallback email
+      const validation = await validateDiscountCode(
+        db,
+        validated.discountCode,
+        subtotal,
+        session?.userId || undefined,
+        userEmail
+      );
+
+      if (validation.valid && validation.discountCode) {
+        discountAmount = calculateDiscountAmount(validation.discountCode, subtotal);
+        discountCodeId = validation.discountCode.id;
+      } else {
+        // If discount code is invalid, return error
+        return NextResponse.json(
+          { error: validation.error || 'Invalid discount code' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Calculate shipping (on subtotal before discount)
     let shippingCost = 0;
     if (validated.shippingRegionId) {
       const region = await getShippingRegionById(db, validated.shippingRegionId);
@@ -84,13 +115,13 @@ export async function POST(request: NextRequest) {
     const settings = await getStoreSettings(db);
     const taxRate = settings?.tax_rate ? settings.tax_rate / 100 : getDefaultTaxRate(); // Convert percentage to decimal
 
-    // Calculate tax from tax-inclusive prices
+    // Calculate tax from tax-inclusive prices (on subtotal before discount)
     // Prices already include tax, so we extract it: tax = subtotal * (tax_rate / (1 + tax_rate))
     const tax = calculateTaxFromInclusive(subtotal, taxRate);
     
-    // Total = subtotal (tax-inclusive) + shipping
+    // Total = subtotal (tax-inclusive) - discount + shipping
     // Tax is stored separately for record-keeping
-    const total = subtotal + shippingCost;
+    const total = subtotal - discountAmount + shippingCost;
 
     // Create order
     const order = await createOrder(db, {
@@ -112,6 +143,17 @@ export async function POST(request: NextRequest) {
       shippingPhone: validated.shippingPhone,
       items: orderItems,
     });
+
+    // Record discount code usage if applied
+    if (discountCodeId && discountAmount > 0) {
+      await recordDiscountCodeUsage(db, {
+        discount_code_id: discountCodeId,
+        order_id: order.id,
+        user_id: session?.userId || null,
+        email: session?.email || validated.shippingName,
+        discount_amount: discountAmount,
+      });
+    }
 
     // Clear cart after successful order creation
     await clearCart(db, session?.userId, sessionId);

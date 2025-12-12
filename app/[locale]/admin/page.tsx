@@ -323,6 +323,14 @@ export default function AdminDashboard() {
               </Link>
 
               <Link
+                href="/admin/discount-codes"
+                className="block p-6 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
+              >
+                <h3 className="text-xl font-semibold text-white mb-2">Discount Codes</h3>
+                <p className="text-neutral-400 text-sm">Create and manage discount codes and coupons</p>
+              </Link>
+
+              <Link
                 href="/admin/settings"
                 className="block p-6 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
               >

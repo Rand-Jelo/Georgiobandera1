@@ -237,6 +237,48 @@ CREATE TABLE IF NOT EXISTS general_settings (
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );`,
     },
+    {
+      name: '006_add_discount_codes.sql',
+      sql: `-- Discount codes table
+CREATE TABLE IF NOT EXISTS discount_codes (
+  id TEXT PRIMARY KEY,
+  code TEXT UNIQUE NOT NULL,
+  description TEXT,
+  discount_type TEXT NOT NULL,
+  discount_value DECIMAL(10, 2) NOT NULL,
+  minimum_purchase DECIMAL(10, 2) DEFAULT 0,
+  maximum_discount DECIMAL(10, 2),
+  usage_limit INTEGER,
+  usage_count INTEGER DEFAULT 0,
+  user_usage_limit INTEGER DEFAULT 1,
+  valid_from INTEGER,
+  valid_until INTEGER,
+  active BOOLEAN DEFAULT 1,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Discount code usage tracking table
+CREATE TABLE IF NOT EXISTS discount_code_usage (
+  id TEXT PRIMARY KEY,
+  discount_code_id TEXT NOT NULL,
+  order_id TEXT NOT NULL,
+  user_id TEXT,
+  email TEXT NOT NULL,
+  discount_amount DECIMAL(10, 2) NOT NULL,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (discount_code_id) REFERENCES discount_codes(id) ON DELETE CASCADE,
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_discount_codes_code ON discount_codes(code);
+CREATE INDEX IF NOT EXISTS idx_discount_codes_active ON discount_codes(active);
+CREATE INDEX IF NOT EXISTS idx_discount_code_usage_code ON discount_code_usage(discount_code_id);
+CREATE INDEX IF NOT EXISTS idx_discount_code_usage_order ON discount_code_usage(order_id);
+CREATE INDEX IF NOT EXISTS idx_discount_code_usage_user ON discount_code_usage(user_id);`,
+    },
   ];
 
   return migrations;

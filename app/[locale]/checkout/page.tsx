@@ -60,6 +60,13 @@ export default function CheckoutPage() {
   const [shippingCost, setShippingCost] = useState(0);
   const [selectedRegion, setSelectedRegion] = useState<ShippingRegion | null>(null);
   const [taxRate, setTaxRate] = useState(0.25); // Default 25%
+  const [discountCode, setDiscountCode] = useState('');
+  const [appliedDiscount, setAppliedDiscount] = useState<{
+    code: string;
+    amount: number;
+  } | null>(null);
+  const [discountError, setDiscountError] = useState('');
+  const [validatingDiscount, setValidatingDiscount] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -148,9 +155,11 @@ export default function CheckoutPage() {
   // Calculate tax from tax-inclusive prices
   // Tax = subtotal * (tax_rate / (1 + tax_rate))
   const tax = taxRate > 0 ? subtotal * (taxRate / (1 + taxRate)) : 0;
-  // Subtotal already includes tax, so total = subtotal + shipping
+  // Apply discount if available
+  const discountAmount = appliedDiscount?.amount || 0;
+  // Subtotal already includes tax, so total = subtotal - discount + shipping
   // Tax is shown separately for transparency
-  const total = subtotal + shippingCost;
+  const total = subtotal - discountAmount + shippingCost;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,7 +176,10 @@ export default function CheckoutPage() {
       const response = await fetch('/api/checkout/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          discountCode: appliedDiscount?.code || null,
+        }),
       });
 
       const data = await response.json() as { order?: { id: string; order_number: string }; error?: string };
@@ -197,6 +209,60 @@ export default function CheckoutPage() {
       const region = shippingRegions.find(r => r.id === value);
       setSelectedRegion(region || null);
     }
+  };
+
+  const handleApplyDiscount = async () => {
+    if (!discountCode.trim()) {
+      setDiscountError('Please enter a discount code');
+      return;
+    }
+
+    setValidatingDiscount(true);
+    setDiscountError('');
+
+    try {
+      const response = await fetch('/api/checkout/validate-discount', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: discountCode.trim(),
+          subtotal,
+        }),
+      });
+
+      const data = await response.json() as {
+        valid?: boolean;
+        discountCode?: { code: string };
+        discountAmount?: number;
+        error?: string;
+      };
+
+      if (!response.ok || !data.valid) {
+        setDiscountError(data.error || 'Invalid discount code');
+        setAppliedDiscount(null);
+        return;
+      }
+
+      if (data.discountAmount !== undefined && data.discountCode) {
+        setAppliedDiscount({
+          code: data.discountCode.code,
+          amount: data.discountAmount,
+        });
+        setDiscountError('');
+      }
+    } catch (err) {
+      console.error('Error validating discount code:', err);
+      setDiscountError('Failed to validate discount code');
+      setAppliedDiscount(null);
+    } finally {
+      setValidatingDiscount(false);
+    }
+  };
+
+  const handleRemoveDiscount = () => {
+    setDiscountCode('');
+    setAppliedDiscount(null);
+    setDiscountError('');
   };
 
   if (loading) {
@@ -454,12 +520,68 @@ export default function CheckoutPage() {
                 })}
               </div>
 
+              {/* Discount Code */}
+              <div className="border-b border-gray-200 pb-4 mb-4">
+                {!appliedDiscount ? (
+                  <div className="space-y-2">
+                    <label htmlFor="discountCode" className="block text-sm font-medium text-gray-700">
+                      Discount Code
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        id="discountCode"
+                        value={discountCode}
+                        onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                        placeholder="Enter code"
+                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyDiscount}
+                        disabled={validatingDiscount || !discountCode.trim()}
+                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {validatingDiscount ? '...' : 'Apply'}
+                      </button>
+                    </div>
+                    {discountError && (
+                      <p className="text-sm text-red-600">{discountError}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-md">
+                    <div>
+                      <p className="text-sm font-medium text-green-800">
+                        Discount Applied: {appliedDiscount.code}
+                      </p>
+                      <p className="text-xs text-green-600">
+                        -{formatPrice(appliedDiscount.amount, 'SEK')}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveDiscount}
+                      className="text-sm text-green-600 hover:text-green-800"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Totals */}
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-gray-600">Subtotal (incl. VAT)</dt>
                   <dd className="text-gray-900">{formatPrice(subtotal, 'SEK')}</dd>
                 </div>
+                {appliedDiscount && (
+                  <div className="flex justify-between text-green-600">
+                    <dt>Discount ({appliedDiscount.code})</dt>
+                    <dd>-{formatPrice(appliedDiscount.amount, 'SEK')}</dd>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <dt className="text-gray-600">{tCart('shipping')}</dt>
                   <dd className="text-gray-900">

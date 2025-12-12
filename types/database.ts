@@ -149,3 +149,31 @@ export interface Message {
   updated_at: number;
 }
 
+export interface DiscountCode {
+  id: string;
+  code: string;
+  description: string | null;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  minimum_purchase: number;
+  maximum_discount: number | null;
+  usage_limit: number | null;
+  usage_count: number;
+  user_usage_limit: number;
+  valid_from: number | null;
+  valid_until: number | null;
+  active: boolean;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface DiscountCodeUsage {
+  id: string;
+  discount_code_id: string;
+  order_id: string;
+  user_id: string | null;
+  email: string;
+  discount_amount: number;
+  created_at: number;
+}
+
