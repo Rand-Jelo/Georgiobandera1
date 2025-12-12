@@ -15,6 +15,11 @@ export default function AdminProductsPage() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'active' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<'delete' | 'status' | 'category' | 'featured' | ''>('');
+  const [bulkValue, setBulkValue] = useState<string>('');
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+  const [categories, setCategories] = useState<Array<{ id: string; name_en: string; name_sv: string }>>([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -36,8 +41,32 @@ export default function AdminProductsPage() {
 
       setIsAdmin(true);
       fetchProducts();
+      fetchCategories();
     } catch (error) {
       router.push('/login');
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await fetch('/api/categories');
+      const data = await response.json() as { categories?: Array<{ id: string; name_en: string; name_sv: string; children?: any[] }> };
+      if (data.categories) {
+        // Flatten categories (include parent and children)
+        const flattenCategories = (cats: typeof data.categories): Array<{ id: string; name_en: string; name_sv: string }> => {
+          const result: Array<{ id: string; name_en: string; name_sv: string }> = [];
+          for (const cat of cats) {
+            result.push({ id: cat.id, name_en: cat.name_en, name_sv: cat.name_sv });
+            if (cat.children && cat.children.length > 0) {
+              result.push(...flattenCategories(cat.children));
+            }
+          }
+          return result;
+        };
+        setCategories(flattenCategories(data.categories));
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
@@ -98,6 +127,103 @@ export default function AdminProductsPage() {
     } catch (error) {
       console.error('Error deleting product:', error);
       alert('Failed to delete product');
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedProducts(new Set(products.map(p => p.id)));
+    } else {
+      setSelectedProducts(new Set());
+    }
+  };
+
+  const handleSelectProduct = (productId: string, checked: boolean) => {
+    const newSelected = new Set(selectedProducts);
+    if (checked) {
+      newSelected.add(productId);
+    } else {
+      newSelected.delete(productId);
+    }
+    setSelectedProducts(newSelected);
+  };
+
+  const handleBulkOperation = async () => {
+    if (selectedProducts.size === 0) {
+      alert('Please select at least one product');
+      return;
+    }
+
+    if (!bulkAction) {
+      alert('Please select an action');
+      return;
+    }
+
+    let confirmMessage = '';
+    switch (bulkAction) {
+      case 'delete':
+        confirmMessage = `Are you sure you want to archive ${selectedProducts.size} product(s)?`;
+        break;
+      case 'status':
+        if (!bulkValue) {
+          alert('Please select a status');
+          return;
+        }
+        confirmMessage = `Are you sure you want to set ${selectedProducts.size} product(s) to "${bulkValue}"?`;
+        break;
+      case 'category':
+        confirmMessage = `Are you sure you want to update category for ${selectedProducts.size} product(s)?`;
+        break;
+      case 'featured':
+        const featuredValue = bulkValue === 'true';
+        confirmMessage = `Are you sure you want to ${featuredValue ? 'mark' : 'unmark'} ${selectedProducts.size} product(s) as featured?`;
+        break;
+    }
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    setBulkProcessing(true);
+    try {
+      const body: any = {
+        productIds: Array.from(selectedProducts),
+        action: bulkAction,
+      };
+
+      if (bulkAction === 'status' || bulkAction === 'category') {
+        body.value = bulkValue || null;
+      } else if (bulkAction === 'featured') {
+        body.value = bulkValue === 'true';
+      }
+
+      const response = await fetch('/api/admin/products/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json() as { success?: boolean; error?: string; message?: string; updated?: number };
+
+      if (!response.ok) {
+        alert(data.error || 'Failed to perform bulk operation');
+        return;
+      }
+
+      alert(data.message || `Successfully updated ${data.updated || selectedProducts.size} product(s)`);
+      
+      // Reset selections and form
+      setSelectedProducts(new Set());
+      setBulkAction('');
+      setBulkValue('');
+      
+      // Refresh products list
+      fetchProducts();
+    } catch (error) {
+      console.error('Error performing bulk operation:', error);
+      alert('Failed to perform bulk operation');
+    } finally {
+      setBulkProcessing(false);
     }
   };
 
@@ -187,10 +313,104 @@ export default function AdminProductsPage() {
           </div>
         </div>
 
+        {/* Bulk Actions Toolbar */}
+        {selectedProducts.size > 0 && (
+          <div className="mb-4 bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="text-white font-medium">
+                {selectedProducts.size} product(s) selected
+              </div>
+              <div className="flex items-center gap-4 flex-wrap">
+                <select
+                  value={bulkAction}
+                  onChange={(e) => {
+                    setBulkAction(e.target.value as typeof bulkAction);
+                    setBulkValue('');
+                  }}
+                  className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                >
+                  <option value="">Select action...</option>
+                  <option value="delete">Archive Selected</option>
+                  <option value="status">Change Status</option>
+                  <option value="category">Change Category</option>
+                  <option value="featured">Toggle Featured</option>
+                </select>
+
+                {bulkAction === 'status' && (
+                  <select
+                    value={bulkValue}
+                    onChange={(e) => setBulkValue(e.target.value)}
+                    className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                  >
+                    <option value="">Select status...</option>
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                )}
+
+                {bulkAction === 'category' && (
+                  <select
+                    value={bulkValue}
+                    onChange={(e) => setBulkValue(e.target.value)}
+                    className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                  >
+                    <option value="">No Category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {locale === 'sv' ? cat.name_sv : cat.name_en}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {bulkAction === 'featured' && (
+                  <select
+                    value={bulkValue}
+                    onChange={(e) => setBulkValue(e.target.value)}
+                    className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                  >
+                    <option value="">Select...</option>
+                    <option value="true">Mark as Featured</option>
+                    <option value="false">Remove from Featured</option>
+                  </select>
+                )}
+
+                <button
+                  onClick={handleBulkOperation}
+                  disabled={bulkProcessing || !bulkAction || (bulkAction !== 'delete' && !bulkValue)}
+                  className="px-4 py-2 text-sm font-medium rounded-lg bg-white text-black hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {bulkProcessing ? 'Processing...' : 'Apply'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setSelectedProducts(new Set());
+                    setBulkAction('');
+                    setBulkValue('');
+                  }}
+                  className="px-4 py-2 text-sm font-medium rounded-lg bg-black/50 text-white hover:bg-black/70 border border-white/10 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
           <table className="min-w-full divide-y divide-white/10">
             <thead className="bg-black/70">
               <tr>
+                <th className="px-6 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={selectedProducts.size > 0 && selectedProducts.size === products.length}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                  />
+                </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
                   Name
                 </th>
@@ -216,6 +436,14 @@ export default function AdminProductsPage() {
                 const name = locale === 'sv' ? product.name_sv : product.name_en;
                 return (
                   <tr key={product.id} className="hover:bg-black/30 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="checkbox"
+                        checked={selectedProducts.has(product.id)}
+                        onChange={(e) => handleSelectProduct(product.id, e.target.checked)}
+                        className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-white">{name}</div>
                     </td>
