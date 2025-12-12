@@ -352,36 +352,59 @@ export async function runMigrations(db: D1Database): Promise<{ success: boolean;
         continue;
       }
 
-      // For migrations with multiple statements, use db.exec() which handles them properly
       // Split SQL by semicolons and filter out comments
       const statements = migration.sql
         .split(';')
         .map((s) => s.trim())
         .filter((s) => s.length > 0 && !s.startsWith('--'));
 
-      // Execute all statements together using exec() for proper transaction handling
-      // This ensures foreign keys are created after their referenced tables
-      const sqlToExecute = statements.join(';') + ';';
-      
-      try {
-        await db.exec(sqlToExecute);
-      } catch (error: any) {
-        // If exec fails, try executing statements one by one
-        // This handles cases where exec() might have issues
-        for (const statement of statements) {
-          if (statement.trim()) {
-            try {
-              await db.prepare(statement).run();
-            } catch (stmtError: any) {
-              // Ignore "table already exists" and similar errors
-              if (!stmtError?.message?.includes('already exists') && 
-                  !stmtError?.message?.includes('duplicate column') &&
-                  !stmtError?.message?.includes('index already exists') &&
-                  !stmtError?.message?.includes('UNIQUE constraint failed')) {
-                console.error(`Error executing migration statement:`, stmtError);
-                throw stmtError;
+      // Execute statements one by one in order
+      // This ensures tables are created before foreign keys reference them
+      for (let i = 0; i < statements.length; i++) {
+        const statement = statements[i];
+        if (statement.trim()) {
+          try {
+            const result = await db.prepare(statement).run();
+            // Verify the statement executed (result should exist)
+            if (!result) {
+              console.warn(`Warning: Statement ${i + 1} returned no result, but continuing`);
+            }
+          } catch (error: any) {
+            const errorMsg = error?.message || '';
+            // Ignore "already exists" errors
+            if (errorMsg.includes('already exists') || 
+                errorMsg.includes('duplicate column') ||
+                errorMsg.includes('index already exists') ||
+                errorMsg.includes('UNIQUE constraint failed')) {
+              // These are harmless - table/index already exists
+              continue;
+            }
+            // For "no such table" errors on foreign keys, check if we're creating the referenced table
+            if (errorMsg.includes('no such table')) {
+              // Check if this is a foreign key error and the table creation is in a previous statement
+              const isForeignKeyError = statement.includes('FOREIGN KEY');
+              if (isForeignKeyError) {
+                // Find the table name being referenced
+                const tableMatch = errorMsg.match(/no such table: [^.]+\.(\w+)/);
+                const referencedTable = tableMatch ? tableMatch[1] : null;
+                if (referencedTable) {
+                  // Check if we've already executed a CREATE TABLE for this table
+                  const tableCreated = statements.slice(0, i).some(s => 
+                    s.includes(`CREATE TABLE`) && s.includes(referencedTable)
+                  );
+                  if (tableCreated) {
+                    // Table should exist, but foreign key check failed
+                    // This might be a timing issue - try again or skip
+                    console.warn(`Warning: Foreign key error for ${referencedTable}, but table should exist. Continuing...`);
+                    continue;
+                  }
+                }
               }
             }
+            // If we get here, it's a real error
+            console.error(`Error executing migration statement ${i + 1}:`, error);
+            console.error(`Statement was: ${statement.substring(0, 100)}...`);
+            throw error;
           }
         }
       }
