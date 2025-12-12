@@ -44,7 +44,7 @@ export async function getAllCustomers(
       u.phone,
       1 as is_registered,
       u.created_at,
-      COALESCE(COUNT(DISTINCT o.id), 0) as order_count,
+      COUNT(DISTINCT o.id) as order_count,
       COALESCE(SUM(CASE WHEN o.status IN ('paid', 'delivered') THEN o.subtotal + o.shipping_cost ELSE 0 END), 0) as total_spent,
       MAX(o.created_at) as last_order_date
     FROM users u
