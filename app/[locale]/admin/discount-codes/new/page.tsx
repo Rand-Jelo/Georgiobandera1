@@ -83,10 +83,14 @@ export default function NewDiscountCodePage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json() as { discountCode?: { id: string }; error?: string };
+      const data = await response.json() as { discountCode?: { id: string }; error?: string; needsMigration?: boolean };
 
       if (!response.ok) {
-        setError(data.error || 'Failed to create discount code');
+        if (data.needsMigration) {
+          setError('Discount codes table not found. Please run database migrations from the admin dashboard first.');
+        } else {
+          setError(data.error || 'Failed to create discount code');
+        }
         setSaving(false);
         return;
       }

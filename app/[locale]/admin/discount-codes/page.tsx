@@ -51,7 +51,18 @@ export default function AdminDiscountCodesPage() {
       }
       const url = `/api/admin/discount-codes${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
-      const data = await response.json() as { codes?: DiscountCode[] };
+      const data = await response.json() as { codes?: DiscountCode[]; error?: string; needsMigration?: boolean };
+      
+      if (!response.ok && data.needsMigration) {
+        // Show migration message
+        return;
+      }
+      
+      if (!response.ok) {
+        console.error('Error fetching discount codes:', data.error);
+        return;
+      }
+      
       setCodes(data.codes || []);
     } catch (error) {
       console.error('Error fetching discount codes:', error);
@@ -201,9 +212,12 @@ export default function AdminDiscountCodesPage() {
         </div>
 
         <div className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
-          {codes.length === 0 ? (
+          {codes.length === 0 && !loading ? (
             <div className="p-12 text-center">
-              <p className="text-neutral-400">No discount codes found.</p>
+              <p className="text-neutral-400 mb-4">No discount codes found.</p>
+              <p className="text-sm text-yellow-400">
+                If you're seeing errors, make sure to run database migrations from the admin dashboard.
+              </p>
             </div>
           ) : (
             <table className="min-w-full divide-y divide-white/10">

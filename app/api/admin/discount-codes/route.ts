@@ -56,8 +56,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ codes });
   } catch (error) {
     console.error('Get discount codes error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    // Check if table doesn't exist
+    if (errorMessage.includes('no such table: discount_codes')) {
+      return NextResponse.json(
+        { 
+          error: 'Discount codes table not found. Please run database migrations first.',
+          needsMigration: true 
+        },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Failed to get discount codes' },
+      { error: 'Failed to get discount codes', details: errorMessage },
       { status: 500 }
     );
   }
@@ -123,8 +134,19 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    // Check if table doesn't exist
+    if (errorMessage.includes('no such table: discount_codes')) {
+      return NextResponse.json(
+        { 
+          error: 'Discount codes table not found. Please run database migrations first.',
+          needsMigration: true 
+        },
+        { status: 500 }
+      );
+    }
     return NextResponse.json(
-      { error: 'Failed to create discount code' },
+      { error: 'Failed to create discount code', details: errorMessage },
       { status: 500 }
     );
   }
