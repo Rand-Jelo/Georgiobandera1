@@ -128,13 +128,6 @@ export async function POST(request: NextRequest) {
     }
     console.error('Create discount code error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    if (errorMessage.includes('UNIQUE constraint')) {
-      return NextResponse.json(
-        { error: 'Discount code already exists' },
-        { status: 400 }
-      );
-    }
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     // Check if table doesn't exist
     if (errorMessage.includes('no such table: discount_codes')) {
       return NextResponse.json(
@@ -143,6 +136,12 @@ export async function POST(request: NextRequest) {
           needsMigration: true 
         },
         { status: 500 }
+      );
+    }
+    if (errorMessage.includes('UNIQUE constraint')) {
+      return NextResponse.json(
+        { error: 'Discount code already exists' },
+        { status: 400 }
       );
     }
     return NextResponse.json(
