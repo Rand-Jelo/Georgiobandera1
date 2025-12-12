@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:migrate": "wrangler d1 migrations apply georgiobandera-db",
+    "db:migrate:local": "node -r ts-node/register scripts/run-migrations.ts",
     "db:create": "wrangler d1 create georgiobandera-db",
     "cf:deploy": "npm run build:cf && wrangler pages deploy .open-next",
     "install:cf": "rm -f package-lock.json && npm install --legacy-peer-deps"

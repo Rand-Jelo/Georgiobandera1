@@ -177,3 +177,18 @@ export interface DiscountCodeUsage {
   created_at: number;
 }
 
+export interface ProductReview {
+  id: string;
+  product_id: string;
+  user_id: string | null;
+  name: string;
+  email: string;
+  rating: number; // 1-5
+  title: string | null;
+  review_text: string;
+  status: 'pending' | 'approved' | 'rejected';
+  helpful_count: number;
+  created_at: number;
+  updated_at: number;
+}
+
