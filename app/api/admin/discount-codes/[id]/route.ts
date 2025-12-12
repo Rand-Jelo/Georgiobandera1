@@ -17,10 +17,10 @@ const updateDiscountCodeSchema = z.object({
   discount_value: z.number().min(0).optional(),
   minimum_purchase: z.number().min(0).optional(),
   maximum_discount: z.number().min(0).nullable().optional(),
-  usage_limit: z.number().int().positive().nullable().optional(),
+  usage_limit: z.union([z.number().int().positive(), z.null()]).optional(),
   user_usage_limit: z.number().int().positive().optional(),
-  valid_from: z.number().int().nullable().optional(),
-  valid_until: z.number().int().nullable().optional(),
+  valid_from: z.union([z.number().int(), z.null()]).optional(),
+  valid_until: z.union([z.number().int(), z.null()]).optional(),
   active: z.boolean().optional(),
 });
 
