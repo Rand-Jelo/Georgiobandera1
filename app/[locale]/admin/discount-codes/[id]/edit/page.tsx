@@ -108,7 +108,7 @@ export default function EditDiscountCodePage() {
         user_usage_limit: formData.user_usage_limit && formData.user_usage_limit.trim() ? parseInt(formData.user_usage_limit, 10) : 1,
         valid_from: formData.valid_from && formData.valid_from.trim() ? Math.floor(new Date(formData.valid_from).getTime() / 1000) : null,
         valid_until: formData.valid_until && formData.valid_until.trim() ? Math.floor(new Date(formData.valid_until).getTime() / 1000) : null,
-        active: formData.active,
+        active: Boolean(formData.active),
       };
 
       // Validate percentage discount
