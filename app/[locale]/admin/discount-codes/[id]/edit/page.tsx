@@ -80,7 +80,7 @@ export default function EditDiscountCodePage() {
           valid_until: data.discountCode.valid_until
             ? new Date(data.discountCode.valid_until * 1000).toISOString().slice(0, 16)
             : '',
-          active: data.discountCode.active,
+          active: Boolean(data.discountCode.active),
         });
       }
     } catch (error) {
