@@ -352,6 +352,14 @@ export async function runMigrations(db: D1Database): Promise<{ success: boolean;
         continue;
       }
 
+      // For migrations with foreign keys, disable foreign key checks temporarily
+      // This allows tables to be created in any order
+      try {
+        await db.prepare('PRAGMA foreign_keys = OFF').run();
+      } catch (e) {
+        // Ignore if pragma fails
+      }
+
       // Split SQL by semicolons and filter out comments
       const statements = migration.sql
         .split(';')
@@ -359,16 +367,11 @@ export async function runMigrations(db: D1Database): Promise<{ success: boolean;
         .filter((s) => s.length > 0 && !s.startsWith('--'));
 
       // Execute statements one by one in order
-      // This ensures tables are created before foreign keys reference them
       for (let i = 0; i < statements.length; i++) {
         const statement = statements[i];
         if (statement.trim()) {
           try {
-            const result = await db.prepare(statement).run();
-            // Verify the statement executed (result should exist)
-            if (!result) {
-              console.warn(`Warning: Statement ${i + 1} returned no result, but continuing`);
-            }
+            await db.prepare(statement).run();
           } catch (error: any) {
             const errorMsg = error?.message || '';
             // Ignore "already exists" errors
@@ -376,37 +379,26 @@ export async function runMigrations(db: D1Database): Promise<{ success: boolean;
                 errorMsg.includes('duplicate column') ||
                 errorMsg.includes('index already exists') ||
                 errorMsg.includes('UNIQUE constraint failed')) {
-              // These are harmless - table/index already exists
               continue;
             }
-            // For "no such table" errors on foreign keys, check if we're creating the referenced table
-            if (errorMsg.includes('no such table')) {
-              // Check if this is a foreign key error and the table creation is in a previous statement
-              const isForeignKeyError = statement.includes('FOREIGN KEY');
-              if (isForeignKeyError) {
-                // Find the table name being referenced
-                const tableMatch = errorMsg.match(/no such table: [^.]+\.(\w+)/);
-                const referencedTable = tableMatch ? tableMatch[1] : null;
-                if (referencedTable) {
-                  // Check if we've already executed a CREATE TABLE for this table
-                  const tableCreated = statements.slice(0, i).some(s => 
-                    s.includes(`CREATE TABLE`) && s.includes(referencedTable)
-                  );
-                  if (tableCreated) {
-                    // Table should exist, but foreign key check failed
-                    // This might be a timing issue - try again or skip
-                    console.warn(`Warning: Foreign key error for ${referencedTable}, but table should exist. Continuing...`);
-                    continue;
-                  }
-                }
-              }
+            // Re-enable foreign keys and throw the error
+            try {
+              await db.prepare('PRAGMA foreign_keys = ON').run();
+            } catch (e) {
+              // Ignore
             }
-            // If we get here, it's a real error
             console.error(`Error executing migration statement ${i + 1}:`, error);
             console.error(`Statement was: ${statement.substring(0, 100)}...`);
             throw error;
           }
         }
+      }
+
+      // Re-enable foreign key checks
+      try {
+        await db.prepare('PRAGMA foreign_keys = ON').run();
+      } catch (e) {
+        // Ignore if pragma fails
       }
 
       results.push(`✅ Applied ${migration.name}`);
