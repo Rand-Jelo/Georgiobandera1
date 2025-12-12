@@ -158,9 +158,18 @@ export default function AdminDashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
-          <h1 className="text-4xl font-semibold text-white mb-2">Admin Dashboard</h1>
-          <p className="text-neutral-400">Manage your e-commerce store</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-semibold text-white mb-2">Admin Dashboard</h1>
+            <p className="text-neutral-400">Manage your e-commerce store</p>
+          </div>
+          <button
+            onClick={runMigrations}
+            disabled={migrationStatus.loading}
+            className="px-4 py-2 text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-blue-500/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          >
+            {migrationStatus.loading ? 'Running Migrations...' : 'Run Migrations'}
+          </button>
         </div>
 
         {/* Migration Status Alert */}
@@ -175,13 +184,6 @@ export default function AdminDashboard() {
                   {migrationStatus.message || 'The database needs to be migrated. Your login credentials may not work until migrations are run.'}
                 </p>
               </div>
-              <button
-                onClick={runMigrations}
-                disabled={migrationStatus.loading}
-                className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-yellow-400 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-yellow-400/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-              >
-                {migrationStatus.loading ? 'Running...' : 'Run Migrations'}
-              </button>
             </div>
           </div>
         )}
