@@ -315,6 +315,14 @@ export default function AdminDashboard() {
               </Link>
 
               <Link
+                href="/admin/customers"
+                className="block p-6 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
+              >
+                <h3 className="text-xl font-semibold text-white mb-2">Customers</h3>
+                <p className="text-neutral-400 text-sm">View customer profiles and order history</p>
+              </Link>
+
+              <Link
                 href="/admin/settings"
                 className="block p-6 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
               >
