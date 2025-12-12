@@ -86,9 +86,12 @@ export async function GET(
   } catch (error) {
     console.error('Get reviews error:', error);
     // Return empty reviews if there's an error (e.g., table doesn't exist)
+    const { searchParams } = new URL(request.url);
+    const includeStatsInError = searchParams.get('stats') === 'true';
+    
     return NextResponse.json({
       reviews: [],
-      stats: includeStats ? {
+      stats: includeStatsInError ? {
         total: 0,
         average: 0,
         ratingDistribution: [
