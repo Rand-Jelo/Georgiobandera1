@@ -8,6 +8,7 @@ import {
   getProductReviewStats,
 } from '@/lib/db/queries/reviews';
 import { getProductById } from '@/lib/db/queries/products';
+import type { ProductReview } from '@/types/database';
 
 const createReviewSchema = z.object({
   name: z.string().min(1).max(100),
@@ -40,7 +41,7 @@ export async function GET(
 
     // Get approved reviews only for public endpoint
     // Handle case where reviews table doesn't exist yet (migrations not run)
-    let reviews: typeof reviews = [];
+    let reviews: ProductReview[] = [];
     try {
       reviews = await getProductReviews(db, id, {
         status: 'approved',
@@ -55,7 +56,7 @@ export async function GET(
       }
     }
 
-    const response: { reviews: typeof reviews; stats?: any } = { reviews };
+    const response: { reviews: ProductReview[]; stats?: any } = { reviews };
 
     if (includeStats) {
       try {
