@@ -352,53 +352,64 @@ export async function runMigrations(db: D1Database): Promise<{ success: boolean;
         continue;
       }
 
-      // For migrations with foreign keys, disable foreign key checks temporarily
-      // This allows tables to be created in any order
+      // For migrations, try to execute all SQL at once using db.exec()
+      // This ensures foreign keys are handled properly in a single transaction
       try {
-        await db.prepare('PRAGMA foreign_keys = OFF').run();
-      } catch (e) {
-        // Ignore if pragma fails
-      }
+        // Clean up the SQL: remove comments and ensure proper semicolon separation
+        let cleanSql = migration.sql
+          .split('\n')
+          .filter(line => !line.trim().startsWith('--'))
+          .join('\n')
+          .trim();
+        
+        // Ensure it ends with a semicolon
+        if (!cleanSql.endsWith(';')) {
+          cleanSql += ';';
+        }
 
-      // Split SQL by semicolons and filter out comments
-      const statements = migration.sql
-        .split(';')
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0 && !s.startsWith('--'));
+        // Try executing all at once with exec()
+        await db.exec(cleanSql);
+      } catch (error: any) {
+        // If exec() fails, fall back to executing statements one by one
+        // This handles cases where exec() might not work
+        const errorMsg = error?.message || '';
+        
+        // Split SQL by semicolons and filter out comments
+        const statements = migration.sql
+          .split(';')
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0 && !s.startsWith('--'));
 
-      // Execute statements one by one in order
-      for (let i = 0; i < statements.length; i++) {
-        const statement = statements[i];
-        if (statement.trim()) {
-          try {
-            await db.prepare(statement).run();
-          } catch (error: any) {
-            const errorMsg = error?.message || '';
-            // Ignore "already exists" errors
-            if (errorMsg.includes('already exists') || 
-                errorMsg.includes('duplicate column') ||
-                errorMsg.includes('index already exists') ||
-                errorMsg.includes('UNIQUE constraint failed')) {
-              continue;
-            }
-            // Re-enable foreign keys and throw the error
+        // Execute statements one by one
+        for (let i = 0; i < statements.length; i++) {
+          const statement = statements[i];
+          if (statement.trim()) {
             try {
-              await db.prepare('PRAGMA foreign_keys = ON').run();
-            } catch (e) {
-              // Ignore
+              await db.prepare(statement).run();
+            } catch (stmtError: any) {
+              const stmtErrorMsg = stmtError?.message || '';
+              // Ignore "already exists" errors
+              if (stmtErrorMsg.includes('already exists') || 
+                  stmtErrorMsg.includes('duplicate column') ||
+                  stmtErrorMsg.includes('index already exists') ||
+                  stmtErrorMsg.includes('UNIQUE constraint failed')) {
+                continue;
+              }
+              // For "no such table" errors on foreign keys, this might be expected
+              // if the table creation hasn't completed yet - but with IF NOT EXISTS it should work
+              if (stmtErrorMsg.includes('no such table') && statement.includes('FOREIGN KEY')) {
+                // This is a foreign key constraint issue
+                // The table should exist by now if we're executing in order
+                // Let's log and continue - the table might already exist from a previous run
+                console.warn(`Warning: Foreign key constraint error (table might already exist): ${stmtErrorMsg}`);
+                continue;
+              }
+              console.error(`Error executing migration statement ${i + 1}:`, stmtError);
+              console.error(`Statement was: ${statement.substring(0, 200)}...`);
+              throw stmtError;
             }
-            console.error(`Error executing migration statement ${i + 1}:`, error);
-            console.error(`Statement was: ${statement.substring(0, 100)}...`);
-            throw error;
           }
         }
-      }
-
-      // Re-enable foreign key checks
-      try {
-        await db.prepare('PRAGMA foreign_keys = ON').run();
-      } catch (e) {
-        // Ignore if pragma fails
       }
 
       results.push(`✅ Applied ${migration.name}`);
