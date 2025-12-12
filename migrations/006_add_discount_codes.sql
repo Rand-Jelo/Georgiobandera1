@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS discount_codes (
   updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
--- Discount code usage tracking table
+-- Discount code usage tracking table (without foreign keys first)
 CREATE TABLE IF NOT EXISTS discount_code_usage (
   id TEXT PRIMARY KEY,
   discount_code_id TEXT NOT NULL,
@@ -25,10 +25,7 @@ CREATE TABLE IF NOT EXISTS discount_code_usage (
   user_id TEXT, -- NULL for guest orders
   email TEXT NOT NULL, -- Email from order
   discount_amount DECIMAL(10, 2) NOT NULL,
-  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
-  FOREIGN KEY (discount_code_id) REFERENCES discount_codes(id) ON DELETE CASCADE,
-  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+  created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
 -- Indexes
