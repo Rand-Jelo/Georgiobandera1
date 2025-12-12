@@ -116,6 +116,7 @@ export async function PATCH(
     return NextResponse.json({ discountCode });
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Validation error:', error.issues);
       return NextResponse.json(
         { error: 'Validation failed', details: error.issues },
         { status: 400 }
@@ -123,6 +124,9 @@ export async function PATCH(
     }
     console.error('Update discount code error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    console.error('Error details:', { errorMessage, errorStack });
+    
     if (errorMessage.includes('not found')) {
       return NextResponse.json(
         { error: 'Discount code not found' },
@@ -136,7 +140,7 @@ export async function PATCH(
       );
     }
     return NextResponse.json(
-      { error: 'Failed to update discount code' },
+      { error: 'Failed to update discount code', details: errorMessage },
       { status: 500 }
     );
   }

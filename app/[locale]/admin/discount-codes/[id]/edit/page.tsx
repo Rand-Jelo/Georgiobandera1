@@ -99,15 +99,15 @@ export default function EditDiscountCodePage() {
     try {
       const payload: any = {
         code: formData.code.toUpperCase(),
-        description: formData.description.trim() || null,
+        description: formData.description?.trim() || null,
         discount_type: formData.discount_type,
         discount_value: parseFloat(formData.discount_value),
-        minimum_purchase: formData.minimum_purchase.trim() ? parseFloat(formData.minimum_purchase) : 0,
-        maximum_discount: formData.maximum_discount.trim() ? parseFloat(formData.maximum_discount) : null,
-        usage_limit: formData.usage_limit.trim() ? parseInt(formData.usage_limit, 10) : null,
-        user_usage_limit: formData.user_usage_limit.trim() ? parseInt(formData.user_usage_limit, 10) : 1,
-        valid_from: formData.valid_from.trim() ? Math.floor(new Date(formData.valid_from).getTime() / 1000) : null,
-        valid_until: formData.valid_until.trim() ? Math.floor(new Date(formData.valid_until).getTime() / 1000) : null,
+        minimum_purchase: formData.minimum_purchase && formData.minimum_purchase.trim() ? parseFloat(formData.minimum_purchase) : 0,
+        maximum_discount: formData.maximum_discount && formData.maximum_discount.trim() ? parseFloat(formData.maximum_discount) : null,
+        usage_limit: formData.usage_limit && formData.usage_limit.trim() ? parseInt(formData.usage_limit, 10) : null,
+        user_usage_limit: formData.user_usage_limit && formData.user_usage_limit.trim() ? parseInt(formData.user_usage_limit, 10) : 1,
+        valid_from: formData.valid_from && formData.valid_from.trim() ? Math.floor(new Date(formData.valid_from).getTime() / 1000) : null,
+        valid_until: formData.valid_until && formData.valid_until.trim() ? Math.floor(new Date(formData.valid_until).getTime() / 1000) : null,
         active: formData.active,
       };
 
@@ -124,10 +124,12 @@ export default function EditDiscountCodePage() {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json() as { discountCode?: DiscountCode; error?: string };
+      const data = await response.json() as { discountCode?: DiscountCode; error?: string; details?: any };
 
       if (!response.ok) {
-        setError(data.error || 'Failed to update discount code');
+        const errorMsg = data.error || 'Failed to update discount code';
+        const detailsMsg = data.details ? ` Details: ${JSON.stringify(data.details)}` : '';
+        setError(errorMsg + detailsMsg);
         setSaving(false);
         return;
       }
@@ -135,7 +137,8 @@ export default function EditDiscountCodePage() {
       router.push('/admin/discount-codes');
     } catch (error) {
       console.error('Error updating discount code:', error);
-      setError('An error occurred while updating the discount code');
+      const errorMsg = error instanceof Error ? error.message : 'An error occurred while updating the discount code';
+      setError(errorMsg);
       setSaving(false);
     }
   };
