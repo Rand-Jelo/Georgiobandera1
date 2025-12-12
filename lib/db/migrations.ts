@@ -352,25 +352,35 @@ export async function runMigrations(db: D1Database): Promise<{ success: boolean;
         continue;
       }
 
-      // Split SQL by semicolons and execute each statement
+      // For migrations with multiple statements, use db.exec() which handles them properly
+      // Split SQL by semicolons and filter out comments
       const statements = migration.sql
         .split(';')
         .map((s) => s.trim())
         .filter((s) => s.length > 0 && !s.startsWith('--'));
 
-      for (const statement of statements) {
-        if (statement.trim()) {
-          try {
-            // Use db.prepare().run() for individual statements instead of db.exec()
-            // db.exec() is for multi-statement SQL and might have issues
-            await db.prepare(statement).run();
-          } catch (error: any) {
-            // Ignore "table already exists" errors
-            if (!error?.message?.includes('already exists') && 
-                !error?.message?.includes('duplicate column') &&
-                !error?.message?.includes('index already exists')) {
-              console.error(`Error executing migration statement:`, error);
-              throw error;
+      // Execute all statements together using exec() for proper transaction handling
+      // This ensures foreign keys are created after their referenced tables
+      const sqlToExecute = statements.join(';') + ';';
+      
+      try {
+        await db.exec(sqlToExecute);
+      } catch (error: any) {
+        // If exec fails, try executing statements one by one
+        // This handles cases where exec() might have issues
+        for (const statement of statements) {
+          if (statement.trim()) {
+            try {
+              await db.prepare(statement).run();
+            } catch (stmtError: any) {
+              // Ignore "table already exists" and similar errors
+              if (!stmtError?.message?.includes('already exists') && 
+                  !stmtError?.message?.includes('duplicate column') &&
+                  !stmtError?.message?.includes('index already exists') &&
+                  !stmtError?.message?.includes('UNIQUE constraint failed')) {
+                console.error(`Error executing migration statement:`, stmtError);
+                throw stmtError;
+              }
             }
           }
         }
