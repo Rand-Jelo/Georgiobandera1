@@ -361,11 +361,14 @@ export async function runMigrations(db: D1Database): Promise<{ success: boolean;
       for (const statement of statements) {
         if (statement.trim()) {
           try {
-            await db.exec(statement);
+            // Use db.prepare().run() for individual statements instead of db.exec()
+            // db.exec() is for multi-statement SQL and might have issues
+            await db.prepare(statement).run();
           } catch (error: any) {
             // Ignore "table already exists" errors
             if (!error?.message?.includes('already exists') && 
-                !error?.message?.includes('duplicate column')) {
+                !error?.message?.includes('duplicate column') &&
+                !error?.message?.includes('index already exists')) {
               console.error(`Error executing migration statement:`, error);
               throw error;
             }
