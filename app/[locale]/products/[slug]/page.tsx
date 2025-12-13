@@ -74,10 +74,14 @@ export default function ProductPage() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [userSession, setUserSession] = useState<{ userId?: string; email?: string } | null>(null);
+  const [hasReviewed, setHasReviewed] = useState(false);
+  const [helpfulClicked, setHelpfulClicked] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (slug) {
       fetchProduct();
+      fetchUserSession();
     }
   }, [slug]);
 
@@ -86,6 +90,54 @@ export default function ProductPage() {
       fetchReviews();
     }
   }, [product]);
+
+  useEffect(() => {
+    // Check if user has already reviewed
+    if (userSession && reviews.length > 0) {
+      const userReview = reviews.find((r) => 
+        (userSession.userId && r.user_id === userSession.userId) ||
+        (userSession.email && r.email === userSession.email)
+      );
+      setHasReviewed(!!userReview);
+    } else {
+      setHasReviewed(false);
+    }
+
+    // Load helpful clicks from localStorage
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem(`helpful-${product?.id || slug}`);
+      if (stored) {
+        try {
+          const clicked = JSON.parse(stored) as string[];
+          setHelpfulClicked(new Set(clicked));
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+    }
+  }, [userSession, reviews, product, slug]);
+
+  const fetchUserSession = async () => {
+    try {
+      const response = await fetch('/api/auth/me');
+      if (response.ok) {
+        const data = await response.json() as { user?: { id?: string; email?: string } };
+        if (data.user) {
+          setUserSession({
+            userId: data.user.id,
+            email: data.user.email,
+          });
+        } else {
+          setUserSession(null);
+        }
+      } else {
+        setUserSession(null);
+      }
+    } catch (err) {
+      console.error('Error fetching user session:', err);
+      setUserSession(null);
+    }
+  };
 
   const fetchProduct = async () => {
     try {
@@ -174,13 +226,33 @@ export default function ProductPage() {
 
   const handleMarkHelpful = async (reviewId: string) => {
     if (!product) return;
+    
+    // Check if already clicked
+    if (helpfulClicked.has(reviewId)) {
+      return;
+    }
+
     try {
-      await fetch(`/api/products/${product.slug}/reviews/helpful`, {
+      const response = await fetch(`/api/products/${product.slug}/reviews/helpful`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reviewId }),
       });
-      fetchReviews();
+
+      if (response.ok) {
+        // Mark as clicked in state and localStorage
+        const newClicked = new Set(helpfulClicked);
+        newClicked.add(reviewId);
+        setHelpfulClicked(newClicked);
+
+        // Store in localStorage
+        if (typeof window !== 'undefined') {
+          const clickedArray = Array.from(newClicked);
+          localStorage.setItem(`helpful-${product.id}`, JSON.stringify(clickedArray));
+        }
+
+        fetchReviews();
+      }
     } catch (err) {
       console.error('Error marking review as helpful:', err);
     }
@@ -450,12 +522,19 @@ export default function ProductPage() {
                 </div>
               )}
             </div>
-            <button
-              onClick={() => setShowReviewForm(!showReviewForm)}
-              className="px-6 py-2.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors font-medium text-sm uppercase tracking-wide whitespace-nowrap"
-            >
-              {showReviewForm ? 'Cancel' : 'Write a Review'}
-            </button>
+            {!hasReviewed && (
+              <button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                className="px-6 py-2.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors font-medium text-sm uppercase tracking-wide whitespace-nowrap"
+              >
+                {showReviewForm ? 'Cancel' : 'Write a Review'}
+              </button>
+            )}
+            {hasReviewed && (
+              <p className="text-sm text-neutral-600 italic">
+                You have already reviewed this product
+              </p>
+            )}
           </div>
 
           {/* Review Form */}
@@ -597,12 +676,25 @@ export default function ProductPage() {
                   <p className="text-neutral-700 mb-4 leading-relaxed">{review.review_text}</p>
                   <button
                     onClick={() => handleMarkHelpful(review.id)}
-                    className="text-sm text-neutral-600 hover:text-neutral-900 flex items-center gap-1.5 transition-colors"
+                    disabled={helpfulClicked.has(review.id)}
+                    className={`text-sm flex items-center gap-1.5 transition-colors ${
+                      helpfulClicked.has(review.id)
+                        ? 'text-neutral-400 cursor-not-allowed'
+                        : 'text-neutral-600 hover:text-neutral-900'
+                    }`}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg 
+                      className={`w-4 h-4 ${helpfulClicked.has(review.id) ? 'fill-current' : ''}`} 
+                      fill={helpfulClicked.has(review.id) ? 'currentColor' : 'none'} 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                     </svg>
                     Helpful ({review.helpful_count})
+                    {helpfulClicked.has(review.id) && (
+                      <span className="text-xs text-neutral-500">(You marked this)</span>
+                    )}
                   </button>
                 </div>
               ))}
