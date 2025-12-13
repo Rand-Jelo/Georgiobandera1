@@ -112,7 +112,7 @@ export default function ProductPage() {
   const fetchReviews = async () => {
     if (!product) return;
     try {
-      const response = await fetch(`/api/products/${product.id}/reviews?stats=true`);
+      const response = await fetch(`/api/products/${product.slug}/reviews?stats=true`);
       const data = await response.json() as {
         reviews?: ProductReview[];
         stats?: {
@@ -138,7 +138,7 @@ export default function ProductPage() {
     setSubmittingReview(true);
 
     try {
-      const response = await fetch(`/api/products/${product.id}/reviews`, {
+      const response = await fetch(`/api/products/${product.slug}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reviewFormData),
@@ -175,7 +175,7 @@ export default function ProductPage() {
   const handleMarkHelpful = async (reviewId: string) => {
     if (!product) return;
     try {
-      await fetch(`/api/products/${product.id}/reviews/helpful`, {
+      await fetch(`/api/products/${product.slug}/reviews/helpful`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reviewId }),

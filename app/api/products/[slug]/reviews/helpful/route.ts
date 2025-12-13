@@ -3,12 +3,12 @@ import { getDB } from '@/lib/db/client';
 import { markReviewHelpful } from '@/lib/db/queries/reviews';
 
 /**
- * POST /api/products/[id]/reviews/helpful
+ * POST /api/products/[slug]/reviews/helpful
  * Mark a review as helpful
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const body = await request.json() as { reviewId?: string };

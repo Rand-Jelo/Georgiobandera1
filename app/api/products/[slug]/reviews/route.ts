@@ -7,7 +7,7 @@ import {
   createReview,
   getProductReviewStats,
 } from '@/lib/db/queries/reviews';
-import { getProductById } from '@/lib/db/queries/products';
+import { getProductBySlug } from '@/lib/db/queries/products';
 import type { ProductReview } from '@/types/database';
 
 const createReviewSchema = z.object({
@@ -19,31 +19,33 @@ const createReviewSchema = z.object({
 });
 
 /**
- * GET /api/products/[id]/reviews
+ * GET /api/products/[slug]/reviews
  * Get reviews for a product
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { slug } = await params;
     const { searchParams } = new URL(request.url);
     const includeStats = searchParams.get('stats') === 'true';
 
     const db = getDB();
 
-    // Verify product exists
-    const product = await getProductById(db, id);
+    // Verify product exists by slug
+    const product = await getProductBySlug(db, slug);
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
+
+    const productId = product.id;
 
     // Get approved reviews only for public endpoint
     // Handle case where reviews table doesn't exist yet (migrations not run)
     let reviews: ProductReview[] = [];
     try {
-      reviews = await getProductReviews(db, id, {
+      reviews = await getProductReviews(db, productId, {
         status: 'approved',
         limit: 50,
       });
@@ -60,7 +62,7 @@ export async function GET(
 
     if (includeStats) {
       try {
-        const stats = await getProductReviewStats(db, id);
+        const stats = await getProductReviewStats(db, productId);
         response.stats = stats;
       } catch (error: any) {
         // If table doesn't exist, return default stats
@@ -107,23 +109,25 @@ export async function GET(
 }
 
 /**
- * POST /api/products/[id]/reviews
+ * POST /api/products/[slug]/reviews
  * Create a review for a product
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { slug } = await params;
     const session = await getSession();
     const db = getDB();
 
-    // Verify product exists
-    const product = await getProductById(db, id);
+    // Verify product exists by slug
+    const product = await getProductBySlug(db, slug);
     if (!product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 });
     }
+
+    const productId = product.id;
 
     // Only allow reviews for active products
     if (product.status !== 'active') {
@@ -145,7 +149,7 @@ export async function POST(
 
     // Check if user has already reviewed this product
     if (session?.userId) {
-      const existingReviews = await getProductReviews(db, id, {
+      const existingReviews = await getProductReviews(db, productId, {
         status: 'approved',
       });
       const userReview = existingReviews.find((r) => r.user_id === session.userId);
@@ -157,7 +161,7 @@ export async function POST(
       }
     } else {
       // For guest reviews, check by email
-      const existingReviews = await getProductReviews(db, id, {
+      const existingReviews = await getProductReviews(db, productId, {
         status: 'approved',
       });
       const emailReview = existingReviews.find((r) => r.email === validated.email);
@@ -170,7 +174,7 @@ export async function POST(
     }
 
     const review = await createReview(db, {
-      product_id: id,
+      product_id: productId,
       user_id: session?.userId || null,
       name: validated.name,
       email: validated.email,
