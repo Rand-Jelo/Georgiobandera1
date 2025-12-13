@@ -33,11 +33,11 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({ categories: categoriesWithChildren });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get categories error:', error);
-    return NextResponse.json(
-      { error: 'Failed to get categories' },
-      { status: 500 }
-    );
+    const errorMessage = error?.message || 'Unknown error';
+    // Return empty array instead of error to prevent breaking the site
+    // This allows the site to load even if database is not available
+    return NextResponse.json({ categories: [] });
   }
 }

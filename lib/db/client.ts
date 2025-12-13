@@ -8,12 +8,17 @@ export interface Env {
 
 // Get the D1 database from Cloudflare context
 export function getDB(): D1Database {
-  const { env } = getCloudflareContext();
-  const db = (env as unknown as Env).DB;
-  if (!db) {
-    throw new Error('D1 database not available');
+  try {
+    const { env } = getCloudflareContext();
+    const db = (env as unknown as Env).DB;
+    if (!db) {
+      throw new Error('D1 database not available - DB binding is missing');
+    }
+    return db;
+  } catch (error: any) {
+    console.error('Error getting Cloudflare context:', error);
+    throw new Error(`Failed to get D1 database: ${error?.message || 'Unknown error'}`);
   }
-  return db;
 }
 
 // Get the R2 bucket from Cloudflare context
