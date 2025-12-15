@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDB } from '@/lib/db/client';
-import { getProductBySlug, getProductVariants, getProductImages } from '@/lib/db/queries/products';
+import { getProductBySlug, getProductVariants, getProductImages, getCategoryById } from '@/lib/db/queries/products';
 
 export async function GET(
   request: NextRequest,
@@ -18,10 +18,11 @@ export async function GET(
       );
     }
 
-    // Get variants and images
-    const [variants, images] = await Promise.all([
+    // Get variants, images, and category
+    const [variants, images, category] = await Promise.all([
       getProductVariants(db, product.id),
       getProductImages(db, product.id),
+      product.category_id ? getCategoryById(db, product.category_id) : null,
     ]);
 
     return NextResponse.json({
@@ -29,6 +30,12 @@ export async function GET(
         ...product,
         variants,
         images,
+        category: category ? {
+          id: category.id,
+          name_en: category.name_en,
+          name_sv: category.name_sv,
+          slug: category.slug,
+        } : null,
       },
     });
   } catch (error) {
