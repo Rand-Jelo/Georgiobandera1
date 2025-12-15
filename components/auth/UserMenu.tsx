@@ -116,6 +116,13 @@ export default function UserMenu({ trigger }: UserMenuProps = {}) {
                 {t('profile')}
               </Link>
               <Link
+                href="/wishlist"
+                className="block px-4 py-2 text-sm text-white hover:bg-white/5 transition-colors"
+                onClick={() => setMenuOpen(false)}
+              >
+                {t('wishlist') || 'Wishlist'}
+              </Link>
+              <Link
                 href="/orders"
                 className="block px-4 py-2 text-sm text-white hover:bg-white/5 transition-colors"
                 onClick={() => setMenuOpen(false)}

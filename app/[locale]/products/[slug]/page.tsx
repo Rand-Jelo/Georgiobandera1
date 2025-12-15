@@ -9,6 +9,7 @@ import { Link } from '@/lib/i18n/routing';
 import { formatPrice } from '@/lib/utils';
 import AddToCartButton from '@/components/cart/AddToCartButton';
 import QuantitySelector from '@/components/product/QuantitySelector';
+import WishlistButton from '@/components/product/WishlistButton';
 import type { ProductReview } from '@/types/database';
 
 interface ProductVariant {
@@ -653,14 +654,18 @@ export default function ProductPage() {
               </div>
             )}
 
-            {/* Add to Cart */}
-            <div className="mb-8">
+            {/* Add to Cart and Wishlist */}
+            <div className="mb-8 flex items-center gap-3">
               <AddToCartButton
                 productId={product.id}
                 variantId={selectedVariant?.id}
                 quantity={quantity}
                 disabled={!inStock}
-                className="w-full"
+                className="flex-1"
+              />
+              <WishlistButton
+                productId={product.id}
+                size="md"
               />
             </div>
 

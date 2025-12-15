@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/lib/i18n/routing';
 
 interface User {
   id: string;
@@ -189,13 +190,23 @@ export default function ProfilePage() {
           </form>
         </div>
 
-        <div className="mt-8">
-          <a
-            href="/orders"
-            className="text-indigo-600 hover:text-indigo-500 font-medium"
-          >
-            {tCommon('orders')} →
-          </a>
+        <div className="mt-8 space-y-4">
+          <div>
+            <Link
+              href="/orders"
+              className="text-indigo-600 hover:text-indigo-500 font-medium"
+            >
+              {tCommon('orders')} →
+            </Link>
+          </div>
+          <div>
+            <Link
+              href="/wishlist"
+              className="text-indigo-600 hover:text-indigo-500 font-medium"
+            >
+              {tCommon('wishlist') || 'My Wishlist'} →
+            </Link>
+          </div>
         </div>
       </div>
     </div>
