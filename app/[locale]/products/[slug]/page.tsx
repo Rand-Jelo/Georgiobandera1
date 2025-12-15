@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { Link } from '@/lib/i18n/routing';
 import { formatPrice } from '@/lib/utils';
 import AddToCartButton from '@/components/cart/AddToCartButton';
+import QuantitySelector from '@/components/product/QuantitySelector';
 import type { ProductReview } from '@/types/database';
 
 interface ProductVariant {
@@ -87,6 +88,7 @@ export default function ProductPage() {
   const [helpfulClicked, setHelpfulClicked] = useState<Set<string>>(new Set());
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loadingRelated, setLoadingRelated] = useState(false);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (slug) {
@@ -406,6 +408,35 @@ export default function ProductPage() {
     return true;
   };
 
+  const getMaxQuantity = (): number => {
+    if (!product) return 1;
+    if (selectedVariant) {
+      if (selectedVariant.track_inventory) {
+        return selectedVariant.stock_quantity;
+      }
+    } else {
+      if (product.track_inventory) {
+        return product.stock_quantity;
+      }
+    }
+    return 999; // No inventory tracking, allow high quantity
+  };
+
+  // Reset quantity when variant changes
+  useEffect(() => {
+    setQuantity(1);
+  }, [selectedVariant?.id]);
+
+  // Adjust quantity if it exceeds max when stock changes
+  useEffect(() => {
+    if (!product) return;
+    const maxQty = getMaxQuantity();
+    if (quantity > maxQty && maxQty > 0) {
+      setQuantity(Math.max(1, maxQty));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product?.stock_quantity, selectedVariant?.stock_quantity]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -605,11 +636,29 @@ export default function ProductPage() {
               )}
             </div>
 
+            {/* Quantity Selector */}
+            {inStock && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-neutral-700 mb-2 uppercase tracking-wide">
+                  {t('quantity') || 'Quantity'}
+                </label>
+                <QuantitySelector
+                  value={quantity}
+                  onChange={setQuantity}
+                  min={1}
+                  max={getMaxQuantity()}
+                  disabled={!inStock}
+                  className="w-full sm:w-auto"
+                />
+              </div>
+            )}
+
             {/* Add to Cart */}
             <div className="mb-8">
               <AddToCartButton
                 productId={product.id}
                 variantId={selectedVariant?.id}
+                quantity={quantity}
                 disabled={!inStock}
                 className="w-full"
               />

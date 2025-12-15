@@ -7,6 +7,7 @@ import { useCart } from '@/lib/hooks/useCart';
 interface AddToCartButtonProps {
   productId: string;
   variantId?: string;
+  quantity?: number;
   disabled?: boolean;
   className?: string;
 }
@@ -14,6 +15,7 @@ interface AddToCartButtonProps {
 export default function AddToCartButton({
   productId,
   variantId,
+  quantity = 1,
   disabled = false,
   className = '',
 }: AddToCartButtonProps) {
@@ -27,7 +29,7 @@ export default function AddToCartButton({
     setSuccess(false);
 
     try {
-      await addToCart(productId, variantId, 1);
+      await addToCart(productId, variantId, quantity);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
     } catch (err) {
