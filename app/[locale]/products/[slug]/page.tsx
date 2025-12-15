@@ -437,6 +437,42 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Breadcrumbs */}
+        <nav className="mb-8" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 text-sm text-neutral-600">
+            <li>
+              <Link href="/" className="hover:text-neutral-900 transition-colors">
+                Home
+              </Link>
+            </li>
+            {product.category && (
+              <>
+                <li>
+                  <svg className="w-4 h-4 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </li>
+                <li>
+                  <Link 
+                    href={`/categories/${product.category.slug}`}
+                    className="hover:text-neutral-900 transition-colors"
+                  >
+                    {locale === 'sv' ? product.category.name_sv : product.category.name_en}
+                  </Link>
+                </li>
+              </>
+            )}
+            <li>
+              <svg className="w-4 h-4 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+            </li>
+            <li className="text-neutral-900 font-medium" aria-current="page">
+              {getDisplayName()}
+            </li>
+          </ol>
+        </nav>
+
         <div className="lg:grid lg:grid-cols-2 lg:gap-16 mb-16">
           {/* Images */}
           <div className="mb-8 lg:mb-0">
