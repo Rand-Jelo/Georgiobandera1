@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
+import { Link } from '@/lib/i18n/routing';
 import { formatPrice } from '@/lib/utils';
 import AddToCartButton from '@/components/cart/AddToCartButton';
 import type { ProductReview } from '@/types/database';
@@ -77,6 +78,8 @@ export default function ProductPage() {
   const [userSession, setUserSession] = useState<{ userId?: string; email?: string } | null>(null);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [helpfulClicked, setHelpfulClicked] = useState<Set<string>>(new Set());
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loadingRelated, setLoadingRelated] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -88,6 +91,7 @@ export default function ProductPage() {
   useEffect(() => {
     if (product) {
       fetchReviews();
+      fetchRelatedProducts();
     }
   }, [product]);
 
@@ -179,6 +183,24 @@ export default function ProductPage() {
       }
     } catch (err) {
       console.error('Error fetching reviews:', err);
+    }
+  };
+
+  const fetchRelatedProducts = async () => {
+    if (!product || !product.category_id) return;
+    
+    setLoadingRelated(true);
+    try {
+      const response = await fetch(`/api/products?categoryId=${product.category_id}&status=active&limit=5`);
+      const data = await response.json() as { products?: Product[] };
+      const products = data.products || [];
+      // Filter out the current product
+      const related = products.filter(p => p.id !== product.id).slice(0, 4);
+      setRelatedProducts(related);
+    } catch (err) {
+      console.error('Error fetching related products:', err);
+    } finally {
+      setLoadingRelated(false);
     }
   };
 
