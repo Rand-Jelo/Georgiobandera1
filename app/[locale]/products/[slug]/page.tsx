@@ -45,6 +45,7 @@ interface Product {
   description_sv: string | null;
   price: number;
   compare_at_price: number | null;
+  sku: string | null;
   stock_quantity: number;
   track_inventory: boolean;
   category_id?: string | null;
