@@ -11,6 +11,7 @@ import AddToCartButton from '@/components/cart/AddToCartButton';
 import QuantitySelector from '@/components/product/QuantitySelector';
 import WishlistButton from '@/components/product/WishlistButton';
 import ProductTabs from '@/components/product/ProductTabs';
+import PriceAlertButton from '@/components/product/PriceAlertButton';
 import type { ProductReview } from '@/types/database';
 
 interface ProductVariant {
