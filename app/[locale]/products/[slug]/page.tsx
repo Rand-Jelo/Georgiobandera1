@@ -198,14 +198,76 @@ export default function ProductPage() {
     
     setLoadingRelated(true);
     try {
-      const response = await fetch(`/api/products?categoryId=${product.category_id}&status=active&limit=5`);
+      // Fetch all categories to find parent and siblings
+      const categoryResponse = await fetch(`/api/categories`);
+      const categoryData = await categoryResponse.json() as { 
+        categories?: Array<{ 
+          id: string; 
+          parent_id: string | null;
+          children?: Array<{ id: string }>;
+        }> 
+      };
+      
+      // Flatten categories to get all (including nested children)
+      const flattenCategories = (cats: typeof categoryData.categories): Array<{ id: string; parent_id: string | null }> => {
+        if (!cats) return [];
+        const result: Array<{ id: string; parent_id: string | null }> = [];
+        for (const cat of cats) {
+          result.push({ id: cat.id, parent_id: cat.parent_id || null });
+          if (cat.children) {
+            result.push(...flattenCategories(cat.children as any));
+          }
+        }
+        return result;
+      };
+      
+      const allCategories = flattenCategories(categoryData.categories);
+      
+      // Find current category
+      const currentCategory = allCategories.find(c => c.id === product.category_id);
+      if (!currentCategory) {
+        // Fallback to just current category if not found
+        const response = await fetch(`/api/products?categoryId=${product.category_id}&status=active&limit=5`);
+        const data = await response.json() as { products?: Product[] };
+        const products = data.products || [];
+        const related = products.filter(p => p.id !== product.id).slice(0, 4);
+        setRelatedProducts(related);
+        setLoadingRelated(false);
+        return;
+      }
+      
+      const parentId = currentCategory.parent_id;
+      let categoryIdsToFetch: string[] = [product.category_id];
+      
+      // If category has a parent, get all sibling categories (categories with same parent_id)
+      if (parentId) {
+        const siblingCategories = allCategories
+          .filter(c => c.parent_id === parentId && c.id !== product.category_id)
+          .map(c => c.id);
+        categoryIdsToFetch = [...new Set([...categoryIdsToFetch, ...siblingCategories])];
+      }
+      
+      // Fetch products from current category + sibling categories
+      const categoryIdsParam = categoryIdsToFetch.join(',');
+      const response = await fetch(`/api/products?categoryIds=${categoryIdsParam}&status=active&limit=8`);
       const data = await response.json() as { products?: Product[] };
       const products = data.products || [];
+      
       // Filter out the current product
       const related = products.filter(p => p.id !== product.id).slice(0, 4);
       setRelatedProducts(related);
     } catch (err) {
       console.error('Error fetching related products:', err);
+      // Fallback to just current category on error
+      try {
+        const response = await fetch(`/api/products?categoryId=${product.category_id}&status=active&limit=5`);
+        const data = await response.json() as { products?: Product[] };
+        const products = data.products || [];
+        const related = products.filter(p => p.id !== product.id).slice(0, 4);
+        setRelatedProducts(related);
+      } catch (fallbackErr) {
+        console.error('Error in fallback fetch:', fallbackErr);
+      }
     } finally {
       setLoadingRelated(false);
     }

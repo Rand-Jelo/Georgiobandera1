@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get('categoryId');
+    const categoryIds = searchParams.get('categoryIds'); // Comma-separated list
     const status = searchParams.get('status') as 'draft' | 'active' | 'archived' | null;
     const featured = searchParams.get('featured') === 'true';
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
@@ -13,8 +14,12 @@ export async function GET(request: NextRequest) {
 
     const db = getDB();
 
+    // Parse categoryIds if provided
+    const categoryIdsArray = categoryIds ? categoryIds.split(',').filter(id => id.trim()) : undefined;
+
     const products = await getProducts(db, {
       categoryId: categoryId || undefined,
+      categoryIds: categoryIdsArray,
       status: status || 'active',
       featured: featured || undefined,
       limit,

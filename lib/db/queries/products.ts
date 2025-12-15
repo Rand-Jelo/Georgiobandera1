@@ -6,6 +6,7 @@ export async function getProducts(
   db: D1Database,
   options: {
     categoryId?: string;
+    categoryIds?: string[]; // Support multiple category IDs
     status?: 'draft' | 'active' | 'archived';
     featured?: boolean;
     search?: string;
@@ -16,7 +17,12 @@ export async function getProducts(
   let sql = 'SELECT DISTINCT * FROM products WHERE 1=1';
   const params: any[] = [];
 
-  if (options.categoryId) {
+  if (options.categoryIds && options.categoryIds.length > 0) {
+    // Support multiple category IDs
+    const placeholders = options.categoryIds.map(() => '?').join(',');
+    sql += ` AND category_id IN (${placeholders})`;
+    params.push(...options.categoryIds);
+  } else if (options.categoryId) {
     sql += ' AND category_id = ?';
     params.push(options.categoryId);
   }
