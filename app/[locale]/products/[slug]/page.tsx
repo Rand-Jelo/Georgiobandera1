@@ -43,8 +43,15 @@ interface Product {
   compare_at_price: number | null;
   stock_quantity: number;
   track_inventory: boolean;
+  category_id?: string | null;
   variants: ProductVariant[];
   images: ProductImage[];
+  category?: {
+    id: string;
+    name_en: string;
+    name_sv: string;
+    slug: string;
+  } | null;
 }
 
 export default function ProductPage() {
