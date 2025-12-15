@@ -821,6 +821,77 @@ export default function ProductPage() {
             </div>
           )}
         </div>
+
+        {/* Related Products Section */}
+        {product.category_id && (
+          <div className="mt-16 border-t border-neutral-200 pt-12">
+            <h2 className="text-2xl font-semibold text-neutral-900 mb-8">Related Products</h2>
+            {loadingRelated ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
+              </div>
+            ) : relatedProducts.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {relatedProducts.map((relatedProduct) => {
+                  const relatedName = locale === 'sv' ? relatedProduct.name_sv : relatedProduct.name_en;
+                  const relatedImageUrl = relatedProduct.images?.[0]?.url;
+                  const relatedHasDiscount = relatedProduct.compare_at_price && relatedProduct.compare_at_price > relatedProduct.price;
+
+                  return (
+                    <Link
+                      key={relatedProduct.id}
+                      href={`/products/${relatedProduct.slug}`}
+                      className="group"
+                    >
+                      <div className="relative w-full overflow-hidden rounded-xl border border-neutral-200 bg-white aspect-[4/5] mb-3">
+                        {relatedImageUrl ? (
+                          <Image
+                            src={relatedImageUrl}
+                            alt={relatedName}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-sm text-neutral-400 bg-neutral-50">
+                            No image
+                          </div>
+                        )}
+                        {relatedHasDiscount && (
+                          <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                            Sale
+                          </div>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        {relatedProduct.category && (
+                          <p className="text-xs uppercase tracking-[0.15em] text-neutral-500 font-medium">
+                            {locale === 'sv' ? relatedProduct.category.name_sv : relatedProduct.category.name_en}
+                          </p>
+                        )}
+                        <h3 className="text-sm font-medium tracking-tight text-neutral-900 group-hover:text-neutral-600 transition-colors line-clamp-2">
+                          {relatedName}
+                        </h3>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-sm font-semibold text-neutral-900">
+                            {formatPrice(relatedProduct.price, 'SEK')}
+                          </span>
+                          {relatedHasDiscount && (
+                            <span className="text-xs text-neutral-500 line-through">
+                              {formatPrice(relatedProduct.compare_at_price!, 'SEK')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-neutral-500 text-center py-8">No related products found.</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
