@@ -512,13 +512,11 @@ export default function SearchPage() {
         )}
 
         {/* Quick View Modal */}
-        {quickViewProduct && (
-          <QuickViewModal
-            product={quickViewProduct}
-            onClose={() => setQuickViewProduct(null)}
-            locale={locale as string}
-          />
-        )}
+        <QuickViewModal
+          product={quickViewProduct}
+          isOpen={!!quickViewProduct}
+          onClose={() => setQuickViewProduct(null)}
+        />
       </div>
     </div>
   );
