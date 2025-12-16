@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/lib/i18n/routing';
 import UserMenu from '@/components/auth/UserMenu';
 import CartIcon from '@/components/cart/CartIcon';
-import SearchInput from '@/components/search/SearchInput';
 import type { Category } from '@/types/database';
 
 interface CategoryWithChildren extends Category {
@@ -247,11 +246,6 @@ export default function Header() {
           </Link>
         </nav>
 
-        {/* Search Input */}
-        <div className="hidden md:block w-64 mx-4">
-          <SearchInput />
-        </div>
-
         {/* Right side – language + account/cart */}
         <div className="hidden items-center gap-4 text-xs md:flex">
           <Link
@@ -295,25 +289,14 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Mobile search and menu */}
-        <div className="md:hidden flex items-center gap-2">
-          <Link
-            href="/search"
-            className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 hover:bg-white hover:text-black transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-            aria-label="Search"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </Link>
-          <button
-            type="button"
-            onClick={() => setMobileOpen((open) => !open)}
-            className="rounded-full border border-white/25 px-3 py-1 text-xs uppercase tracking-wide hover:bg-white hover:text-black transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
-          >
-            {mobileOpen ? 'Close' : 'Menu'}
-          </button>
-        </div>
+        {/* Mobile menu toggle */}
+        <button
+          type="button"
+          onClick={() => setMobileOpen((open) => !open)}
+          className="md:hidden rounded-full border border-white/25 px-3 py-1 text-xs uppercase tracking-wide hover:bg-white hover:text-black transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        >
+          {mobileOpen ? 'Close' : 'Menu'}
+        </button>
       </div>
 
       {mobileOpen && (

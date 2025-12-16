@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
 import QuickViewModal from '@/components/product/QuickViewModal';
+import SearchInput from '@/components/search/SearchInput';
 import { formatPrice } from '@/lib/utils';
 
 interface Product {
@@ -301,8 +302,12 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-white py-12">
-      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Search Bar */}
+        <div className="mb-8">
+          <SearchInput className="max-w-2xl mx-auto" />
+        </div>
+
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-semibold text-neutral-900">{t('shop')}</h1>
           <div className="flex items-center gap-4">
