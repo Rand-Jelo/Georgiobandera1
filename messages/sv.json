@@ -16,7 +16,9 @@
     "search": "Sök",
     "language": "Språk",
     "english": "Engelska",
-    "swedish": "Svenska"
+    "swedish": "Svenska",
+    "searchPlaceholder": "Sök produkter...",
+    "viewAllResults": "Visa alla resultat"
   },
   "home": {
     "title": "Välkommen till Georgio Bandera",
@@ -133,6 +135,14 @@
     "shipped": "Skickad",
     "delivered": "Levererad",
     "cancelled": "Avbruten"
+  },
+  "search": {
+    "searchResults": "Sökresultat",
+    "foundResults": "Hittade {count} resultat{count, plural, =1 {} other {}} för \"{query}\"",
+    "noResults": "Inga resultat hittades för \"{query}\"",
+    "noQuery": "Sök produkter",
+    "enterSearchTerm": "Vänligen ange en sökterm för att hitta produkter.",
+    "tryDifferentKeywords": "Prova olika nyckelord eller kontrollera din stavning."
   }
 }
 
