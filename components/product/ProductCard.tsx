@@ -28,9 +28,11 @@ interface ProductCardProps {
   product: Product;
   locale?: string;
   showQuickAdd?: boolean;
+  viewMode?: 'grid' | 'list';
+  onQuickView?: () => void;
 }
 
-export default function ProductCard({ product, locale = 'en', showQuickAdd = false }: ProductCardProps) {
+export default function ProductCard({ product, locale = 'en', showQuickAdd = false, viewMode = 'grid', onQuickView }: ProductCardProps) {
   const t = useTranslations('product');
   const { addToCart, adding } = useCart();
   const [quickAddSuccess, setQuickAddSuccess] = useState(false);
@@ -55,9 +57,87 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // If clicking on a link or button, don't trigger quick view
+    if ((e.target as HTMLElement).closest('a, button')) return;
+    if (onQuickView) {
+      e.preventDefault();
+      e.stopPropagation();
+      onQuickView();
+    }
+  };
+
+  if (viewMode === 'list') {
+    return (
+      <div className="group relative bg-neutral-900/40 border border-white/20 rounded-xl overflow-hidden">
+        <div onClick={handleCardClick} className="flex gap-6 cursor-pointer">
+          <div className="flex gap-6 flex-1">
+          <div className="relative w-32 h-32 flex-shrink-0 overflow-hidden rounded-lg">
+            {product.images && product.images.length > 0 ? (
+              <Image
+                src={imageUrl}
+                alt={product.images[0]?.alt_text_en || name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                sizes="128px"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-xs text-neutral-500">
+                No image
+              </div>
+            )}
+            {hasDiscount && (
+              <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                Sale
+              </div>
+            )}
+          </div>
+          <div className="flex-1 flex items-center justify-between py-4 pr-4">
+            <div className="flex-1">
+              {categoryName && (
+                <p className="text-xs uppercase tracking-[0.15em] text-white/70 font-medium mb-1">
+                  {categoryName}
+                </p>
+              )}
+              <h3 className="text-lg font-medium tracking-tight text-white group-hover:text-white/80 transition-colors mb-2">
+                {name}
+              </h3>
+              <div className="flex items-baseline gap-2">
+                <span className="text-lg font-medium text-white">
+                  {formatPrice(product.price, 'SEK')}
+                </span>
+                {hasDiscount && (
+                  <span className="text-sm text-white/50 line-through">
+                    {formatPrice(product.compare_at_price!, 'SEK')}
+                  </span>
+                )}
+              </div>
+            </div>
+            {showQuickAdd && (
+              <button
+                onClick={handleQuickAdd}
+                disabled={adding || quickAddSuccess}
+                className="px-6 py-2 bg-white text-neutral-900 rounded-lg font-medium text-sm hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {quickAddSuccess ? (
+                  'Added!'
+                ) : adding ? (
+                  'Adding...'
+                ) : (
+                  t('addToCart') || 'Add to Cart'
+                )}
+              </button>
+            )}
+          </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="group relative">
-      <Link href={`/products/${product.slug}`} className="block">
+    <div className="group relative" onClick={handleCardClick}>
+      <div className="block cursor-pointer">
         <div className="relative w-full overflow-hidden rounded-3xl border border-white/20 bg-neutral-900/40 aspect-[4/5]">
           {product.images && product.images.length > 0 ? (
             <Image
@@ -117,7 +197,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
             )}
           </div>
         </div>
-      </Link>
+      </div>
     </div>
   );
 }

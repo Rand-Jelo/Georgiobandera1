@@ -10,40 +10,89 @@ export async function getProducts(
     status?: 'draft' | 'active' | 'archived';
     featured?: boolean;
     search?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    inStock?: boolean;
+    sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'popularity';
     limit?: number;
     offset?: number;
   } = {}
 ): Promise<Product[]> {
-  let sql = 'SELECT DISTINCT * FROM products WHERE 1=1';
+  let sql = 'SELECT DISTINCT p.* FROM products p WHERE 1=1';
   const params: any[] = [];
 
   if (options.categoryIds && options.categoryIds.length > 0) {
     // Support multiple category IDs
     const placeholders = options.categoryIds.map(() => '?').join(',');
-    sql += ` AND category_id IN (${placeholders})`;
+    sql += ` AND p.category_id IN (${placeholders})`;
     params.push(...options.categoryIds);
   } else if (options.categoryId) {
-    sql += ' AND category_id = ?';
+    sql += ' AND p.category_id = ?';
     params.push(options.categoryId);
   }
 
   if (options.status) {
-    sql += ' AND status = ?';
+    sql += ' AND p.status = ?';
     params.push(options.status);
   }
 
   if (options.featured !== undefined) {
-    sql += ' AND featured = ?';
+    sql += ' AND p.featured = ?';
     params.push(options.featured ? 1 : 0);
   }
 
   if (options.search) {
-    sql += ' AND (name_en LIKE ? OR name_sv LIKE ? OR slug LIKE ? OR sku LIKE ? OR description_en LIKE ? OR description_sv LIKE ?)';
+    sql += ' AND (p.name_en LIKE ? OR p.name_sv LIKE ? OR p.slug LIKE ? OR p.sku LIKE ? OR p.description_en LIKE ? OR p.description_sv LIKE ?)';
     const searchTerm = `%${options.search}%`;
     params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
   }
 
-  sql += ' ORDER BY created_at DESC';
+  if (options.minPrice !== undefined) {
+    sql += ' AND p.price >= ?';
+    params.push(options.minPrice);
+  }
+
+  if (options.maxPrice !== undefined) {
+    sql += ' AND p.price <= ?';
+    params.push(options.maxPrice);
+  }
+
+  if (options.inStock !== undefined) {
+    if (options.inStock) {
+      sql += ' AND (p.track_inventory = 0 OR p.stock_quantity > 0)';
+    } else {
+      sql += ' AND p.track_inventory = 1 AND p.stock_quantity = 0';
+    }
+  }
+
+  // Sorting
+  switch (options.sortBy) {
+    case 'price_asc':
+      sql += ' ORDER BY p.price ASC';
+      break;
+    case 'price_desc':
+      sql += ' ORDER BY p.price DESC';
+      break;
+    case 'newest':
+      sql += ' ORDER BY p.created_at DESC';
+      break;
+    case 'oldest':
+      sql += ' ORDER BY p.created_at ASC';
+      break;
+    case 'name_asc':
+      sql += ' ORDER BY p.name_en ASC';
+      break;
+    case 'name_desc':
+      sql += ' ORDER BY p.name_en DESC';
+      break;
+    case 'popularity':
+      // For popularity, we'll need to join with order_items
+      // For now, fall back to created_at DESC
+      sql += ' ORDER BY p.created_at DESC';
+      break;
+    default:
+      sql += ' ORDER BY p.created_at DESC';
+  }
 
   if (options.limit) {
     sql += ' LIMIT ?';

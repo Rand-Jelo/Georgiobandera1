@@ -51,7 +51,21 @@
     "standardShipping": "Standardfrakt: 2-5 arbetsdagar",
     "expressShipping": "Expressfrakt tillgänglig",
     "onlyLeft": "Endast {count} kvar i lager!",
-    "loading": "Laddar..."
+    "loading": "Laddar...",
+    "filters": "Filter",
+    "categories": "Kategorier",
+    "priceRange": "Prisintervall",
+    "availability": "Tillgänglighet",
+    "all": "Alla",
+    "applyFilters": "Tillämpa filter",
+    "reset": "Återställ",
+    "sortNewest": "Nyast",
+    "sortOldest": "Äldst",
+    "sortPriceLow": "Pris: Låg till Hög",
+    "sortPriceHigh": "Pris: Hög till Låg",
+    "sortNameAsc": "Namn: A-Ö",
+    "sortNameDesc": "Namn: Ö-A",
+    "viewFullDetails": "Visa fullständiga detaljer"
   },
   "cart": {
     "title": "Varukorg",

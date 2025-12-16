@@ -51,7 +51,21 @@
     "standardShipping": "Standard shipping: 2-5 business days",
     "expressShipping": "Express shipping available",
     "onlyLeft": "Only {count} left in stock!",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "filters": "Filters",
+    "categories": "Categories",
+    "priceRange": "Price Range",
+    "availability": "Availability",
+    "all": "All",
+    "applyFilters": "Apply Filters",
+    "reset": "Reset",
+    "sortNewest": "Newest",
+    "sortOldest": "Oldest",
+    "sortPriceLow": "Price: Low to High",
+    "sortPriceHigh": "Price: High to Low",
+    "sortNameAsc": "Name: A-Z",
+    "sortNameDesc": "Name: Z-A",
+    "viewFullDetails": "View Full Details"
   },
   "cart": {
     "title": "Shopping Cart",
