@@ -303,13 +303,14 @@ export default function ShopPage() {
   return (
     <div className="min-h-screen bg-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Search Bar */}
-        <div className="mb-8">
-          <SearchInput className="max-w-2xl mx-auto" />
-        </div>
-
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
           <h1 className="text-4xl font-semibold text-neutral-900">{t('shop')}</h1>
+          
+          {/* Search Bar - Inline with title and controls */}
+          <div className="flex-1 max-w-md mx-auto lg:mx-0">
+            <SearchInput />
+          </div>
+
           <div className="flex items-center gap-4">
             {/* View Mode Toggle */}
             <div className="flex items-center gap-2 border border-neutral-300 rounded-lg p-1 bg-white">

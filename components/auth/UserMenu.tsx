@@ -135,7 +135,7 @@ export default function UserMenu({ trigger }: UserMenuProps = {}) {
                 className="block px-4 py-2 text-sm text-white hover:bg-white/5 transition-colors"
                 onClick={() => setMenuOpen(false)}
               >
-                {t('wishlist') || 'Wishlist'}
+                {t('wishlist')}
               </Link>
               <Link
                 href="/orders"
