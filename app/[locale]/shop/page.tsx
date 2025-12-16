@@ -236,13 +236,10 @@ export default function ShopPage() {
 
   if (loading && products.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950 relative">
-        <div className="absolute inset-0 opacity-30">
-          <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
-        </div>
-        <div className="text-center relative z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white/30 mx-auto"></div>
-          <p className="mt-4 text-neutral-400">Loading products...</p>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-neutral-900 mx-auto"></div>
+          <p className="mt-4 text-neutral-600">Loading products...</p>
         </div>
       </div>
     );
@@ -250,36 +247,29 @@ export default function ShopPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950 relative">
-        <div className="absolute inset-0 opacity-30">
-          <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
-        </div>
-        <div className="text-center relative z-10">
-          <p className="text-red-300">{error}</p>
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <p className="text-red-600">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
-      </div>
+    <div className="min-h-screen bg-white py-12">
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-semibold text-white">{t('shop')}</h1>
+          <h1 className="text-4xl font-semibold text-neutral-900">{t('shop')}</h1>
           <div className="flex items-center gap-4">
             {/* View Mode Toggle */}
-            <div className="flex items-center gap-2 border border-white/20 rounded-lg p-1">
+            <div className="flex items-center gap-2 border border-neutral-300 rounded-lg p-1 bg-white">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded transition-colors ${
                   viewMode === 'grid'
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/60 hover:text-white'
+                    ? 'bg-neutral-900 text-white'
+                    : 'text-neutral-600 hover:text-neutral-900'
                 }`}
                 aria-label="Grid view"
               >
@@ -291,8 +281,8 @@ export default function ShopPage() {
                 onClick={() => setViewMode('list')}
                 className={`p-2 rounded transition-colors ${
                   viewMode === 'list'
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/60 hover:text-white'
+                    ? 'bg-neutral-900 text-white'
+                    : 'text-neutral-600 hover:text-neutral-900'
                 }`}
                 aria-label="List view"
               >
@@ -306,7 +296,7 @@ export default function ShopPage() {
             <select
               value={sortBy}
               onChange={(e) => handleSortChange(e.target.value as SortOption)}
-              className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="px-4 py-2 bg-white border border-neutral-300 rounded-lg text-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
             >
               <option value="newest">{tProduct('sortNewest') || 'Newest'}</option>
               <option value="oldest">{tProduct('sortOldest') || 'Oldest'}</option>
@@ -319,7 +309,7 @@ export default function ShopPage() {
             {/* Filters Button (Mobile) */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="lg:hidden px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm hover:bg-white/20 transition-colors"
+              className="lg:hidden px-4 py-2 bg-neutral-900 border border-neutral-900 rounded-lg text-white text-sm hover:bg-neutral-800 transition-colors"
             >
               {tProduct('filters') || 'Filters'}
             </button>
@@ -357,7 +347,7 @@ export default function ShopPage() {
           <div className="flex-1">
             {products.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-neutral-400 text-lg">No products found.</p>
+                <p className="text-neutral-600 text-lg">No products found.</p>
               </div>
             ) : (
               <>
@@ -383,7 +373,7 @@ export default function ShopPage() {
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors"
+                      className="px-4 py-2 bg-white border border-neutral-300 rounded-lg text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
                     >
                       Previous
                     </button>
@@ -400,22 +390,22 @@ export default function ShopPage() {
                             onClick={() => handlePageChange(page)}
                             className={`px-4 py-2 rounded-lg transition-colors ${
                               currentPage === page
-                                ? 'bg-white text-neutral-900'
-                                : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
+                                ? 'bg-neutral-900 text-white'
+                                : 'bg-white border border-neutral-300 text-neutral-900 hover:bg-neutral-50'
                             }`}
                           >
                             {page}
                           </button>
                         );
                       } else if (page === currentPage - 2 || page === currentPage + 2) {
-                        return <span key={page} className="text-white/60">...</span>;
+                        return <span key={page} className="text-neutral-400">...</span>;
                       }
                       return null;
                     })}
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/20 transition-colors"
+                      className="px-4 py-2 bg-white border border-neutral-300 rounded-lg text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
                     >
                       Next
                     </button>
@@ -423,7 +413,7 @@ export default function ShopPage() {
                 )}
 
                 {/* Results count */}
-                <div className="mt-8 text-center text-neutral-400 text-sm">
+                <div className="mt-8 text-center text-neutral-600 text-sm">
                   Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-
                   {Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount} products
                 </div>

@@ -69,45 +69,45 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
 
   if (viewMode === 'list') {
     return (
-      <div className="group relative bg-neutral-900/40 border border-white/20 rounded-xl overflow-hidden">
+      <div className="group relative bg-white border border-neutral-200 rounded-xl overflow-hidden">
         <div onClick={handleCardClick} className="flex gap-6 cursor-pointer">
           <div className="flex gap-6 flex-1">
-          <div className="relative w-32 h-32 flex-shrink-0 overflow-hidden rounded-lg">
-            {product.images && product.images.length > 0 ? (
-              <Image
-                src={imageUrl}
-                alt={product.images[0]?.alt_text_en || name}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                sizes="128px"
-              />
-            ) : (
-              <div className="flex h-full items-center justify-center text-xs text-neutral-500">
-                No image
-              </div>
-            )}
-            {hasDiscount && (
-              <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                Sale
-              </div>
-            )}
-          </div>
+            <div className="relative w-32 h-32 flex-shrink-0 overflow-hidden rounded-lg">
+              {product.images && product.images.length > 0 ? (
+                <Image
+                  src={imageUrl}
+                  alt={product.images[0]?.alt_text_en || name}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  sizes="128px"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-xs text-neutral-400 bg-neutral-50">
+                  No image
+                </div>
+              )}
+              {hasDiscount && (
+                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  Sale
+                </div>
+              )}
+            </div>
           <div className="flex-1 flex items-center justify-between py-4 pr-4">
             <div className="flex-1">
               {categoryName && (
-                <p className="text-xs uppercase tracking-[0.15em] text-white/70 font-medium mb-1">
+                <p className="text-xs uppercase tracking-[0.15em] text-neutral-500 font-medium mb-1">
                   {categoryName}
                 </p>
               )}
-              <h3 className="text-lg font-medium tracking-tight text-white group-hover:text-white/80 transition-colors mb-2">
+              <h3 className="text-lg font-medium tracking-tight text-neutral-900 group-hover:text-neutral-600 transition-colors mb-2">
                 {name}
               </h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-lg font-medium text-white">
+                <span className="text-lg font-medium text-neutral-900">
                   {formatPrice(product.price, 'SEK')}
                 </span>
                 {hasDiscount && (
-                  <span className="text-sm text-white/50 line-through">
+                  <span className="text-sm text-neutral-500 line-through">
                     {formatPrice(product.compare_at_price!, 'SEK')}
                   </span>
                 )}
@@ -117,7 +117,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               <button
                 onClick={handleQuickAdd}
                 disabled={adding || quickAddSuccess}
-                className="px-6 py-2 bg-white text-neutral-900 rounded-lg font-medium text-sm hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-neutral-900 text-white rounded-lg font-medium text-sm hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {quickAddSuccess ? (
                   'Added!'
@@ -138,7 +138,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
   return (
     <div className="group relative" onClick={handleCardClick}>
       <div className="block cursor-pointer">
-        <div className="relative w-full overflow-hidden rounded-3xl border border-white/20 bg-neutral-900/40 aspect-[4/5]">
+        <div className="relative w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50 aspect-[4/5]">
           {product.images && product.images.length > 0 ? (
             <Image
               src={imageUrl}
@@ -148,7 +148,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-neutral-500">
+            <div className="flex h-full items-center justify-center text-sm text-neutral-400 bg-neutral-50">
               Product image coming soon
             </div>
           )}
@@ -157,45 +157,43 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               Sale
             </div>
           )}
-          {showQuickAdd && (
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <button
-                onClick={handleQuickAdd}
-                disabled={adding || quickAddSuccess}
-                className="px-4 py-2 bg-white text-neutral-900 rounded-lg font-medium text-sm hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {quickAddSuccess ? (
-                  'Added!'
-                ) : adding ? (
-                  'Adding...'
-                ) : (
-                  t('addToCart') || 'Add to Cart'
-                )}
-              </button>
-            </div>
-          )}
         </div>
 
         <div className="mt-4 space-y-1">
           {categoryName && (
-            <p className="text-xs uppercase tracking-[0.15em] text-white/70 font-medium">
+            <p className="text-xs uppercase tracking-[0.15em] text-neutral-500 font-medium">
               {categoryName}
             </p>
           )}
-          <h3 className="text-base font-medium tracking-tight text-white group-hover:text-white/80 transition-colors">
+          <h3 className="text-base font-medium tracking-tight text-neutral-900 group-hover:text-neutral-600 transition-colors">
             {name}
           </h3>
           
           <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-base font-medium text-white">
+            <span className="text-base font-medium text-neutral-900">
               {formatPrice(product.price, 'SEK')}
             </span>
             {hasDiscount && (
-              <span className="text-sm text-white/50 line-through">
+              <span className="text-sm text-neutral-500 line-through">
                 {formatPrice(product.compare_at_price!, 'SEK')}
               </span>
             )}
           </div>
+          {showQuickAdd && (
+            <button
+              onClick={handleQuickAdd}
+              disabled={adding || quickAddSuccess}
+              className="mt-3 w-full px-4 py-2 bg-neutral-900 text-white rounded-lg font-medium text-sm hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {quickAddSuccess ? (
+                'Added!'
+              ) : adding ? (
+                'Adding...'
+              ) : (
+                t('addToCart') || 'Add to Cart'
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>
