@@ -37,8 +37,21 @@
     "quantity": "Antal",
     "description": "Beskrivning",
     "specifications": "Specifikationer",
+    "reviews": "Recensioner",
+    "shipping": "Frakt",
     "relatedProducts": "Relaterade produkter",
-    "selectVariant": "Välj variant"
+    "selectVariant": "Välj variant",
+    "notifyPriceDrop": "Meddela mig",
+    "removePriceAlert": "Ta bort prisvarning",
+    "priceAlertActive": "Prisvarning aktiv",
+    "stockStatus": "Lagerstatus",
+    "available": "tillgängliga",
+    "shippingInfo": "Fraktinformation kommer att beräknas vid kassan baserat på din plats.",
+    "freeShippingOver": "Gratis frakt över 500 SEK",
+    "standardShipping": "Standardfrakt: 2-5 arbetsdagar",
+    "expressShipping": "Expressfrakt tillgänglig",
+    "onlyLeft": "Endast {count} kvar i lager!",
+    "loading": "Laddar..."
   },
   "cart": {
     "title": "Varukorg",

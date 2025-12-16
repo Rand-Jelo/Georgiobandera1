@@ -37,8 +37,21 @@
     "quantity": "Quantity",
     "description": "Description",
     "specifications": "Specifications",
+    "reviews": "Reviews",
+    "shipping": "Shipping",
     "relatedProducts": "Related Products",
-    "selectVariant": "Select Variant"
+    "selectVariant": "Select Variant",
+    "notifyPriceDrop": "Notify Me",
+    "removePriceAlert": "Remove price alert",
+    "priceAlertActive": "Price Alert Active",
+    "stockStatus": "Stock Status",
+    "available": "available",
+    "shippingInfo": "Shipping information will be calculated at checkout based on your location.",
+    "freeShippingOver": "Free shipping over 500 SEK",
+    "standardShipping": "Standard shipping: 2-5 business days",
+    "expressShipping": "Express shipping available",
+    "onlyLeft": "Only {count} left in stock!",
+    "loading": "Loading..."
   },
   "cart": {
     "title": "Shopping Cart",
