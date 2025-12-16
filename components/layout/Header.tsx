@@ -271,6 +271,7 @@ export default function Header() {
           <UserMenu
             trigger={
               <button
+                type="button"
                 aria-label="My account"
                 className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 hover:bg-white hover:text-black transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-105"
               >

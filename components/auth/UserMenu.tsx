@@ -45,15 +45,21 @@ export default function UserMenu({ trigger }: UserMenuProps = {}) {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/me');
+      const response = await fetch('/api/auth/me', {
+        credentials: 'include',
+      });
       if (response.ok) {
         const data = await response.json() as { user?: User };
         if (data.user) {
           setUser(data.user);
         }
+      } else {
+        // Not authenticated - clear any stale user state
+        setUser(null);
       }
     } catch (err) {
       // Not authenticated
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -78,7 +84,16 @@ export default function UserMenu({ trigger }: UserMenuProps = {}) {
     return (
       <div className="relative">
         {trigger ? (
-          <div onClick={() => setMenuOpen(!menuOpen)}>{trigger}</div>
+          <div 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setMenuOpen(!menuOpen);
+            }}
+            className="cursor-pointer"
+          >
+            {trigger}
+          </div>
         ) : (
           <button
             onClick={() => setMenuOpen(!menuOpen)}
