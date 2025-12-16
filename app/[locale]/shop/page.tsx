@@ -58,11 +58,16 @@ export default function ShopPage() {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
 
   // Filters
-  const [filters, setFilters] = useState({
-    categoryIds: [] as string[],
-    minPrice: undefined as number | undefined,
-    maxPrice: undefined as number | undefined,
-    inStock: undefined as boolean | undefined,
+  const [filters, setFilters] = useState<{
+    categoryIds: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    inStock?: boolean;
+  }>({
+    categoryIds: [],
+    minPrice: undefined,
+    maxPrice: undefined,
+    inStock: undefined,
   });
 
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -114,7 +119,12 @@ export default function ShopPage() {
     }
   };
 
-  const updateURL = useCallback((newFilters: typeof filters, newSort: SortOption, newPage: number) => {
+  const updateURL = useCallback((newFilters: {
+    categoryIds: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    inStock?: boolean;
+  }, newSort: SortOption, newPage: number) => {
     const params = new URLSearchParams();
     if (newFilters.categoryIds.length > 0) {
       params.set('categories', newFilters.categoryIds.join(','));
@@ -199,7 +209,12 @@ export default function ShopPage() {
     }
   };
 
-  const handleFiltersChange = (newFilters: typeof filters) => {
+  const handleFiltersChange = (newFilters: {
+    categoryIds: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    inStock?: boolean;
+  }) => {
     setFilters(newFilters);
     setCurrentPage(1);
     updateURL(newFilters, sortBy, 1);
