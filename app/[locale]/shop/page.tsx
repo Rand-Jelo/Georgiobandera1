@@ -138,13 +138,64 @@ export default function ShopPage() {
     router.push(`/shop?${params.toString()}`);
   }, [router]);
 
+  // Helper function to get all child category IDs recursively from nested structure
+  const getAllChildCategoryIds = (categoryId: string, allCategories: Category[]): string[] => {
+    const result: string[] = [categoryId];
+    
+    // Find the category in the nested structure
+    const findCategory = (cats: Category[], id: string): Category | null => {
+      for (const cat of cats) {
+        if (cat.id === id) {
+          return cat;
+        }
+        if (cat.children) {
+          const found = findCategory(cat.children, id);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    
+    // Recursively collect all descendant IDs
+    const collectDescendants = (cat: Category): void => {
+      if (cat.children) {
+        cat.children.forEach(child => {
+          result.push(child.id);
+          collectDescendants(child);
+        });
+      }
+    };
+    
+    const category = findCategory(allCategories, categoryId);
+    if (category) {
+      collectDescendants(category);
+    }
+    
+    return result;
+  };
+
+  // Expand parent categories to include all child categories
+  const expandCategoryIds = (categoryIds: string[]): string[] => {
+    const expanded: string[] = [];
+
+    // For each selected category, add it and all its children
+    categoryIds.forEach(categoryId => {
+      expanded.push(...getAllChildCategoryIds(categoryId, categories));
+    });
+
+    // Remove duplicates
+    return [...new Set(expanded)];
+  };
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       params.set('status', 'active');
       if (filters.categoryIds.length > 0) {
-        params.set('categoryIds', filters.categoryIds.join(','));
+        // Expand parent categories to include all child categories
+        const expandedCategoryIds = expandCategoryIds(filters.categoryIds);
+        params.set('categoryIds', expandedCategoryIds.join(','));
       }
       if (filters.minPrice !== undefined) {
         params.set('minPrice', filters.minPrice.toString());
@@ -180,7 +231,9 @@ export default function ShopPage() {
       const params = new URLSearchParams();
       params.set('status', 'active');
       if (filters.categoryIds.length > 0) {
-        params.set('categoryIds', filters.categoryIds.join(','));
+        // Expand parent categories to include all child categories
+        const expandedCategoryIds = expandCategoryIds(filters.categoryIds);
+        params.set('categoryIds', expandedCategoryIds.join(','));
       }
       if (filters.minPrice !== undefined) {
         params.set('minPrice', filters.minPrice.toString());
