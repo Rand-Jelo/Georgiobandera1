@@ -432,10 +432,7 @@ export default function SearchPage() {
                       product={product}
                       locale={locale as string}
                       showQuickAdd={true}
-                      onQuickViewClick={(productId) => {
-                        const foundProduct = products.find(p => p.id === productId);
-                        if (foundProduct) setQuickViewProduct(foundProduct);
-                      }}
+                      onQuickView={() => setQuickViewProduct(product)}
                       viewMode={viewMode}
                     />
                   ))}
