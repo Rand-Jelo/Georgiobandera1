@@ -32,6 +32,7 @@ interface Category {
   name_en: string;
   name_sv: string;
   slug: string;
+  parent_id?: string | null;
   children?: Category[];
 }
 
@@ -102,18 +103,8 @@ export default function ShopPage() {
     try {
       const response = await fetch('/api/categories');
       const data = await response.json() as { categories: Category[] };
-      // Flatten categories for filter list
-      const flattenCategories = (cats: Category[]): Category[] => {
-        const result: Category[] = [];
-        cats.forEach(cat => {
-          result.push(cat);
-          if (cat.children) {
-            result.push(...flattenCategories(cat.children));
-          }
-        });
-        return result;
-      };
-      setCategories(flattenCategories(data.categories || []));
+      // Keep nested structure for filters
+      setCategories(data.categories || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
     }
