@@ -466,10 +466,10 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading product...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto"></div>
+          <p className="mt-4 text-neutral-500 font-medium">Loading product...</p>
         </div>
       </div>
     );
@@ -477,9 +477,14 @@ export default function ProductPage() {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <p className="text-red-600">{error || 'Product not found'}</p>
+          <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p className="text-red-600 font-medium">{error || 'Product not found'}</p>
         </div>
       </div>
     );
@@ -493,11 +498,11 @@ export default function ProductPage() {
   const inStock = isInStock();
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div className="min-h-screen bg-neutral-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Breadcrumbs */}
-        <nav className="mb-8" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm text-neutral-600">
+        <nav className="mb-12" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 text-sm text-neutral-500 font-medium">
             <li>
               <Link href="/" className="hover:text-neutral-900 transition-colors">
                 Home
@@ -525,7 +530,7 @@ export default function ProductPage() {
                 <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
               </svg>
             </li>
-            <li className="text-neutral-900 font-medium" aria-current="page">
+            <li className="text-neutral-900 font-semibold" aria-current="page">
               {getDisplayName()}
             </li>
           </ol>
@@ -533,10 +538,10 @@ export default function ProductPage() {
 
         <div className="lg:grid lg:grid-cols-2 lg:gap-16 mb-16">
           {/* Images */}
-          <div className="mb-8 lg:mb-0">
+          <div className="mb-12 lg:mb-0">
             {product.images.length > 0 ? (
               <>
-                <div className="aspect-square bg-neutral-50 rounded-2xl overflow-hidden mb-4 border border-neutral-200 relative">
+                <div className="aspect-square bg-gradient-to-br from-neutral-50 to-white rounded-2xl overflow-hidden mb-6 border border-neutral-100 shadow-lg relative">
                   <Image
                     src={product.images[selectedImageIndex]?.url || product.images[0].url}
                     alt={product.images[selectedImageIndex]?.alt_text_en || productName}
@@ -547,14 +552,14 @@ export default function ProductPage() {
                   />
                 </div>
                 {product.images.length > 1 && (
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className="grid grid-cols-4 gap-4">
                     {product.images.map((image, index) => (
                       <button
                         key={image.id}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`aspect-square bg-neutral-50 rounded-lg overflow-hidden border-2 transition-all ${
+                        className={`aspect-square bg-white rounded-xl overflow-hidden border-2 transition-all shadow-sm hover:shadow-md ${
                           selectedImageIndex === index
-                            ? 'border-neutral-900 ring-2 ring-neutral-900 ring-offset-2'
+                            ? 'border-neutral-900 ring-2 ring-neutral-900 ring-offset-2 scale-105'
                             : 'border-neutral-200 hover:border-neutral-300'
                         }`}
                       >
@@ -571,23 +576,28 @@ export default function ProductPage() {
                 )}
               </>
             ) : (
-              <div className="aspect-square bg-neutral-50 rounded-2xl flex items-center justify-center border border-neutral-200">
-                <span className="text-neutral-400">No image available</span>
+              <div className="aspect-square bg-gradient-to-br from-neutral-50 to-white rounded-2xl flex items-center justify-center border border-neutral-100 shadow-lg">
+                <div className="text-center">
+                  <svg className="w-16 h-16 text-neutral-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-neutral-400 text-sm font-medium">No image available</span>
+                </div>
               </div>
             )}
           </div>
 
           {/* Product Info */}
           <div className="flex flex-col">
-            <h1 className="text-4xl font-semibold text-neutral-900 mb-4 tracking-tight">{getDisplayName()}</h1>
+            <h1 className="text-5xl font-light tracking-tight text-neutral-900 mb-6">{getDisplayName()}</h1>
 
             {/* Price */}
-            <div className="flex items-baseline gap-4 mb-6">
+            <div className="flex items-baseline gap-4 mb-8">
               <span className="text-3xl font-semibold text-neutral-900">
                 {formatPrice(getDisplayPrice(), 'SEK')}
               </span>
               {hasDiscount && (
-                <span className="text-xl text-neutral-500 line-through">
+                <span className="text-xl text-neutral-400 line-through font-medium">
                   {formatPrice(product.compare_at_price!, 'SEK')}
                 </span>
               )}
@@ -595,11 +605,11 @@ export default function ProductPage() {
 
             {/* Variants */}
             {product.variants.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-neutral-700 mb-3 uppercase tracking-wide">
+              <div className="mb-8">
+                <h3 className="text-sm font-medium text-neutral-700 mb-4 uppercase tracking-wide">
                   {t('selectVariant') || 'Select Variant'}
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {product.variants.map((variant) => {
                     const variantName = locale === 'sv'
                       ? variant.name_sv || variant.name_en
@@ -619,10 +629,10 @@ export default function ProductPage() {
                         key={variant.id}
                         onClick={() => setSelectedVariant(variant)}
                         disabled={!variantInStock}
-                        className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-all ${
+                        className={`w-full text-left px-5 py-3.5 rounded-xl border-2 transition-all ${
                           isSelected
-                            ? 'border-neutral-900 bg-neutral-50'
-                            : 'border-neutral-200 hover:border-neutral-300 bg-white'
+                            ? 'border-neutral-900 bg-neutral-50 shadow-sm'
+                            : 'border-neutral-200 hover:border-neutral-300 bg-white hover:shadow-sm'
                         } ${
                           !variantInStock
                             ? 'opacity-50 cursor-not-allowed'
@@ -645,28 +655,28 @@ export default function ProductPage() {
             )}
 
             {/* Stock Status */}
-            <div className="mb-6">
+            <div className="mb-8">
               {inStock ? (
-                <p className="text-green-600 font-medium flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  {t('inStock') || 'In Stock'}
-                </p>
+                  <span className="text-green-700 font-medium text-sm">{t('inStock') || 'In Stock'}</span>
+                </div>
               ) : (
-                <p className="text-red-600 font-medium flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-full">
+                  <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
-                  {t('outOfStock') || 'Out of Stock'}
-                </p>
+                  <span className="text-red-700 font-medium text-sm">{t('outOfStock') || 'Out of Stock'}</span>
+                </div>
               )}
             </div>
 
             {/* Quantity Selector */}
             {inStock && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-neutral-700 mb-2 uppercase tracking-wide">
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
                   {t('quantity') || 'Quantity'}
                 </label>
                 <QuantitySelector
@@ -734,9 +744,23 @@ export default function ProductPage() {
                 {!hasReviewed && (
                   <button
                     onClick={() => setShowReviewForm(!showReviewForm)}
-                    className="px-6 py-2.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors font-medium text-sm uppercase tracking-wide whitespace-nowrap"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg font-medium text-sm whitespace-nowrap"
                   >
-                    {showReviewForm ? 'Cancel' : 'Write a Review'}
+                    {showReviewForm ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                        Cancel
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        Write a Review
+                      </>
+                    )}
                   </button>
                 )}
                 {hasReviewed && (
@@ -748,7 +772,7 @@ export default function ProductPage() {
 
               {/* Review Form */}
               {showReviewForm && (
-                <div className="mb-12 p-6 bg-neutral-50 rounded-xl border border-neutral-200">
+                <div className="mb-12 p-8 bg-white rounded-2xl border border-neutral-100 shadow-sm">
                   {reviewSuccess ? (
                     <div className="text-center py-4">
                       <p className="text-green-600 font-medium mb-4">
@@ -768,7 +792,7 @@ export default function ProductPage() {
                     <form onSubmit={handleSubmitReview} className="space-y-5">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label htmlFor="review-name" className="block text-sm font-medium text-neutral-700 mb-2">
+                          <label htmlFor="review-name" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
                             Name *
                           </label>
                           <input
@@ -777,11 +801,11 @@ export default function ProductPage() {
                             required
                             value={reviewFormData.name}
                             onChange={(e) => setReviewFormData({ ...reviewFormData, name: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white"
+                            className="w-full px-5 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white transition-all"
                           />
                         </div>
                         <div>
-                          <label htmlFor="review-email" className="block text-sm font-medium text-neutral-700 mb-2">
+                          <label htmlFor="review-email" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
                             Email *
                           </label>
                           <input
@@ -790,7 +814,7 @@ export default function ProductPage() {
                             required
                             value={reviewFormData.email}
                             onChange={(e) => setReviewFormData({ ...reviewFormData, email: e.target.value })}
-                            className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white"
+                            className="w-full px-5 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white transition-all"
                           />
                         </div>
                       </div>
@@ -805,20 +829,20 @@ export default function ProductPage() {
                       </div>
 
                       <div>
-                        <label htmlFor="review-title" className="block text-sm font-medium text-neutral-700 mb-2">
-                          Review Title (optional)
+                        <label htmlFor="review-title" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                          Review Title <span className="text-neutral-400 font-normal">(optional)</span>
                         </label>
                         <input
                           type="text"
                           id="review-title"
                           value={reviewFormData.title}
                           onChange={(e) => setReviewFormData({ ...reviewFormData, title: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white"
+                          className="w-full px-5 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white transition-all"
                         />
                       </div>
 
                       <div>
-                        <label htmlFor="review-text" className="block text-sm font-medium text-neutral-700 mb-2">
+                        <label htmlFor="review-text" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
                           Your Review *
                         </label>
                         <textarea
@@ -828,26 +852,46 @@ export default function ProductPage() {
                           minLength={10}
                           value={reviewFormData.review_text}
                           onChange={(e) => setReviewFormData({ ...reviewFormData, review_text: e.target.value })}
-                          className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white resize-none"
+                          className="w-full px-5 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white resize-none transition-all"
                           placeholder="Share your experience with this product..."
                         />
-                        <p className="mt-2 text-sm text-neutral-500">
+                        <p className="mt-2 text-xs text-neutral-500 font-medium">
                           Minimum 10 characters
                         </p>
                       </div>
 
                       {reviewError && (
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                          <p className="text-sm text-red-600">{reviewError}</p>
+                        <div className="p-4 bg-red-50/50 border border-red-200/50 rounded-xl backdrop-blur-sm">
+                          <div className="flex items-center gap-2 text-sm text-red-800">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {reviewError}
+                          </div>
                         </div>
                       )}
 
                       <button
                         type="submit"
                         disabled={submittingReview}
-                        className="px-6 py-2.5 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm uppercase tracking-wide"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm disabled:hover:scale-100"
                       >
-                        {submittingReview ? 'Submitting...' : 'Submit Review'}
+                        {submittingReview ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            Submit Review
+                          </>
+                        )}
                       </button>
                     </form>
                   )}
@@ -912,7 +956,7 @@ export default function ProductPage() {
 
               {/* Rating Distribution */}
               {reviewStats && reviewStats.total > 0 && (
-                <div className="mt-12 p-6 bg-neutral-50 rounded-xl border border-neutral-200">
+                <div className="mt-12 p-8 bg-white rounded-2xl border border-neutral-100 shadow-sm">
                   <h3 className="text-base font-semibold text-neutral-900 mb-5 uppercase tracking-wide text-sm">Rating Distribution</h3>
                   <div className="space-y-3">
                     {reviewStats.ratingDistribution.map(({ rating, count }) => {
@@ -944,8 +988,8 @@ export default function ProductPage() {
 
         {/* Related Products Section */}
         {product.category_id && (
-          <div className="mt-16 border-t border-neutral-200 pt-12">
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-8">Related Products</h2>
+          <div className="mt-20 border-t border-neutral-200 pt-16">
+            <h2 className="text-3xl font-light tracking-tight text-neutral-900 mb-12">Related Products</h2>
             {loadingRelated ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
@@ -963,7 +1007,7 @@ export default function ProductPage() {
                       href={`/products/${relatedProduct.slug}`}
                       className="group"
                     >
-                      <div className="relative w-full overflow-hidden rounded-xl border border-neutral-200 bg-white aspect-[4/5] mb-3">
+                      <div className="relative w-full overflow-hidden rounded-2xl border border-neutral-100 bg-white aspect-[4/5] mb-4 shadow-sm hover:shadow-md transition-shadow">
                         {relatedImageUrl ? (
                           <Image
                             src={relatedImageUrl}
