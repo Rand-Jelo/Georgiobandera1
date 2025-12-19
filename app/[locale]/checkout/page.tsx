@@ -267,10 +267,10 @@ export default function CheckoutPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading checkout...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto"></div>
+          <p className="mt-4 text-neutral-500 font-medium">Loading checkout...</p>
         </div>
       </div>
     );
@@ -278,13 +278,21 @@ export default function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <p className="text-gray-600 mb-4">Your cart is empty</p>
+          <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <p className="text-neutral-600 mb-6 font-medium">Your cart is empty</p>
           <button
             onClick={() => router.push('/shop')}
-            className="text-indigo-600 hover:text-indigo-500"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg"
           >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
             Continue Shopping
           </button>
         </div>
@@ -293,322 +301,393 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-neutral-50 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">{t('title')}</h1>
+        <h1 className="text-5xl font-light tracking-tight text-neutral-900 mb-12">{t('title')}</h1>
 
         <form onSubmit={handleSubmit} className="lg:grid lg:grid-cols-12 lg:gap-x-12">
           {/* Left Column - Shipping & Payment */}
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 space-y-6">
             {/* Shipping Information */}
-            <div className="bg-white shadow rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                {t('shippingInfo')}
-              </h2>
-
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="shippingName" className="block text-sm font-medium text-gray-700">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="shippingName"
-                    name="shippingName"
-                    required
-                    value={formData.shippingName}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
+            <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+              <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-semibold text-neutral-900">
+                    {t('shippingInfo')}
+                  </h2>
                 </div>
+              </div>
+              <div className="p-6">
 
-                <div>
-                  <label htmlFor="shippingAddressLine1" className="block text-sm font-medium text-gray-700">
-                    Address Line 1 *
-                  </label>
-                  <input
-                    type="text"
-                    id="shippingAddressLine1"
-                    name="shippingAddressLine1"
-                    required
-                    value={formData.shippingAddressLine1}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="shippingAddressLine2" className="block text-sm font-medium text-gray-700">
-                    Address Line 2
-                  </label>
-                  <input
-                    type="text"
-                    id="shippingAddressLine2"
-                    name="shippingAddressLine2"
-                    value={formData.shippingAddressLine2}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-5">
                   <div>
-                    <label htmlFor="shippingCity" className="block text-sm font-medium text-gray-700">
-                      City *
+                    <label htmlFor="shippingName" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Full Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      id="shippingCity"
-                      name="shippingCity"
+                      id="shippingName"
+                      name="shippingName"
                       required
-                      value={formData.shippingCity}
+                      value={formData.shippingName}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="shippingPostalCode" className="block text-sm font-medium text-gray-700">
-                      Postal Code *
+                    <label htmlFor="shippingAddressLine1" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Address Line 1 <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      id="shippingPostalCode"
-                      name="shippingPostalCode"
+                      id="shippingAddressLine1"
+                      name="shippingAddressLine1"
                       required
-                      value={formData.shippingPostalCode}
+                      value={formData.shippingAddressLine1}
                       onChange={handleChange}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label htmlFor="shippingCountry" className="block text-sm font-medium text-gray-700">
-                    Country *
-                  </label>
-                  <select
-                    id="shippingCountry"
-                    name="shippingCountry"
-                    required
-                    value={formData.shippingCountry}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    <option value="SE">Sweden</option>
-                    <option value="NO">Norway</option>
-                    <option value="DK">Denmark</option>
-                    <option value="FI">Finland</option>
-                  </select>
-                </div>
+                  <div>
+                    <label htmlFor="shippingAddressLine2" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Address Line 2 <span className="text-neutral-400 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="shippingAddressLine2"
+                      name="shippingAddressLine2"
+                      value={formData.shippingAddressLine2}
+                      onChange={handleChange}
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="shippingPhone" className="block text-sm font-medium text-gray-700">
-                    Phone
-                  </label>
-                  <input
-                    type="tel"
-                    id="shippingPhone"
-                    name="shippingPhone"
-                    value={formData.shippingPhone}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  />
-                </div>
+                  <div className="grid grid-cols-2 gap-5">
+                    <div>
+                      <label htmlFor="shippingCity" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                        City <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="shippingCity"
+                        name="shippingCity"
+                        required
+                        value={formData.shippingCity}
+                        onChange={handleChange}
+                        className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                      />
+                    </div>
 
-                <div>
-                  <label htmlFor="shippingRegionId" className="block text-sm font-medium text-gray-700">
-                    Shipping Region *
-                  </label>
-                  <select
-                    id="shippingRegionId"
-                    name="shippingRegionId"
-                    required
-                    value={formData.shippingRegionId}
-                    onChange={handleChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  >
-                    <option value="">Select region</option>
-                    {shippingRegions.map((region) => (
-                      <option key={region.id} value={region.id}>
-                        {locale === 'sv' ? region.name_sv : region.name_en}
-                      </option>
-                    ))}
-                  </select>
+                    <div>
+                      <label htmlFor="shippingPostalCode" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                        Postal Code <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        id="shippingPostalCode"
+                        name="shippingPostalCode"
+                        required
+                        value={formData.shippingPostalCode}
+                        onChange={handleChange}
+                        className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="shippingCountry" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Country <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="shippingCountry"
+                      name="shippingCountry"
+                      required
+                      value={formData.shippingCountry}
+                      onChange={handleChange}
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                    >
+                      <option value="SE">Sweden</option>
+                      <option value="NO">Norway</option>
+                      <option value="DK">Denmark</option>
+                      <option value="FI">Finland</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="shippingPhone" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Phone <span className="text-neutral-400 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                      type="tel"
+                      id="shippingPhone"
+                      name="shippingPhone"
+                      value={formData.shippingPhone}
+                      onChange={handleChange}
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="shippingRegionId" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Shipping Region <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="shippingRegionId"
+                      name="shippingRegionId"
+                      required
+                      value={formData.shippingRegionId}
+                      onChange={handleChange}
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                    >
+                      <option value="">Select region</option>
+                      {shippingRegions.map((region) => (
+                        <option key={region.id} value={region.id}>
+                          {locale === 'sv' ? region.name_sv : region.name_en}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Payment Method */}
-            <div className="bg-white shadow rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                {t('paymentMethod')}
-              </h2>
-
-              <div className="space-y-3">
-                <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="stripe"
-                    checked={formData.paymentMethod === 'stripe'}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <div className="ml-3">
-                    <div className="font-medium text-gray-900">Credit/Debit Card</div>
-                    <div className="text-sm text-gray-500">Visa, Mastercard, Amex, Klarna</div>
+            <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+              <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
                   </div>
-                </label>
+                  <h2 className="text-xl font-semibold text-neutral-900">
+                    {t('paymentMethod')}
+                  </h2>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="space-y-3">
+                  <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all ${
+                    formData.paymentMethod === 'stripe'
+                      ? 'border-neutral-900 bg-neutral-50'
+                      : 'border-neutral-200 hover:border-neutral-300 bg-white'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="stripe"
+                      checked={formData.paymentMethod === 'stripe'}
+                      onChange={handleChange}
+                      className="h-5 w-5 text-neutral-900 focus:ring-neutral-900"
+                    />
+                    <div className="ml-4">
+                      <div className="font-semibold text-neutral-900">Credit/Debit Card</div>
+                      <div className="text-sm text-neutral-500 mt-1">Visa, Mastercard, Amex, Klarna</div>
+                    </div>
+                  </label>
 
-                <label className="flex items-center p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="paypal"
-                    checked={formData.paymentMethod === 'paypal'}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500"
-                  />
-                  <div className="ml-3">
-                    <div className="font-medium text-gray-900">PayPal</div>
-                    <div className="text-sm text-gray-500">Pay with your PayPal account</div>
-                  </div>
-                </label>
+                  <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all ${
+                    formData.paymentMethod === 'paypal'
+                      ? 'border-neutral-900 bg-neutral-50'
+                      : 'border-neutral-200 hover:border-neutral-300 bg-white'
+                  }`}>
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="paypal"
+                      checked={formData.paymentMethod === 'paypal'}
+                      onChange={handleChange}
+                      className="h-5 w-5 text-neutral-900 focus:ring-neutral-900"
+                    />
+                    <div className="ml-4">
+                      <div className="font-semibold text-neutral-900">PayPal</div>
+                      <div className="text-sm text-neutral-500 mt-1">Pay with your PayPal account</div>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-                <p className="text-sm text-red-800">{error}</p>
+              <div className="rounded-xl bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2 text-sm text-red-800">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {error}
+                </div>
               </div>
             )}
           </div>
 
           {/* Right Column - Order Summary */}
           <div className="lg:col-span-5 mt-8 lg:mt-0">
-            <div className="bg-white shadow rounded-lg p-6 sticky top-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                {t('orderSummary')}
-              </h2>
-
-              {/* Order Items */}
-              <div className="border-b border-gray-200 pb-4 mb-4">
-                {cartItems.map((item) => {
-                  const price = item.variant?.price ?? item.product?.price ?? 0;
-                  const name = locale === 'sv'
-                    ? item.product?.name_sv || item.product?.name_en || ''
-                    : item.product?.name_en || '';
-                  const variantName = locale === 'sv'
-                    ? item.variant?.name_sv || item.variant?.name_en
-                    : item.variant?.name_en;
-
-                  return (
-                    <div key={item.id} className="flex justify-between text-sm mb-2">
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">{name}</p>
-                        {variantName && (
-                          <p className="text-gray-500 text-xs">{variantName}</p>
-                        )}
-                        <p className="text-gray-500">Qty: {item.quantity}</p>
-                      </div>
-                      <p className="text-gray-900 font-medium">
-                        {formatPrice(price * item.quantity, 'SEK')}
-                      </p>
-                    </div>
-                  );
-                })}
+            <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden sticky top-8">
+              <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-semibold text-neutral-900">
+                    {t('orderSummary')}
+                  </h2>
+                </div>
               </div>
+              <div className="p-6">
 
-              {/* Discount Code */}
-              <div className="border-b border-gray-200 pb-4 mb-4">
-                {!appliedDiscount ? (
-                  <div className="space-y-2">
-                    <label htmlFor="discountCode" className="block text-sm font-medium text-gray-700">
-                      Discount Code
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        id="discountCode"
-                        value={discountCode}
-                        onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                        placeholder="Enter code"
-                        className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                      />
+                {/* Order Items */}
+                <div className="border-b border-neutral-200 pb-6 mb-6">
+                  {cartItems.map((item) => {
+                    const price = item.variant?.price ?? item.product?.price ?? 0;
+                    const name = locale === 'sv'
+                      ? item.product?.name_sv || item.product?.name_en || ''
+                      : item.product?.name_en || '';
+                    const variantName = locale === 'sv'
+                      ? item.variant?.name_sv || item.variant?.name_en
+                      : item.variant?.name_en;
+
+                    return (
+                      <div key={item.id} className="flex justify-between text-sm mb-4 last:mb-0">
+                        <div className="flex-1 pr-4">
+                          <p className="font-semibold text-neutral-900">{name}</p>
+                          {variantName && (
+                            <p className="text-neutral-500 text-xs mt-0.5">{variantName}</p>
+                          )}
+                          <p className="text-neutral-500 text-xs mt-1">Qty: {item.quantity}</p>
+                        </div>
+                        <p className="text-neutral-900 font-semibold whitespace-nowrap">
+                          {formatPrice(price * item.quantity, 'SEK')}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Discount Code */}
+                <div className="border-b border-neutral-200 pb-6 mb-6">
+                  {!appliedDiscount ? (
+                    <div className="space-y-3">
+                      <label htmlFor="discountCode" className="block text-sm font-medium text-neutral-700 tracking-wide">
+                        Discount Code
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          id="discountCode"
+                          value={discountCode}
+                          onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                          placeholder="Enter code"
+                          className="flex-1 px-4 py-2.5 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyDiscount}
+                          disabled={validatingDiscount || !discountCode.trim()}
+                          className="px-6 py-2.5 bg-neutral-100 text-neutral-700 rounded-xl text-sm font-medium hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        >
+                          {validatingDiscount ? (
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          ) : 'Apply'}
+                        </button>
+                      </div>
+                      {discountError && (
+                        <p className="text-sm text-red-600 flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {discountError}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl">
+                      <div>
+                        <p className="text-sm font-semibold text-green-800">
+                          Discount Applied: {appliedDiscount.code}
+                        </p>
+                        <p className="text-xs text-green-600 mt-1">
+                          -{formatPrice(appliedDiscount.amount, 'SEK')}
+                        </p>
+                      </div>
                       <button
                         type="button"
-                        onClick={handleApplyDiscount}
-                        disabled={validatingDiscount || !discountCode.trim()}
-                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={handleRemoveDiscount}
+                        className="text-sm text-green-600 hover:text-green-800 font-medium transition-colors"
                       >
-                        {validatingDiscount ? '...' : 'Apply'}
+                        Remove
                       </button>
                     </div>
-                    {discountError && (
-                      <p className="text-sm text-red-600">{discountError}</p>
-                    )}
+                  )}
+                </div>
+
+                {/* Totals */}
+                <dl className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <dt className="text-neutral-600 font-medium">Subtotal (incl. VAT)</dt>
+                    <dd className="text-neutral-900 font-semibold">{formatPrice(subtotal, 'SEK')}</dd>
                   </div>
-                ) : (
-                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-md">
-                    <div>
-                      <p className="text-sm font-medium text-green-800">
-                        Discount Applied: {appliedDiscount.code}
-                      </p>
-                      <p className="text-xs text-green-600">
-                        -{formatPrice(appliedDiscount.amount, 'SEK')}
-                      </p>
+                  {appliedDiscount && (
+                    <div className="flex justify-between text-green-600">
+                      <dt className="font-medium">Discount ({appliedDiscount.code})</dt>
+                      <dd className="font-semibold">-{formatPrice(appliedDiscount.amount, 'SEK')}</dd>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveDiscount}
-                      className="text-sm text-green-600 hover:text-green-800"
-                    >
-                      Remove
-                    </button>
+                  )}
+                  <div className="flex justify-between">
+                    <dt className="text-neutral-600 font-medium">{tCart('shipping')}</dt>
+                    <dd className="text-neutral-900 font-semibold">
+                      {shippingCost === 0 ? (
+                        <span className="text-green-600">Free</span>
+                      ) : (
+                        formatPrice(shippingCost, 'SEK')
+                      )}
+                    </dd>
                   </div>
-                )}
+                  <div className="flex justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-200">
+                    <dt>VAT included in subtotal</dt>
+                    <dd>{formatPrice(tax, 'SEK')}</dd>
+                  </div>
+                  <div className="flex justify-between text-lg font-semibold border-t border-neutral-200 pt-3 mt-3">
+                    <dt className="text-neutral-900">{tCart('total')}</dt>
+                    <dd className="text-neutral-900">{formatPrice(total, 'SEK')}</dd>
+                  </div>
+                </dl>
+
+                <button
+                  type="submit"
+                  disabled={processing}
+                  className="w-full mt-8 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg disabled:hover:scale-100"
+                >
+                  {processing ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      {t('processing')}
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {t('placeOrder')}
+                    </>
+                  )}
+                </button>
               </div>
-
-              {/* Totals */}
-              <dl className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-gray-600">Subtotal (incl. VAT)</dt>
-                  <dd className="text-gray-900">{formatPrice(subtotal, 'SEK')}</dd>
-                </div>
-                {appliedDiscount && (
-                  <div className="flex justify-between text-green-600">
-                    <dt>Discount ({appliedDiscount.code})</dt>
-                    <dd>-{formatPrice(appliedDiscount.amount, 'SEK')}</dd>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <dt className="text-gray-600">{tCart('shipping')}</dt>
-                  <dd className="text-gray-900">
-                    {shippingCost === 0 ? (
-                      <span className="text-green-600">Free</span>
-                    ) : (
-                      formatPrice(shippingCost, 'SEK')
-                    )}
-                  </dd>
-                </div>
-                <div className="flex justify-between text-xs text-gray-500">
-                  <dt>VAT included in subtotal</dt>
-                  <dd>{formatPrice(tax, 'SEK')}</dd>
-                </div>
-                <div className="flex justify-between text-base font-semibold border-t border-gray-200 pt-2">
-                  <dt className="text-gray-900">{tCart('total')}</dt>
-                  <dd className="text-gray-900">{formatPrice(total, 'SEK')}</dd>
-                </div>
-              </dl>
-
-              <button
-                type="submit"
-                disabled={processing}
-                className="w-full mt-6 bg-indigo-600 text-white py-3 px-4 rounded-md font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {processing ? t('processing') : t('placeOrder')}
-              </button>
             </div>
           </div>
         </form>
