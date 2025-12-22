@@ -52,9 +52,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (!captureResponse.ok) {
-      const errorData = await captureResponse.json();
+      const errorData = await captureResponse.json() as { message?: string; error?: string };
       return NextResponse.json(
-        { error: errorData.message || 'Failed to capture payment' },
+        { error: errorData.message || errorData.error || 'Failed to capture payment' },
         { status: 400 }
       );
     }

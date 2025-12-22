@@ -156,8 +156,8 @@ export async function POST(request: NextRequest) {
     });
 
     if (!orderResponse.ok) {
-      const errorData = await orderResponse.json();
-      throw new Error(errorData.message || 'Failed to create PayPal order');
+      const errorData = await orderResponse.json() as { message?: string; error?: string };
+      throw new Error(errorData.message || errorData.error || 'Failed to create PayPal order');
     }
 
     const orderData = await orderResponse.json() as { id: string; status: string };
