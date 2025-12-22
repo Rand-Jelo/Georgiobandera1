@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
         );
       }
       const stripe = new Stripe(stripeSecretKey, {
-        apiVersion: '2024-12-18.acacia',
+        apiVersion: '2025-11-17.clover',
       });
       const paymentIntent = await stripe.paymentIntents.retrieve(validated.paymentIntentId);
       if (paymentIntent.status !== 'succeeded') {
