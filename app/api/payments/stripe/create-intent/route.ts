@@ -129,10 +129,19 @@ export async function POST(request: NextRequest) {
 
     const total = subtotal - discountAmount + shippingCost;
 
+    // Validate total amount
+    const amountInCents = Math.round(total * 100);
+    if (amountInCents <= 0) {
+      return NextResponse.json(
+        { error: 'Invalid order total. Amount must be greater than zero.' },
+        { status: 400 }
+      );
+    }
+
     // Create Stripe Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(total * 100), // Convert to öre
-      currency: 'sek',
+      amount: amountInCents, // Convert to öre (cents)
+      currency: 'sek', // Stripe uses lowercase currency codes
       metadata: {
         subtotal: subtotal.toString(),
         shipping: shippingCost.toString(),
@@ -158,8 +167,18 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Create Stripe payment intent error:', error);
+    
+    // Return more detailed error information
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorDetails = error instanceof Error ? error.stack : String(error);
+    
     return NextResponse.json(
-      { error: 'Failed to create payment intent' },
+      { 
+        error: 'Failed to create payment intent',
+        details: errorMessage,
+        // Only include stack in development
+        ...(process.env.NODE_ENV === 'development' && { stack: errorDetails })
+      },
       { status: 500 }
     );
   }

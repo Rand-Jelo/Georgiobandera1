@@ -269,10 +269,17 @@ export default function CheckoutPage() {
             }),
           });
 
-          const data = await response.json() as { clientSecret?: string; paymentIntentId?: string; error?: string };
+          const data = await response.json() as { 
+            clientSecret?: string; 
+            paymentIntentId?: string; 
+            error?: string;
+            details?: string;
+          };
           
           if (data.error) {
-            setError(data.error);
+            const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
+            setError(errorMsg);
+            console.error('Stripe payment intent error:', data);
             return;
           }
 
