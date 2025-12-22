@@ -7,7 +7,7 @@ import {
   updateCartItem,
   removeCartItem,
 } from '@/lib/db/queries/cart';
-import { getProductById, getProductVariant } from '@/lib/db/queries/products';
+import { getProductById, getProductVariant, getProductImages } from '@/lib/db/queries/products';
 import { z } from 'zod';
 
 const addItemSchema = z.object({
@@ -34,9 +34,12 @@ export async function GET(request: NextRequest) {
           ? await getProductVariant(db, item.variant_id)
           : null;
         
+        // Get product images (prefer variant-specific images if variant exists)
+        const images = await getProductImages(db, item.product_id, item.variant_id || undefined);
+        
         return {
           ...item,
-          product,
+          product: product ? { ...product, images } : null,
           variant,
         };
       })
