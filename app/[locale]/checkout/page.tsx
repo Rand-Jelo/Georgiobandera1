@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { formatPrice } from '@/lib/utils';
+import { COUNTRIES } from '@/lib/constants/countries';
 
 interface ShippingRegion {
   id: string;
@@ -505,10 +506,12 @@ export default function CheckoutPage() {
                       onChange={handleChange}
                       className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
                     >
-                      <option value="SE">Sweden</option>
-                      <option value="NO">Norway</option>
-                      <option value="DK">Denmark</option>
-                      <option value="FI">Finland</option>
+                      <option value="">Select a country</option>
+                      {COUNTRIES.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
