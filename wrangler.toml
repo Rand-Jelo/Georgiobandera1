@@ -23,6 +23,13 @@ database_id = "75b60e35-e861-4d8a-9bc1-46aaf7eb9424"
 binding = "IMAGES"
 bucket_name = "georgiobandera-images"
 
+# Public environment variables (non-sensitive)
+# Note: Sensitive keys (STRIPE_SECRET_KEY, PAYPAL_CLIENT_SECRET) must be set as Secrets in Cloudflare Dashboard
+[env.production.vars]
+NEXT_PUBLIC_APP_URL = "https://georgiobandera1.pages.dev"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_test_51R6DhzGIjrwBNt3fhi0qru3dIGPwr4St89ugs6ckHX9BNimZBO30iJdhupHR624IpKe4L7ZP21acvQRaD79Kjzbg00hqoYqDLq"
+NEXT_PUBLIC_PAYPAL_CLIENT_ID = "AUakk-eShgnYninYF5nHTujK5lE_7MumxZBYXO2hzZxbgt7kh4C587n34F-VxiN1A2VhRYcJW_BCydNP"
+
 [env.preview]
 name = "georgiobandera-preview"
 
@@ -34,4 +41,11 @@ database_id = "75b60e35-e861-4d8a-9bc1-46aaf7eb9424"
 [[env.preview.r2_buckets]]
 binding = "IMAGES"
 bucket_name = "georgiobandera-images"
+
+# Public environment variables (non-sensitive)
+# Note: Sensitive keys (STRIPE_SECRET_KEY, PAYPAL_CLIENT_SECRET) must be set as Secrets in Cloudflare Dashboard
+[env.preview.vars]
+NEXT_PUBLIC_APP_URL = "https://georgiobandera1.pages.dev"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_test_51R6DhzGIjrwBNt3fhi0qru3dIGPwr4St89ugs6ckHX9BNimZBO30iJdhupHR624IpKe4L7ZP21acvQRaD79Kjzbg00hqoYqDLq"
+NEXT_PUBLIC_PAYPAL_CLIENT_ID = "AUakk-eShgnYninYF5nHTujK5lE_7MumxZBYXO2hzZxbgt7kh4C587n34F-VxiN1A2VhRYcJW_BCydNP"
 

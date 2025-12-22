@@ -1,11 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { formatPrice } from '@/lib/utils';
 import { COUNTRIES } from '@/lib/constants/countries';
+import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
+import { PayPalScriptProvider } from '@paypal/react-paypal-js';
+import StripePayment from '@/components/payment/StripePayment';
+import PayPalPayment from '@/components/payment/PayPalPayment';
 
 interface ShippingRegion {
   id: string;
@@ -73,6 +78,11 @@ export default function CheckoutPage() {
   } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [validatingDiscount, setValidatingDiscount] = useState(false);
+  
+  // Payment state
+  const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
+  const [paypalOrderId, setPaypalOrderId] = useState<string | null>(null);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -239,29 +249,79 @@ export default function CheckoutPage() {
   // Use 0 for shipping if not calculated yet
   const total = subtotal - discountAmount + (shippingCost ?? 0);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // Initialize payment when method is selected and address is complete
+  useEffect(() => {
+    if (!formData.paymentMethod || shippingCost === null || total <= 0) {
+      setStripeClientSecret(null);
+      setPaypalOrderId(null);
+      return;
+    }
+
+    const initializePayment = async () => {
+      try {
+        if (formData.paymentMethod === 'stripe') {
+          const response = await fetch('/api/payments/stripe/create-intent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              shippingRegionId: formData.shippingRegionId,
+              discountCode: appliedDiscount?.code || null,
+            }),
+          });
+
+          const data = await response.json() as { clientSecret?: string; paymentIntentId?: string; error?: string };
+          
+          if (data.error) {
+            setError(data.error);
+            return;
+          }
+
+          if (data.clientSecret) {
+            setStripeClientSecret(data.clientSecret);
+          }
+        } else if (formData.paymentMethod === 'paypal') {
+          const response = await fetch('/api/payments/paypal/create-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              shippingRegionId: formData.shippingRegionId,
+              discountCode: appliedDiscount?.code || null,
+            }),
+          });
+
+          const data = await response.json() as { orderId?: string; status?: string; error?: string };
+          
+          if (data.error) {
+            setError(data.error);
+            return;
+          }
+
+          if (data.orderId) {
+            setPaypalOrderId(data.orderId);
+          }
+        }
+      } catch (err) {
+        console.error('Error initializing payment:', err);
+        setError('Failed to initialize payment. Please try again.');
+      }
+    };
+
+    initializePayment();
+  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount]);
+
+  const handlePaymentSuccess = async (paymentId: string) => {
+    setPaymentProcessing(true);
     setError('');
-    setProcessing(true);
-
-    if (!formData.paymentMethod) {
-      setError('Please select a payment method');
-      setProcessing(false);
-      return;
-    }
-
-    if (shippingCost === null) {
-      setError('Please complete your shipping address to calculate shipping cost');
-      setProcessing(false);
-      return;
-    }
 
     try {
+      // Create order with payment confirmation
       const response = await fetch('/api/checkout/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          paymentIntentId: formData.paymentMethod === 'stripe' ? paymentId : undefined,
+          paypalOrderId: formData.paymentMethod === 'paypal' ? paymentId : undefined,
           discountCode: appliedDiscount?.code || null,
         }),
       });
@@ -270,19 +330,22 @@ export default function CheckoutPage() {
 
       if (data.error) {
         setError(data.error);
-        setProcessing(false);
+        setPaymentProcessing(false);
         return;
       }
 
       if (data.order) {
-        // Redirect to order confirmation
-        // Payment processing will be handled via webhooks when payment integrations are added
         router.push(`/orders/${data.order.order_number}`);
       }
     } catch (err) {
       setError('Failed to create order. Please try again.');
-      setProcessing(false);
+      setPaymentProcessing(false);
     }
+  };
+
+  const handlePaymentError = (errorMessage: string) => {
+    setError(errorMessage);
+    setPaymentProcessing(false);
   };
 
   // Auto-detect shipping region when country changes
@@ -397,7 +460,7 @@ export default function CheckoutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-5xl font-light tracking-tight text-neutral-900 mb-12">{t('title')}</h1>
 
-        <form onSubmit={handleSubmit} className="lg:grid lg:grid-cols-12 lg:gap-x-12">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-x-12">
           {/* Left Column - Shipping & Payment */}
           <div className="lg:col-span-7 space-y-6">
             {/* Shipping Information */}
@@ -571,7 +634,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
               <div className="p-6">
-                <div className="space-y-3">
+                <div className="space-y-3 mb-6">
                   <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all ${
                     formData.paymentMethod === 'stripe'
                       ? 'border-neutral-900 bg-neutral-50'
@@ -610,6 +673,38 @@ export default function CheckoutPage() {
                     </div>
                   </label>
                 </div>
+
+                {/* Payment Forms */}
+                {formData.paymentMethod === 'stripe' && stripeClientSecret && (
+                  <div className="mt-6 pt-6 border-t border-neutral-200">
+                    <StripePaymentWrapper
+                      clientSecret={stripeClientSecret}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      disabled={paymentProcessing || shippingCost === null}
+                    />
+                  </div>
+                )}
+
+                {formData.paymentMethod === 'paypal' && paypalOrderId && (
+                  <div className="mt-6 pt-6 border-t border-neutral-200">
+                    <PayPalPaymentWrapper
+                      orderId={paypalOrderId}
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                      disabled={paymentProcessing || shippingCost === null}
+                      total={total}
+                    />
+                  </div>
+                )}
+
+                {formData.paymentMethod && shippingCost === null && (
+                  <div className="mt-6 pt-6 border-t border-neutral-200">
+                    <p className="text-sm text-neutral-500 text-center">
+                      Please complete your shipping address to proceed with payment
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -782,34 +877,111 @@ export default function CheckoutPage() {
                   </div>
                 </dl>
 
-                <button
-                  type="submit"
-                  disabled={processing || shippingCost === null}
-                  className="w-full mt-8 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg disabled:hover:scale-100"
-                >
-                  {processing ? (
-                    <>
-                      <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      {t('processing')}
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      {t('placeOrder')}
-                    </>
-                  )}
-                </button>
+                {(!formData.paymentMethod || (formData.paymentMethod === 'stripe' && !stripeClientSecret) || (formData.paymentMethod === 'paypal' && !paypalOrderId)) && (
+                  <div className="mt-8 p-4 bg-neutral-50 rounded-xl border border-neutral-200">
+                    <p className="text-sm text-neutral-600 text-center">
+                      {!formData.paymentMethod 
+                        ? 'Please select a payment method above'
+                        : 'Initializing payment...'}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        </form>
+        </div>
       </div>
     </div>
+  );
+}
+
+// Stripe Payment Wrapper Component
+function StripePaymentWrapper({ clientSecret, onSuccess, onError, disabled }: { 
+  clientSecret: string; 
+  onSuccess: (id: string) => void; 
+  onError: (error: string) => void;
+  disabled?: boolean;
+}) {
+  const stripePromise = useMemo(() => {
+    const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    if (!publishableKey) return null;
+    return loadStripe(publishableKey);
+  }, []);
+
+  if (!stripePromise) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-sm text-red-600">Stripe is not configured. Please add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to environment variables.</p>
+      </div>
+    );
+  }
+
+  const options: StripeElementsOptions = {
+    clientSecret,
+    appearance: {
+      theme: 'stripe',
+      variables: {
+        colorPrimary: '#171717',
+        colorBackground: '#ffffff',
+        colorText: '#171717',
+        colorDanger: '#ef4444',
+        fontFamily: 'system-ui, sans-serif',
+        spacingUnit: '4px',
+        borderRadius: '12px',
+      },
+    },
+  };
+
+  return (
+    <Elements stripe={stripePromise} options={options}>
+      <StripePayment
+        clientSecret={clientSecret}
+        onSuccess={onSuccess}
+        onError={onError}
+        disabled={disabled}
+      />
+    </Elements>
+  );
+}
+
+// PayPal Payment Wrapper Component
+function PayPalPaymentWrapper({ orderId, onSuccess, onError, disabled, total }: { 
+  orderId: string; 
+  onSuccess: (id: string) => void; 
+  onError: (error: string) => void;
+  disabled?: boolean;
+  total: number;
+}) {
+  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+
+  if (!paypalClientId) {
+    return (
+      <div className="text-center py-4">
+        <p className="text-sm text-red-600">PayPal is not configured. Please add NEXT_PUBLIC_PAYPAL_CLIENT_ID to environment variables.</p>
+      </div>
+    );
+  }
+
+  const isProduction = !paypalClientId.includes('sandbox') && !paypalClientId.includes('test');
+  const currency = 'SEK';
+
+  return (
+    <PayPalScriptProvider
+      options={{
+        clientId: paypalClientId,
+        currency,
+        intent: 'capture',
+        components: 'buttons',
+      }}
+    >
+      <PayPalPayment
+        orderId={orderId}
+        onSuccess={onSuccess}
+        onError={onError}
+        disabled={disabled}
+        total={total}
+      />
+    </PayPalScriptProvider>
   );
 }
 
