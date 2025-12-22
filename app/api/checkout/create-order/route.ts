@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
         );
       }
       const stripe = new Stripe(stripeSecretKey, {
-        apiVersion: '2025-11-17.clover',
+        httpClient: Stripe.createFetchHttpClient(), // Required for Cloudflare Workers/Pages
       });
       const paymentIntent = await stripe.paymentIntents.retrieve(validated.paymentIntentId);
       if (paymentIntent.status !== 'succeeded') {

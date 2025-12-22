@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const stripe = new Stripe(stripeSecretKey, {
-      apiVersion: '2025-11-17.clover',
+      httpClient: Stripe.createFetchHttpClient(), // Required for Cloudflare Workers/Pages
     });
 
     const body = await request.json();
