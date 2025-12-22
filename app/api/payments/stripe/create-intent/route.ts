@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
             price_data: {
               currency: 'sek',
               product_data: {
-                name: `Discount: ${discount.code}`,
+                name: `Discount: ${validation.discountCode.code}`,
               },
               unit_amount: -Math.round(discountAmount * 100), // Negative for discount
             },
