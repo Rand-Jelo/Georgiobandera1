@@ -104,9 +104,9 @@ export async function POST(request: NextRequest) {
     let discountAmount = 0;
     if (validated.discountCode) {
       const userEmail = session?.email || undefined;
-      const discount = await validateDiscountCode(db, validated.discountCode, subtotal, userEmail);
-      if (discount) {
-        discountAmount = calculateDiscountAmount(discount, subtotal);
+      const validation = await validateDiscountCode(db, validated.discountCode, subtotal, session?.userId || undefined, userEmail);
+      if (validation.valid && validation.discountCode) {
+        discountAmount = calculateDiscountAmount(validation.discountCode, subtotal);
         if (discountAmount > 0) {
           // Add discount as a negative line item
           lineItems.push({
