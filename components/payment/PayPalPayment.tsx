@@ -58,7 +58,8 @@ export default function PayPalPayment({ orderId, onSuccess, onError, disabled, t
         }
       }}
       onError={(err) => {
-        onError(err.message || 'PayPal payment failed');
+        const errorMessage = (err as { message?: string })?.message || 'PayPal payment failed';
+        onError(errorMessage);
       }}
       onCancel={() => {
         onError('Payment cancelled');
