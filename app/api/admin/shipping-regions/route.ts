@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
       base_price: number;
       free_shipping_threshold?: number | null;
       active?: boolean;
+      countries?: string[];
     };
     const region = await createShippingRegion(db, body);
 

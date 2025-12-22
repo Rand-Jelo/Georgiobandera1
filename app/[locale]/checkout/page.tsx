@@ -11,6 +11,11 @@ interface ShippingRegion {
   name_en: string;
   name_sv: string;
   code: string;
+  base_price: number;
+  free_shipping_threshold: number | null;
+  active: boolean;
+  created_at: number;
+  updated_at: number;
 }
 
 interface CartItem {
@@ -90,22 +95,60 @@ export default function CheckoutPage() {
     return sum + price * item.quantity;
   }, 0);
 
-  // Auto-match shipping region when country changes
-  useEffect(() => {
-    if (formData.shippingCountry && shippingRegions.length > 0) {
-      // Find region that matches the country code
-      const matchedRegion = shippingRegions.find(r => r.code === formData.shippingCountry);
-      if (matchedRegion) {
-        setFormData(prev => ({ ...prev, shippingRegionId: matchedRegion.id }));
-        setSelectedRegion(matchedRegion);
+  const detectShippingRegion = async (countryCode: string) => {
+    try {
+      const response = await fetch('/api/shipping/detect-region', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ country: countryCode }),
+      });
+
+      const data = await response.json() as { 
+        region?: { 
+          id: string; 
+          name_en: string; 
+          name_sv: string; 
+          code: string;
+          base_price: number;
+          free_shipping_threshold: number | null;
+          active: boolean;
+        }; 
+        error?: string 
+      };
+
+      if (data.region) {
+        // Find the full region object from the fetched regions (preferred)
+        const fullRegion = shippingRegions.find(r => r.id === data.region!.id);
+        if (fullRegion) {
+          setFormData(prev => ({ ...prev, shippingRegionId: fullRegion.id }));
+          setSelectedRegion(fullRegion);
+        } else {
+          // If not found in local state, use the region from API response
+          setFormData(prev => ({ ...prev, shippingRegionId: data.region!.id }));
+          setSelectedRegion({
+            id: data.region.id,
+            name_en: data.region.name_en,
+            name_sv: data.region.name_sv,
+            code: data.region.code,
+            base_price: data.region.base_price,
+            free_shipping_threshold: data.region.free_shipping_threshold,
+            active: data.region.active,
+            created_at: 0,
+            updated_at: 0,
+          });
+        }
       } else {
-        // If no match, clear selection
         setFormData(prev => ({ ...prev, shippingRegionId: '' }));
         setSelectedRegion(null);
         setShippingCost(null);
       }
+    } catch (err) {
+      console.error('Error detecting shipping region:', err);
+      setFormData(prev => ({ ...prev, shippingRegionId: '' }));
+      setSelectedRegion(null);
+      setShippingCost(null);
     }
-  }, [formData.shippingCountry, shippingRegions]);
+  };
 
   // Calculate shipping when region is selected and address is complete
   useEffect(() => {
@@ -241,24 +284,21 @@ export default function CheckoutPage() {
     }
   };
 
+  // Auto-detect shipping region when country changes
+  useEffect(() => {
+    if (formData.shippingCountry) {
+      detectShippingRegion(formData.shippingCountry);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.shippingCountry]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    // When country changes, auto-match shipping region
+    // When country changes, auto-detect shipping region
     if (name === 'shippingCountry') {
-      const matchedRegion = shippingRegions.find(r => r.code === value);
-      if (matchedRegion) {
-        setFormData(prev => ({ ...prev, shippingRegionId: matchedRegion.id }));
-        setSelectedRegion(matchedRegion);
-      } else {
-        setFormData(prev => ({ ...prev, shippingRegionId: '' }));
-        setSelectedRegion(null);
-        setShippingCost(null);
-      }
-    } else if (name === 'shippingRegionId') {
-      const region = shippingRegions.find(r => r.id === value);
-      setSelectedRegion(region || null);
+      detectShippingRegion(value);
     }
   };
 
@@ -486,36 +526,29 @@ export default function CheckoutPage() {
                     />
                   </div>
 
-                  <div>
-                    <label htmlFor="shippingRegionId" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Shipping Region <span className="text-red-500">*</span>
-                      {selectedRegion && (
-                        <span className="ml-2 text-xs text-neutral-500 font-normal">
-                          (Auto-selected based on country)
-                        </span>
+                  {selectedRegion && (
+                    <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">Shipping Region</p>
+                          <p className="text-sm font-semibold text-neutral-900">
+                            {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">Base Price</p>
+                          <p className="text-sm font-semibold text-neutral-900">
+                            {formatPrice(selectedRegion.base_price, 'SEK')}
+                          </p>
+                        </div>
+                      </div>
+                      {selectedRegion.free_shipping_threshold && (
+                        <p className="mt-2 text-xs text-neutral-500">
+                          Free shipping on orders over {formatPrice(selectedRegion.free_shipping_threshold, 'SEK')}
+                        </p>
                       )}
-                    </label>
-                    <select
-                      id="shippingRegionId"
-                      name="shippingRegionId"
-                      required
-                      value={formData.shippingRegionId}
-                      onChange={handleChange}
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                    >
-                      <option value="">Select region</option>
-                      {shippingRegions.map((region) => (
-                        <option key={region.id} value={region.id}>
-                          {locale === 'sv' ? region.name_sv : region.name_en}
-                        </option>
-                      ))}
-                    </select>
-                    {selectedRegion && (
-                      <p className="mt-2 text-xs text-neutral-500">
-                        Shipping to: {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
-                      </p>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

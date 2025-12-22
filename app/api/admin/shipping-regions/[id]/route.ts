@@ -86,6 +86,7 @@ export async function PATCH(
       base_price?: number;
       free_shipping_threshold?: number | null;
       active?: boolean;
+      countries?: string[];
     };
     const region = await updateShippingRegion(db, id, body);
 

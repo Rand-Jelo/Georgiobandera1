@@ -5,6 +5,64 @@ import { useRouter } from 'next/navigation';
 import { Link } from '@/lib/i18n/routing';
 import type { ShippingRegion } from '@/types/database';
 
+// ISO 3166-1 alpha-2 country codes
+const COUNTRY_CODES = [
+  { code: 'SE', name: 'Sweden' },
+  { code: 'NO', name: 'Norway' },
+  { code: 'DK', name: 'Denmark' },
+  { code: 'FI', name: 'Finland' },
+  { code: 'IS', name: 'Iceland' },
+  { code: 'AT', name: 'Austria' },
+  { code: 'BE', name: 'Belgium' },
+  { code: 'BG', name: 'Bulgaria' },
+  { code: 'HR', name: 'Croatia' },
+  { code: 'CY', name: 'Cyprus' },
+  { code: 'CZ', name: 'Czech Republic' },
+  { code: 'EE', name: 'Estonia' },
+  { code: 'FR', name: 'France' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'GR', name: 'Greece' },
+  { code: 'HU', name: 'Hungary' },
+  { code: 'IE', name: 'Ireland' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'LV', name: 'Latvia' },
+  { code: 'LT', name: 'Lithuania' },
+  { code: 'LU', name: 'Luxembourg' },
+  { code: 'MT', name: 'Malta' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'PL', name: 'Poland' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'RO', name: 'Romania' },
+  { code: 'SK', name: 'Slovakia' },
+  { code: 'SI', name: 'Slovenia' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'US', name: 'United States' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'NZ', name: 'New Zealand' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'CN', name: 'China' },
+  { code: 'IN', name: 'India' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'MX', name: 'Mexico' },
+  { code: 'AR', name: 'Argentina' },
+  { code: 'ZA', name: 'South Africa' },
+  { code: 'EG', name: 'Egypt' },
+  { code: 'AE', name: 'United Arab Emirates' },
+  { code: 'SA', name: 'Saudi Arabia' },
+  { code: 'TR', name: 'Turkey' },
+  { code: 'RU', name: 'Russia' },
+  { code: 'KR', name: 'South Korea' },
+  { code: 'SG', name: 'Singapore' },
+  { code: 'MY', name: 'Malaysia' },
+  { code: 'TH', name: 'Thailand' },
+  { code: 'ID', name: 'Indonesia' },
+  { code: 'PH', name: 'Philippines' },
+  { code: 'VN', name: 'Vietnam' },
+  { code: 'CH', name: 'Switzerland' },
+];
+
 interface StoreSettings {
   store_name: string;
   store_email: string;
@@ -63,6 +121,7 @@ export default function AdminSettingsPage() {
     base_price: '',
     free_shipping_threshold: '',
     active: true,
+    countries: [] as string[],
   });
 
   useEffect(() => {
@@ -193,6 +252,7 @@ export default function AdminSettingsPage() {
         base_price: parseFloat(regionForm.base_price),
         free_shipping_threshold: regionForm.free_shipping_threshold ? parseFloat(regionForm.free_shipping_threshold) : null,
         active: regionForm.active,
+        countries: regionForm.countries,
       };
 
       let response;
@@ -225,6 +285,7 @@ export default function AdminSettingsPage() {
         base_price: '',
         free_shipping_threshold: '',
         active: true,
+        countries: [],
       });
     } catch (error) {
       console.error('Error saving shipping region:', error);
@@ -241,6 +302,7 @@ export default function AdminSettingsPage() {
       base_price: region.base_price.toString(),
       free_shipping_threshold: region.free_shipping_threshold?.toString() || '',
       active: region.active,
+      countries: region.countries || [],
     });
     setShowRegionForm(true);
   };
@@ -546,6 +608,51 @@ export default function AdminSettingsPage() {
                       </label>
                     </div>
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-300 mb-2">
+                      Countries (ISO codes) *
+                      <span className="text-xs text-neutral-500 ml-2">
+                        Select countries that should use this shipping region. Leave empty for "Rest of World" region.
+                      </span>
+                    </label>
+                    <div className="border border-white/20 bg-black/50 rounded-lg p-3 max-h-60 overflow-y-auto">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                        {COUNTRY_CODES.map((country) => (
+                          <label
+                            key={country.code}
+                            className="flex items-center space-x-2 cursor-pointer hover:bg-white/5 p-2 rounded"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={regionForm.countries.includes(country.code)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setRegionForm({
+                                    ...regionForm,
+                                    countries: [...regionForm.countries, country.code],
+                                  });
+                                } else {
+                                  setRegionForm({
+                                    ...regionForm,
+                                    countries: regionForm.countries.filter((c) => c !== country.code),
+                                  });
+                                }
+                              }}
+                              className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                            />
+                            <span className="text-sm text-neutral-300">
+                              {country.code} - {country.name}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    {regionForm.countries.length > 0 && (
+                      <p className="mt-2 text-xs text-neutral-400">
+                        Selected: {regionForm.countries.join(', ')}
+                      </p>
+                    )}
+                  </div>
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
@@ -588,6 +695,9 @@ export default function AdminSettingsPage() {
                         Code
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        Countries
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
                         Base Price
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
@@ -610,6 +720,29 @@ export default function AdminSettingsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-neutral-300">{region.code}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-neutral-300">
+                            {region.countries && region.countries.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {region.countries.slice(0, 5).map((country) => (
+                                  <span
+                                    key={country}
+                                    className="px-2 py-1 bg-white/10 rounded text-xs"
+                                  >
+                                    {country}
+                                  </span>
+                                ))}
+                                {region.countries.length > 5 && (
+                                  <span className="px-2 py-1 bg-white/10 rounded text-xs">
+                                    +{region.countries.length - 5} more
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-neutral-500 italic">All other countries</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-white">{region.base_price} SEK</div>
