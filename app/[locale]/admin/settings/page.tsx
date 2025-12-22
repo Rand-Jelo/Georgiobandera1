@@ -516,6 +516,7 @@ export default function AdminSettingsPage() {
                     base_price: '',
                     free_shipping_threshold: '',
                     active: true,
+                    countries: [],
                   });
                   setShowRegionForm(true);
                 }}
