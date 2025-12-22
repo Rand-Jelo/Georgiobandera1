@@ -139,9 +139,10 @@ export async function POST(request: NextRequest) {
         httpClient: Stripe.createFetchHttpClient(), // Required for Cloudflare Workers/Pages
       });
       const paymentIntent = await stripe.paymentIntents.retrieve(validated.paymentIntentId);
-      if (paymentIntent.status !== 'succeeded') {
+      // Accept 'succeeded' or 'processing' status (processing means payment is being processed)
+      if (paymentIntent.status !== 'succeeded' && paymentIntent.status !== 'processing') {
         return NextResponse.json(
-          { error: 'Payment not completed' },
+          { error: `Payment not completed. Status: ${paymentIntent.status}` },
           { status: 400 }
         );
       }
@@ -202,8 +203,18 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Create order error:', error);
+    
+    // Return more detailed error information
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorDetails = error instanceof Error ? error.stack : String(error);
+    
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      { 
+        error: 'Failed to create order',
+        details: errorMessage,
+        // Only include stack in development
+        ...(process.env.NODE_ENV === 'development' && { stack: errorDetails })
+      },
       { status: 500 }
     );
   }

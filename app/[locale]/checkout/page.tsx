@@ -333,10 +333,16 @@ export default function CheckoutPage() {
         }),
       });
 
-      const data = await response.json() as { order?: { id: string; order_number: string }; error?: string };
+      const data = await response.json() as { 
+        order?: { id: string; order_number: string }; 
+        error?: string;
+        details?: string;
+      };
 
       if (data.error) {
-        setError(data.error);
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
+        setError(errorMsg);
+        console.error('Create order error:', data);
         setPaymentProcessing(false);
         return;
       }
