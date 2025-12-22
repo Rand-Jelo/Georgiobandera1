@@ -178,6 +178,21 @@
     "noQuery": "Sök produkter",
     "enterSearchTerm": "Vänligen ange en sökterm för att hitta produkter.",
     "tryDifferentKeywords": "Prova olika nyckelord eller kontrollera din stavning."
+  },
+  "contact": {
+    "title": "Kontakta oss",
+    "subtitle": "Vi vill gärna höra från dig. Skicka ett meddelande så svarar vi så snart som möjligt.",
+    "name": "Namn",
+    "namePlaceholder": "Ditt namn",
+    "email": "E-post",
+    "emailPlaceholder": "din.epost@exempel.com",
+    "subject": "Ämne",
+    "subjectPlaceholder": "Vad gäller detta?",
+    "message": "Meddelande",
+    "messagePlaceholder": "Ditt meddelande...",
+    "send": "Skicka meddelande",
+    "sending": "Skickar...",
+    "success": "Ditt meddelande har skickats! Vi återkommer så snart som möjligt."
   }
 }
 
