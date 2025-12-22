@@ -57,7 +57,7 @@ export default function CheckoutPage() {
     paymentMethod: '' as 'stripe' | 'paypal' | '',
   });
 
-  const [shippingCost, setShippingCost] = useState(0);
+  const [shippingCost, setShippingCost] = useState<number | null>(null); // null means not calculated yet
   const [selectedRegion, setSelectedRegion] = useState<ShippingRegion | null>(null);
   const [taxRate, setTaxRate] = useState(0.25); // Default 25%
   const [discountCode, setDiscountCode] = useState('');
@@ -90,11 +90,40 @@ export default function CheckoutPage() {
     return sum + price * item.quantity;
   }, 0);
 
+  // Auto-match shipping region when country changes
   useEffect(() => {
-    if (formData.shippingRegionId && subtotal > 0) {
-      calculateShipping();
+    if (formData.shippingCountry && shippingRegions.length > 0) {
+      // Find region that matches the country code
+      const matchedRegion = shippingRegions.find(r => r.code === formData.shippingCountry);
+      if (matchedRegion) {
+        setFormData(prev => ({ ...prev, shippingRegionId: matchedRegion.id }));
+        setSelectedRegion(matchedRegion);
+      } else {
+        // If no match, clear selection
+        setFormData(prev => ({ ...prev, shippingRegionId: '' }));
+        setSelectedRegion(null);
+        setShippingCost(null);
+      }
     }
-  }, [formData.shippingRegionId, subtotal]);
+  }, [formData.shippingCountry, shippingRegions]);
+
+  // Calculate shipping when region is selected and address is complete
+  useEffect(() => {
+    const isAddressComplete = 
+      formData.shippingName &&
+      formData.shippingAddressLine1 &&
+      formData.shippingCity &&
+      formData.shippingPostalCode &&
+      formData.shippingCountry &&
+      formData.shippingRegionId;
+
+    if (isAddressComplete && subtotal > 0) {
+      calculateShipping();
+    } else {
+      // Hide shipping cost if address is incomplete
+      setShippingCost(null);
+    }
+  }, [formData.shippingRegionId, formData.shippingName, formData.shippingAddressLine1, formData.shippingCity, formData.shippingPostalCode, formData.shippingCountry, subtotal]);
 
   const fetchData = async () => {
     try {
@@ -108,12 +137,7 @@ export default function CheckoutPage() {
       const regionsData = await regionsResponse.json() as { regions?: ShippingRegion[] };
       setShippingRegions(regionsData.regions || []);
 
-      // Set default region if available
-      if (regionsData.regions && regionsData.regions.length > 0) {
-        const defaultRegion = regionsData.regions.find(r => r.code === 'SE') || regionsData.regions[0];
-        setFormData(prev => ({ ...prev, shippingRegionId: defaultRegion.id }));
-        setSelectedRegion(defaultRegion);
-      }
+      // Don't set default region - let it be auto-matched when country is selected
     } catch (err) {
       console.error('Error fetching checkout data:', err);
       setError('Failed to load checkout data');
@@ -128,11 +152,17 @@ export default function CheckoutPage() {
       return sum + price * item.quantity;
     }, 0);
 
-    if (!formData.shippingRegionId || currentSubtotal === 0) return;
+    if (!formData.shippingRegionId || currentSubtotal === 0) {
+      setShippingCost(null);
+      return;
+    }
 
     try {
       const region = shippingRegions.find(r => r.id === formData.shippingRegionId);
-      if (!region) return;
+      if (!region) {
+        setShippingCost(null);
+        return;
+      }
 
       const response = await fetch('/api/shipping/calculate', {
         method: 'POST',
@@ -146,9 +176,12 @@ export default function CheckoutPage() {
       const data = await response.json() as { shippingCost?: number };
       if (data.shippingCost !== undefined) {
         setShippingCost(data.shippingCost);
+      } else {
+        setShippingCost(null);
       }
     } catch (err) {
       console.error('Error calculating shipping:', err);
+      setShippingCost(null);
     }
   };
 
@@ -159,7 +192,8 @@ export default function CheckoutPage() {
   const discountAmount = appliedDiscount?.amount || 0;
   // Subtotal already includes tax, so total = subtotal - discount + shipping
   // Tax is shown separately for transparency
-  const total = subtotal - discountAmount + shippingCost;
+  // Use 0 for shipping if not calculated yet
+  const total = subtotal - discountAmount + (shippingCost ?? 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,6 +202,12 @@ export default function CheckoutPage() {
 
     if (!formData.paymentMethod) {
       setError('Please select a payment method');
+      setProcessing(false);
+      return;
+    }
+
+    if (shippingCost === null) {
+      setError('Please complete your shipping address to calculate shipping cost');
       setProcessing(false);
       return;
     }
@@ -205,7 +245,18 @@ export default function CheckoutPage() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    if (name === 'shippingRegionId') {
+    // When country changes, auto-match shipping region
+    if (name === 'shippingCountry') {
+      const matchedRegion = shippingRegions.find(r => r.code === value);
+      if (matchedRegion) {
+        setFormData(prev => ({ ...prev, shippingRegionId: matchedRegion.id }));
+        setSelectedRegion(matchedRegion);
+      } else {
+        setFormData(prev => ({ ...prev, shippingRegionId: '' }));
+        setSelectedRegion(null);
+        setShippingCost(null);
+      }
+    } else if (name === 'shippingRegionId') {
       const region = shippingRegions.find(r => r.id === value);
       setSelectedRegion(region || null);
     }
@@ -438,6 +489,11 @@ export default function CheckoutPage() {
                   <div>
                     <label htmlFor="shippingRegionId" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
                       Shipping Region <span className="text-red-500">*</span>
+                      {selectedRegion && (
+                        <span className="ml-2 text-xs text-neutral-500 font-normal">
+                          (Auto-selected based on country)
+                        </span>
+                      )}
                     </label>
                     <select
                       id="shippingRegionId"
@@ -454,6 +510,11 @@ export default function CheckoutPage() {
                         </option>
                       ))}
                     </select>
+                    {selectedRegion && (
+                      <p className="mt-2 text-xs text-neutral-500">
+                        Shipping to: {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -645,29 +706,49 @@ export default function CheckoutPage() {
                       <dd className="font-semibold">-{formatPrice(appliedDiscount.amount, 'SEK')}</dd>
                     </div>
                   )}
-                  <div className="flex justify-between">
-                    <dt className="text-neutral-600 font-medium">{tCart('shipping')}</dt>
-                    <dd className="text-neutral-900 font-semibold">
-                      {shippingCost === 0 ? (
-                        <span className="text-green-600">Free</span>
-                      ) : (
-                        formatPrice(shippingCost, 'SEK')
-                      )}
-                    </dd>
-                  </div>
+                  {shippingCost !== null ? (
+                    <div className="flex justify-between">
+                      <dt className="text-neutral-600 font-medium">{tCart('shipping')}</dt>
+                      <dd className="text-neutral-900 font-semibold">
+                        {shippingCost === 0 ? (
+                          <span className="text-green-600">Free</span>
+                        ) : (
+                          formatPrice(shippingCost, 'SEK')
+                        )}
+                      </dd>
+                    </div>
+                  ) : (
+                    <div className="flex justify-between">
+                      <dt className="text-neutral-600 font-medium">{tCart('shipping')}</dt>
+                      <dd className="text-neutral-500 text-xs italic">
+                        {formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry
+                          ? 'Calculating...'
+                          : 'Enter address to calculate'
+                        }
+                      </dd>
+                    </div>
+                  )}
                   <div className="flex justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-200">
                     <dt>VAT included in subtotal</dt>
                     <dd>{formatPrice(tax, 'SEK')}</dd>
                   </div>
                   <div className="flex justify-between text-lg font-semibold border-t border-neutral-200 pt-3 mt-3">
                     <dt className="text-neutral-900">{tCart('total')}</dt>
-                    <dd className="text-neutral-900">{formatPrice(total, 'SEK')}</dd>
+                    <dd className="text-neutral-900">
+                      {shippingCost !== null ? (
+                        formatPrice(total, 'SEK')
+                      ) : (
+                        <span className="text-neutral-500 text-sm font-normal italic">
+                          {formatPrice(subtotal - discountAmount, 'SEK')} + shipping
+                        </span>
+                      )}
+                    </dd>
                   </div>
                 </dl>
 
                 <button
                   type="submit"
-                  disabled={processing}
+                  disabled={processing || shippingCost === null}
                   className="w-full mt-8 inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:scale-105 shadow-lg disabled:hover:scale-100"
                 >
                   {processing ? (
