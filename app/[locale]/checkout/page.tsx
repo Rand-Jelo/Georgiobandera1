@@ -34,6 +34,13 @@ interface CartItem {
     name_en: string;
     name_sv: string;
     price: number;
+    images?: Array<{
+      id: string;
+      url: string;
+      alt_text_en?: string;
+      alt_text_sv?: string;
+      sort_order: number;
+    }>;
   } | null;
   variant: {
     id: string;
@@ -41,6 +48,23 @@ interface CartItem {
     name_sv: string | null;
     price: number | null;
   } | null;
+}
+
+interface SavedAddress {
+  id: string;
+  user_id: string;
+  label: string | null;
+  first_name: string;
+  last_name: string;
+  company: string | null;
+  address_line1: string;
+  address_line2: string | null;
+  city: string;
+  state_province: string | null;
+  postal_code: string;
+  country: string;
+  phone: string | null;
+  is_default: number;
 }
 
 export default function CheckoutPage() {
@@ -84,10 +108,55 @@ export default function CheckoutPage() {
   const [paypalOrderId, setPaypalOrderId] = useState<string | null>(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
 
+  // Saved addresses
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [showSaveAddress, setShowSaveAddress] = useState(false);
+
+  // Order notes and gift message
+  const [orderNotes, setOrderNotes] = useState('');
+  const [giftMessage, setGiftMessage] = useState('');
+
+  // Review step
+  const [showReview, setShowReview] = useState(false);
+
   useEffect(() => {
     fetchData();
     fetchTaxRate();
+    fetchSavedAddresses();
   }, []);
+
+  const fetchSavedAddresses = async () => {
+    try {
+      const response = await fetch('/api/addresses');
+      if (response.ok) {
+        const data = await response.json() as { addresses?: SavedAddress[] };
+        setSavedAddresses(data.addresses || []);
+        // Auto-select default address if available
+        const defaultAddress = data.addresses?.find(a => a.is_default === 1);
+        if (defaultAddress) {
+          handleSelectSavedAddress(defaultAddress);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching saved addresses:', err);
+    }
+  };
+
+  const handleSelectSavedAddress = (address: SavedAddress) => {
+    setSelectedAddressId(address.id);
+    setFormData({
+      ...formData,
+      shippingName: `${address.first_name} ${address.last_name}`,
+      shippingAddressLine1: address.address_line1,
+      shippingAddressLine2: address.address_line2 || '',
+      shippingCity: address.city,
+      shippingPostalCode: address.postal_code,
+      shippingCountry: address.country,
+      shippingPhone: address.phone || '',
+    });
+    detectShippingRegion(address.country);
+  };
 
   const fetchTaxRate = async () => {
     try {
@@ -321,6 +390,34 @@ export default function CheckoutPage() {
     setError('');
 
     try {
+      // Save address if requested
+      if (showSaveAddress && !selectedAddressId) {
+        const nameParts = formData.shippingName.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+        
+        try {
+          await fetch('/api/addresses', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              first_name: firstName,
+              last_name: lastName,
+              address_line1: formData.shippingAddressLine1,
+              address_line2: formData.shippingAddressLine2 || undefined,
+              city: formData.shippingCity,
+              postal_code: formData.shippingPostalCode,
+              country: formData.shippingCountry,
+              phone: formData.shippingPhone || undefined,
+              is_default: savedAddresses.length === 0, // Set as default if it's the first address
+            }),
+          });
+        } catch (err) {
+          console.error('Error saving address:', err);
+          // Continue with order creation even if address save fails
+        }
+      }
+
       // Create order with payment confirmation
       const response = await fetch('/api/checkout/create-order', {
         method: 'POST',
@@ -330,6 +427,8 @@ export default function CheckoutPage() {
           paymentIntentId: formData.paymentMethod === 'stripe' ? paymentId : undefined,
           paypalOrderId: formData.paymentMethod === 'paypal' ? paymentId : undefined,
           discountCode: appliedDiscount?.code || null,
+          orderNotes: orderNotes || undefined,
+          giftMessage: giftMessage || undefined,
         }),
       });
 
@@ -471,7 +570,35 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-neutral-50 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-5xl font-light tracking-tight text-neutral-900 mb-12">{t('title')}</h1>
+        <h1 className="text-5xl font-light tracking-tight text-neutral-900 mb-8">{t('title')}</h1>
+
+        {/* Progress Indicator */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between max-w-3xl">
+            <div className={`flex items-center ${showReview ? 'text-neutral-400' : 'text-neutral-900'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                showReview ? 'border-neutral-300 bg-white' : 'border-neutral-900 bg-neutral-900 text-white'
+              }`}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <span className="ml-3 text-sm font-medium hidden sm:block">Shipping</span>
+            </div>
+            <div className={`flex-1 h-0.5 mx-4 ${showReview ? 'bg-neutral-300' : 'bg-neutral-900'}`} />
+            <div className={`flex items-center ${showReview ? 'text-neutral-900' : 'text-neutral-400'}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                showReview ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white'
+              }`}>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span className="ml-3 text-sm font-medium hidden sm:block">Review</span>
+            </div>
+          </div>
+        </div>
 
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-12">
           {/* Left Column - Shipping & Payment */}
@@ -492,6 +619,58 @@ export default function CheckoutPage() {
                 </div>
               </div>
               <div className="p-6">
+                {/* Saved Addresses Selector */}
+                {savedAddresses.length > 0 && (
+                  <div className="mb-6 pb-6 border-b border-neutral-200">
+                    <label className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Use Saved Address
+                    </label>
+                    <select
+                      value={selectedAddressId || ''}
+                      onChange={(e) => {
+                        const addressId = e.target.value;
+                        if (addressId) {
+                          const address = savedAddresses.find(a => a.id === addressId);
+                          if (address) {
+                            handleSelectSavedAddress(address);
+                          }
+                        } else {
+                          setSelectedAddressId(null);
+                        }
+                      }}
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                    >
+                      <option value="">Select a saved address...</option>
+                      {savedAddresses.map((address) => (
+                        <option key={address.id} value={address.id}>
+                          {address.label || `${address.first_name} ${address.last_name}`} - {address.city}, {address.country}
+                        </option>
+                      ))}
+                    </select>
+                    {selectedAddressId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedAddressId(null);
+                          setFormData({
+                            shippingName: '',
+                            shippingAddressLine1: '',
+                            shippingAddressLine2: '',
+                            shippingCity: '',
+                            shippingPostalCode: '',
+                            shippingCountry: 'SE',
+                            shippingPhone: '',
+                            shippingRegionId: '',
+                            paymentMethod: '' as 'stripe' | 'paypal' | '',
+                          });
+                        }}
+                        className="mt-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+                      >
+                        Use different address
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 <div className="space-y-5">
                   <div>
@@ -628,25 +807,90 @@ export default function CheckoutPage() {
                       )}
                     </div>
                   )}
+
+                  {/* Save Address Option */}
+                  {!selectedAddressId && (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="saveAddress"
+                        checked={showSaveAddress}
+                        onChange={(e) => setShowSaveAddress(e.target.checked)}
+                        className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
+                      />
+                      <label htmlFor="saveAddress" className="ml-2 text-sm text-neutral-700">
+                        Save this address for future orders
+                      </label>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Payment Method */}
-            <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
-              <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
+            {/* Order Notes & Gift Message */}
+            {!showReview && (
+              <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+                <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-semibold text-neutral-900">
+                      Additional Information
+                    </h2>
                   </div>
-                  <h2 className="text-xl font-semibold text-neutral-900">
-                    {t('paymentMethod')}
-                  </h2>
+                </div>
+                <div className="p-6 space-y-5">
+                  <div>
+                    <label htmlFor="orderNotes" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Order Notes <span className="text-neutral-400 font-normal">(Optional)</span>
+                    </label>
+                    <textarea
+                      id="orderNotes"
+                      name="orderNotes"
+                      rows={3}
+                      value={orderNotes}
+                      onChange={(e) => setOrderNotes(e.target.value)}
+                      placeholder="Special instructions for your order..."
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="giftMessage" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Gift Message <span className="text-neutral-400 font-normal">(Optional)</span>
+                    </label>
+                    <textarea
+                      id="giftMessage"
+                      name="giftMessage"
+                      rows={3}
+                      value={giftMessage}
+                      onChange={(e) => setGiftMessage(e.target.value)}
+                      placeholder="Add a personal message for the recipient..."
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm resize-none"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="p-6">
+            )}
+
+            {/* Payment Method */}
+            {!showReview && (
+              <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden" data-payment-section>
+                <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-semibold text-neutral-900">
+                      {t('paymentMethod')}
+                    </h2>
+                  </div>
+                </div>
+                <div className="p-6">
                 <div className="space-y-3 mb-6">
                   <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all ${
                     formData.paymentMethod === 'stripe'
@@ -720,6 +964,7 @@ export default function CheckoutPage() {
                 )}
               </div>
             </div>
+            )}
 
             {error && (
               <div className="rounded-xl bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm">
@@ -735,7 +980,7 @@ export default function CheckoutPage() {
 
           {/* Right Column - Order Summary */}
           <div className="lg:col-span-5 mt-8 lg:mt-0">
-            <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden sticky top-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden lg:sticky lg:top-8">
               <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
@@ -760,19 +1005,29 @@ export default function CheckoutPage() {
                     const variantName = locale === 'sv'
                       ? item.variant?.name_sv || item.variant?.name_en
                       : item.variant?.name_en;
+                    const productImage = item.product?.images?.[0]?.url;
 
                     return (
-                      <div key={item.id} className="flex justify-between text-sm mb-4 last:mb-0">
-                        <div className="flex-1 pr-4">
-                          <p className="font-semibold text-neutral-900">{name}</p>
+                      <div key={item.id} className="flex gap-4 mb-4 last:mb-0">
+                        {productImage && (
+                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                            <img
+                              src={productImage}
+                              alt={name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-neutral-900 text-sm">{name}</p>
                           {variantName && (
                             <p className="text-neutral-500 text-xs mt-0.5">{variantName}</p>
                           )}
                           <p className="text-neutral-500 text-xs mt-1">Qty: {item.quantity}</p>
+                          <p className="text-neutral-900 font-semibold text-sm mt-2">
+                            {formatPrice(price * item.quantity, 'SEK')}
+                          </p>
                         </div>
-                        <p className="text-neutral-900 font-semibold whitespace-nowrap">
-                          {formatPrice(price * item.quantity, 'SEK')}
-                        </p>
                       </div>
                     );
                   })}
@@ -899,10 +1154,216 @@ export default function CheckoutPage() {
                     </p>
                   </div>
                 )}
+
+                {/* Trust Badges */}
+                <div className="mt-8 pt-8 border-t border-neutral-200">
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
+                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      </div>
+                      <p className="text-xs font-medium text-neutral-700">Secure Payment</p>
+                      <p className="text-xs text-neutral-500 mt-0.5">SSL Encrypted</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
+                      </div>
+                      <p className="text-xs font-medium text-neutral-700">Money-Back</p>
+                      <p className="text-xs text-neutral-500 mt-0.5">30-Day Guarantee</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Review Step */}
+        {showReview && (
+          <div className="mt-8 bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+            <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
+              <h2 className="text-xl font-semibold text-neutral-900">Review Your Order</h2>
+            </div>
+            <div className="p-6">
+              <div className="space-y-6">
+                {/* Shipping Review */}
+                <div>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Shipping Address</h3>
+                  <div className="bg-neutral-50 rounded-xl p-4 text-sm text-neutral-700">
+                    <p className="font-medium">{formData.shippingName}</p>
+                    <p>{formData.shippingAddressLine1}</p>
+                    {formData.shippingAddressLine2 && <p>{formData.shippingAddressLine2}</p>}
+                    <p>{formData.shippingCity}, {formData.shippingPostalCode}</p>
+                    <p>{COUNTRIES.find(c => c.code === formData.shippingCountry)?.name || formData.shippingCountry}</p>
+                    {formData.shippingPhone && <p className="mt-2">Phone: {formData.shippingPhone}</p>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowReview(false)}
+                    className="mt-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+                  >
+                    Edit address
+                  </button>
+                </div>
+
+                {/* Payment Review */}
+                <div>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Payment Method</h3>
+                  {formData.paymentMethod ? (
+                    <>
+                      <div className="bg-neutral-50 rounded-xl p-4 text-sm text-neutral-700">
+                        <p className="font-medium">
+                          {formData.paymentMethod === 'stripe' ? 'Credit/Debit Card' : 'PayPal'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowReview(false)}
+                        className="mt-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+                      >
+                        Change payment method
+                      </button>
+                    </>
+                  ) : (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm text-yellow-800">
+                      <p>Please select a payment method to continue.</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowReview(false)}
+                        className="mt-2 text-sm text-yellow-700 hover:text-yellow-900 transition-colors underline"
+                      >
+                        Select payment method
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Order Summary Review */}
+                <div>
+                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Order Summary</h3>
+                  <div className="bg-neutral-50 rounded-xl p-4 space-y-3">
+                    {cartItems.map((item) => {
+                      const price = item.variant?.price ?? item.product?.price ?? 0;
+                      const name = locale === 'sv'
+                        ? item.product?.name_sv || item.product?.name_en || ''
+                        : item.product?.name_en || '';
+                      const variantName = locale === 'sv'
+                        ? item.variant?.name_sv || item.variant?.name_en
+                        : item.variant?.name_en;
+                      const productImage = item.product?.images?.[0]?.url;
+
+                      return (
+                        <div key={item.id} className="flex gap-3 pb-3 border-b border-neutral-200 last:border-0 last:pb-0">
+                          {productImage && (
+                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                              <img
+                                src={productImage}
+                                alt={name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm text-neutral-900">{name}</p>
+                            {variantName && (
+                              <p className="text-neutral-500 text-xs mt-0.5">{variantName}</p>
+                            )}
+                            <p className="text-neutral-500 text-xs mt-1">Qty: {item.quantity}</p>
+                            <p className="text-neutral-900 font-semibold text-sm mt-1">
+                              {formatPrice(price * item.quantity, 'SEK')}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="pt-3 border-t border-neutral-200 space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-neutral-600">Subtotal:</span>
+                        <span className="font-semibold text-neutral-900">{formatPrice(subtotal, 'SEK')}</span>
+                      </div>
+                      {appliedDiscount && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Discount ({appliedDiscount.code}):</span>
+                          <span className="font-semibold">-{formatPrice(appliedDiscount.amount, 'SEK')}</span>
+                        </div>
+                      )}
+                      {shippingCost !== null && (
+                        <div className="flex justify-between">
+                          <span className="text-neutral-600">Shipping:</span>
+                          <span className="font-semibold text-neutral-900">
+                            {shippingCost === 0 ? 'Free' : formatPrice(shippingCost, 'SEK')}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-lg font-bold pt-2 border-t border-neutral-200">
+                        <span className="text-neutral-900">Total:</span>
+                        <span className="text-neutral-900">{formatPrice(total, 'SEK')}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Order Notes & Gift Message Review */}
+                {(orderNotes || giftMessage) && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-neutral-900 mb-3">Additional Information</h3>
+                    <div className="bg-neutral-50 rounded-xl p-4 text-sm text-neutral-700 space-y-2">
+                      {orderNotes && (
+                        <div>
+                          <p className="font-medium mb-1">Order Notes:</p>
+                          <p className="text-neutral-600">{orderNotes}</p>
+                        </div>
+                      )}
+                      {giftMessage && (
+                        <div>
+                          <p className="font-medium mb-1">Gift Message:</p>
+                          <p className="text-neutral-600">{giftMessage}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Continue to Payment Button */}
+                <div className="pt-6 border-t border-neutral-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowReview(false);
+                      // Scroll to payment section
+                      setTimeout(() => {
+                        const paymentSection = document.querySelector('[data-payment-section]');
+                        paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 100);
+                    }}
+                    disabled={!formData.paymentMethod}
+                    className="w-full py-3.5 px-6 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    {formData.paymentMethod ? 'Continue to Payment' : 'Select Payment Method First'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Review Button */}
+        {!showReview && formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry && shippingCost !== null && (
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowReview(true)}
+              className="px-6 py-3 bg-neutral-100 text-neutral-900 rounded-full font-medium hover:bg-neutral-200 transition-all duration-300"
+            >
+              Review Order
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

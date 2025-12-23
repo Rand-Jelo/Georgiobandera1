@@ -355,6 +355,11 @@ UPDATE shipping_regions SET countries = '["AT","BE","BG","HR","CY","CZ","DK","EE
 -- WORLD region gets empty array (will match any country not in other regions)
 UPDATE shipping_regions SET countries = '[]' WHERE code = 'WORLD';`,
     },
+    {
+      name: '012_add_order_gift_message.sql',
+      sql: `-- Add gift_message column to orders table
+ALTER TABLE orders ADD COLUMN gift_message TEXT;`,
+    },
   ];
 
   return migrations;
@@ -417,6 +422,29 @@ export async function runMigrations(db: D1Database): Promise<{ success: boolean;
         try {
           await addAdminColumnIfNeeded(db);
           results.push(`✅ Applied ${migration.name}`);
+        } catch (error: any) {
+          // Ignore if column already exists
+          if (error?.message?.includes('duplicate column')) {
+            results.push(`⏭️  Skipped ${migration.name} (already applied)`);
+          } else {
+            throw error;
+          }
+        }
+        continue;
+      }
+
+      if (migration.name === '012_add_order_gift_message.sql') {
+        try {
+          // Check if column already exists
+          const tableInfo = await db.prepare("PRAGMA table_info(orders)").all();
+          const hasGiftMessage = (tableInfo.results as any[]).some((col: any) => col.name === 'gift_message');
+          
+          if (!hasGiftMessage) {
+            await db.prepare("ALTER TABLE orders ADD COLUMN gift_message TEXT").run();
+            results.push(`✅ Applied ${migration.name}`);
+          } else {
+            results.push(`⏭️  Skipped ${migration.name} (already applied)`);
+          }
         } catch (error: any) {
           // Ignore if column already exists
           if (error?.message?.includes('duplicate column')) {

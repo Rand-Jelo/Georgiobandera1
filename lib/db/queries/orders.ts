@@ -23,6 +23,8 @@ export async function createOrder(
     shippingPostalCode: string;
     shippingCountry: string;
     shippingPhone?: string;
+    orderNotes?: string;
+    giftMessage?: string;
     items: Array<{
       productId: string;
       variantId?: string;
@@ -44,8 +46,9 @@ export async function createOrder(
       id, order_number, user_id, email, payment_method, payment_intent_id,
       subtotal, shipping_cost, tax, total, currency, shipping_region_id,
       shipping_name, shipping_address_line1, shipping_address_line2,
-      shipping_city, shipping_postal_code, shipping_country, shipping_phone
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      shipping_city, shipping_postal_code, shipping_country, shipping_phone,
+      notes, gift_message
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       orderNumber,
@@ -66,6 +69,8 @@ export async function createOrder(
       orderData.shippingPostalCode,
       orderData.shippingCountry,
       orderData.shippingPhone || null,
+      orderData.orderNotes || null,
+      orderData.giftMessage || null,
     ]
   );
 

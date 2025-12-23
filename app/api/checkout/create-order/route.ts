@@ -16,6 +16,8 @@ import {
   calculateDiscountAmount,
   recordDiscountCodeUsage,
 } from '@/lib/db/queries/discount-codes';
+import { sendOrderConfirmationEmail } from '@/lib/email/order-confirmation';
+import { getOrderItems } from '@/lib/db/queries/orders';
 
 const createOrderSchema = z.object({
   shippingName: z.string().min(1),
@@ -30,6 +32,8 @@ const createOrderSchema = z.object({
   paymentIntentId: z.string().optional(),
   paypalOrderId: z.string().optional(),
   discountCode: z.string().nullable().optional(),
+  orderNotes: z.string().optional(),
+  giftMessage: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -169,6 +173,8 @@ export async function POST(request: NextRequest) {
       shippingPostalCode: validated.shippingPostalCode,
       shippingCountry: validated.shippingCountry,
       shippingPhone: validated.shippingPhone,
+      orderNotes: validated.orderNotes,
+      giftMessage: validated.giftMessage,
       items: orderItems,
     });
 
@@ -185,6 +191,21 @@ export async function POST(request: NextRequest) {
 
     // Clear cart after successful order creation
     await clearCart(db, session?.userId, sessionId);
+
+    // Send order confirmation email (async, don't wait)
+    const orderItemsForEmail = await getOrderItems(db, order.id);
+    sendOrderConfirmationEmail({
+      order,
+      items: orderItemsForEmail.map(item => ({
+        productName: item.product_name,
+        variantName: item.variant_name || undefined,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      locale: request.headers.get('accept-language')?.includes('sv') ? 'sv' : 'en',
+    }).catch(err => {
+      console.error('Failed to send order confirmation email:', err);
+    });
 
     return NextResponse.json({
       order: {
