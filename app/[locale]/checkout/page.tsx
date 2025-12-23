@@ -119,6 +119,7 @@ export default function CheckoutPage() {
 
   // Review step
   const [showReview, setShowReview] = useState(false);
+  const [reviewCompleted, setReviewCompleted] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -314,9 +315,18 @@ export default function CheckoutPage() {
   // Use 0 for shipping if not calculated yet
   const total = subtotal - discountAmount + (shippingCost ?? 0);
 
-  // Initialize payment when method is selected and address is complete
+  // Initialize payment when method is selected, address is complete
+  // Only require review completion if review step was shown
   useEffect(() => {
     if (!formData.paymentMethod || shippingCost === null || total <= 0) {
+      setStripeClientSecret(null);
+      setPaypalOrderId(null);
+      return;
+    }
+
+    // If review step was shown, require it to be completed before initializing payment
+    // This prevents payment from initializing while user is still reviewing
+    if (showReview && !reviewCompleted) {
       setStripeClientSecret(null);
       setPaypalOrderId(null);
       return;
@@ -379,7 +389,7 @@ export default function CheckoutPage() {
     };
 
     initializePayment();
-  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount]);
+  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount, reviewCompleted, showReview]);
 
   const handlePaymentSuccess = async (paymentId: string) => {
     setPaymentProcessing(true);
@@ -1230,7 +1240,14 @@ export default function CheckoutPage() {
                       <p>Please select a payment method to continue.</p>
                       <button
                         type="button"
-                        onClick={() => setShowReview(false)}
+                        onClick={() => {
+                          setShowReview(false);
+                          // Scroll to payment section
+                          setTimeout(() => {
+                            const paymentSection = document.querySelector('[data-payment-section]');
+                            paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 100);
+                        }}
                         className="mt-2 text-sm text-yellow-700 hover:text-yellow-900 transition-colors underline"
                       >
                         Select payment method
@@ -1330,6 +1347,17 @@ export default function CheckoutPage() {
                   <button
                     type="button"
                     onClick={() => {
+                      if (!formData.paymentMethod) {
+                        setShowReview(false);
+                        // Scroll to payment section
+                        setTimeout(() => {
+                          const paymentSection = document.querySelector('[data-payment-section]');
+                          paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                        return;
+                      }
+                      // Mark review as completed and proceed to payment
+                      setReviewCompleted(true);
                       setShowReview(false);
                       // Scroll to payment section
                       setTimeout(() => {
