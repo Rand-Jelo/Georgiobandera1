@@ -24,10 +24,9 @@ export async function POST(request: NextRequest) {
 
     // Get PayPal access token
     const auth = Buffer.from(`${paypalClientId}:${paypalClientSecret}`).toString('base64');
-    const isProduction = !paypalClientId.includes('sandbox') && !paypalClientId.includes('test');
-    const baseUrl = isProduction
-      ? 'https://api-m.paypal.com'
-      : 'https://api-m.sandbox.paypal.com';
+    // For now we always use PayPal Sandbox while testing.
+    // When switching to live payments, change this to api-m.paypal.com.
+    const baseUrl = 'https://api-m.sandbox.paypal.com';
 
     const tokenResponse = await fetch(`${baseUrl}/v1/oauth2/token`, {
       method: 'POST',
