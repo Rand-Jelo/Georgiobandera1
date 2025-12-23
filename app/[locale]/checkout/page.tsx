@@ -132,11 +132,7 @@ export default function CheckoutPage() {
       if (response.ok) {
         const data = await response.json() as { addresses?: SavedAddress[] };
         setSavedAddresses(data.addresses || []);
-        // Auto-select default address if available
-        const defaultAddress = data.addresses?.find(a => a.is_default === 1);
-        if (defaultAddress) {
-          handleSelectSavedAddress(defaultAddress);
-        }
+        // Don't auto-select - user must explicitly choose an address
       }
     } catch (err) {
       console.error('Error fetching saved addresses:', err);
