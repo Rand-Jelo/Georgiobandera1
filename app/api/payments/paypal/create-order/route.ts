@@ -18,7 +18,9 @@ const createOrderSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Check if PayPal is configured
-    const paypalClientId = process.env.PAYPAL_CLIENT_ID;
+    // Prefer server-side PAYPAL_CLIENT_ID, but fall back to NEXT_PUBLIC_PAYPAL_CLIENT_ID
+    // Cloudflare Pages often exposes the client ID as NEXT_PUBLIC_PAYPAL_CLIENT_ID only.
+    const paypalClientId = process.env.PAYPAL_CLIENT_ID || process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
     const paypalClientSecret = process.env.PAYPAL_CLIENT_SECRET;
     
     if (!paypalClientId || !paypalClientSecret) {
