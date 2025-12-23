@@ -111,7 +111,7 @@ export async function sendOrderConfirmationEmail(data: OrderConfirmationEmailDat
           </div>
 
           <div style="text-align: center; margin-top: 30px; padding: 20px; color: #666; font-size: 14px;">
-            <p>${isSwedish ? 'Vi skickar dig en uppdatering när din beställning skickas.' : 'We'll send you an update when your order ships.'}</p>
+            <p>${isSwedish ? 'Vi skickar dig en uppdatering när din beställning skickas.' : "We'll send you an update when your order ships."}</p>
             <p style="margin-top: 20px;">
               <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev'}/orders/${data.order.order_number}" 
                  style="color: #171717; text-decoration: underline;">
