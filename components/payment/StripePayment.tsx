@@ -16,16 +16,6 @@ export default function StripePayment({ clientSecret, onSuccess, onError, disabl
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!stripe || !clientSecret) return;
-
-    stripe.retrievePaymentIntent(clientSecret).then(({ paymentIntent }) => {
-      if (paymentIntent?.status === 'succeeded') {
-        onSuccess(paymentIntent.id);
-      }
-    });
-  }, [stripe, clientSecret, onSuccess]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
