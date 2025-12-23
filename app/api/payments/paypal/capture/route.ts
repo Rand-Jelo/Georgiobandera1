@@ -39,7 +39,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (!tokenResponse.ok) {
-      throw new Error('Failed to get PayPal access token');
+      const errorData = await tokenResponse.json() as { error?: string; error_description?: string };
+      const message = errorData.error_description || errorData.error || 'Failed to get PayPal access token';
+      return NextResponse.json(
+        { error: message },
+        { status: 500 }
+      );
     }
 
     const { access_token } = await tokenResponse.json() as { access_token: string };
