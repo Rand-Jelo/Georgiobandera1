@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { formatPrice } from '@/lib/utils';
+import { Link } from '@/lib/i18n/routing';
 
 interface Order {
   id: string;
@@ -92,40 +93,48 @@ export default function OrdersPage() {
             <ul className="divide-y divide-gray-200">
               {orders.map((order) => (
                 <li key={order.id}>
-                  <div className="px-6 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center">
-                          <p className="text-sm font-medium text-indigo-600">
-                            {t('orderNumber')}{order.order_number}
-                          </p>
-                          <span
-                            className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                              order.status
-                            )}`}
-                          >
-                            {getStatusText(order.status)}
-                          </span>
-                        </div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500">
-                          <p>
-                            {t('date')}:{' '}
-                            {new Date(order.created_at * 1000).toLocaleDateString()}
-                          </p>
-                          {order.tracking_number && (
-                            <p className="ml-4">
-                              {t('tracking')}: {order.tracking_number}
+                  <Link href={`/orders/${order.order_number}`}>
+                    <div className="px-6 py-4 sm:px-6 hover:bg-gray-50 transition-colors cursor-pointer">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center">
+                            <p className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
+                              {t('orderNumber')}{order.order_number}
                             </p>
-                          )}
+                            <span
+                              className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                                order.status
+                              )}`}
+                            >
+                              {getStatusText(order.status)}
+                            </span>
+                          </div>
+                          <div className="mt-2 flex items-center text-sm text-gray-500">
+                            <p>
+                              {t('date')}:{' '}
+                              {new Date(order.created_at * 1000).toLocaleDateString()}
+                            </p>
+                            {order.tracking_number && (
+                              <p className="ml-4 flex items-center gap-1">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {t('tracking')}: {order.tracking_number}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-lg font-semibold text-gray-900">
-                          {formatPrice(order.subtotal + order.shipping_cost, order.currency)}
-                        </p>
+                        <div className="ml-4 flex items-center gap-2">
+                          <p className="text-lg font-semibold text-gray-900">
+                            {formatPrice(order.subtotal + order.shipping_cost, order.currency)}
+                          </p>
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 </li>
               ))}
             </ul>
