@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { formatPrice } from '@/lib/utils';
 import { COUNTRIES } from '@/lib/constants/countries';
+import { validateAddressFormat, validatePostalCode, formatPostalCode } from '@/lib/utils/address-validation';
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
@@ -120,11 +121,29 @@ export default function CheckoutPage() {
   // Review step
   const [showReview, setShowReview] = useState(false);
 
+  // Address validation
+  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+
+  // Guest checkout
+  const [createAccount, setCreateAccount] = useState(false);
+  const [guestEmail, setGuestEmail] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
   useEffect(() => {
     fetchData();
     fetchTaxRate();
     fetchSavedAddresses();
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    try {
+      const response = await fetch('/api/auth/me');
+      setIsLoggedIn(response.ok);
+    } catch (err) {
+      setIsLoggedIn(false);
+    }
+  };
 
   const fetchSavedAddresses = async () => {
     try {
@@ -433,6 +452,8 @@ export default function CheckoutPage() {
           discountCode: appliedDiscount?.code || null,
           orderNotes: orderNotes || undefined,
           giftMessage: giftMessage || undefined,
+          guestEmail: guestEmail || undefined,
+          createAccount: createAccount || false,
         }),
       });
 
@@ -475,6 +496,34 @@ export default function CheckoutPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Validate postal code when it changes
+    if (name === 'shippingPostalCode' && formData.shippingCountry) {
+      const validation = validatePostalCode(value, formData.shippingCountry);
+      if (!validation.valid) {
+        setAddressErrors(prev => ({ ...prev, shippingPostalCode: validation.errors[0] || 'Invalid postal code' }));
+      } else {
+        setAddressErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.shippingPostalCode;
+          return newErrors;
+        });
+        // Auto-format postal code
+        const formatted = formatPostalCode(value, formData.shippingCountry);
+        if (formatted !== value) {
+          setFormData(prev => ({ ...prev, shippingPostalCode: formatted }));
+        }
+      }
+    }
+
+    // Clear postal code error when country changes
+    if (name === 'shippingCountry') {
+      setAddressErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.shippingPostalCode;
+        return newErrors;
+      });
+    }
 
     // When country changes, auto-detect shipping region
     if (name === 'shippingCountry') {
@@ -748,8 +797,20 @@ export default function CheckoutPage() {
                         required
                         value={formData.shippingPostalCode}
                         onChange={handleChange}
-                        className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                        className={`block w-full px-5 py-3 border rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 transition-all text-sm ${
+                          addressErrors.shippingPostalCode
+                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                            : 'border-neutral-200 focus:ring-neutral-900 focus:border-neutral-900'
+                        }`}
                       />
+                      {addressErrors.shippingPostalCode && (
+                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {addressErrors.shippingPostalCode}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -830,6 +891,57 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
+
+            {/* Guest Checkout - Email & Account Creation */}
+            {!showReview && isLoggedIn === false && (
+              <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+                <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-semibold text-neutral-900">
+                      Contact Information
+                    </h2>
+                  </div>
+                </div>
+                <div className="p-6 space-y-5">
+                  <div>
+                    <label htmlFor="guestEmail" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      id="guestEmail"
+                      name="guestEmail"
+                      required
+                      value={guestEmail}
+                      onChange={(e) => setGuestEmail(e.target.value)}
+                      placeholder="your.email@example.com"
+                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+                    />
+                    <p className="mt-2 text-xs text-neutral-500">
+                      We'll send your order confirmation to this email
+                    </p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="createAccount"
+                      checked={createAccount}
+                      onChange={(e) => setCreateAccount(e.target.checked)}
+                      className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
+                    />
+                    <label htmlFor="createAccount" className="ml-2 text-sm text-neutral-700">
+                      Create an account for faster checkout next time
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Order Notes & Gift Message */}
             {!showReview && (

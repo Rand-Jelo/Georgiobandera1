@@ -15,10 +15,19 @@ interface OrderItem {
   total: number;
 }
 
+interface OrderStatusHistory {
+  id: string;
+  order_id: string;
+  status: string;
+  message: string | null;
+  created_at: number;
+}
+
 interface Order {
   id: string;
   order_number: string;
   status: string;
+  payment_status: string;
   subtotal: number;
   shipping_cost: number;
   tax: number;
@@ -33,6 +42,7 @@ interface Order {
   tracking_number: string | null;
   created_at: number;
   items: OrderItem[];
+  statusHistory?: OrderStatusHistory[];
 }
 
 export default function OrderConfirmationPage() {
@@ -45,6 +55,8 @@ export default function OrderConfirmationPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [showGuestForm, setShowGuestForm] = useState(false);
 
   useEffect(() => {
     if (orderNumber) {
@@ -52,15 +64,25 @@ export default function OrderConfirmationPage() {
     }
   }, [orderNumber]);
 
-  const fetchOrder = async () => {
+  const fetchOrder = async (email?: string) => {
     try {
-      const response = await fetch(`/api/orders/${orderNumber}`);
+      const url = email 
+        ? `/api/orders/${orderNumber}?email=${encodeURIComponent(email)}`
+        : `/api/orders/${orderNumber}`;
+      
+      const response = await fetch(url);
       const data = await response.json() as { order?: Order; error?: string };
 
       if (data.error) {
-        setError(data.error);
+        if (data.error.includes('email') || data.error.includes('Unauthorized')) {
+          setShowGuestForm(true);
+          setError('');
+        } else {
+          setError(data.error);
+        }
       } else {
         setOrder(data.order || null);
+        setShowGuestForm(false);
       }
     } catch (err) {
       setError('Failed to load order');
@@ -68,6 +90,17 @@ export default function OrderConfirmationPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGuestAccess = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!guestEmail.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    await fetchOrder(guestEmail);
   };
 
   if (loading) {
@@ -81,7 +114,7 @@ export default function OrderConfirmationPage() {
     );
   }
 
-  if (error || !order) {
+  if (error && !showGuestForm) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
@@ -90,7 +123,7 @@ export default function OrderConfirmationPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-red-600 mb-6 font-medium">{error || 'Order not found'}</p>
+          <p className="text-red-600 mb-6 font-medium">{error}</p>
           <Link
             href="/orders"
             className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg"
@@ -100,6 +133,54 @@ export default function OrderConfirmationPage() {
         </div>
       </div>
     );
+  }
+
+  if (showGuestForm && !order) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50 py-16 px-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-neutral-100 p-8">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-semibold text-neutral-900 mb-2">View Your Order</h1>
+            <p className="text-neutral-600">Enter your email address to view order {orderNumber}</p>
+          </div>
+          
+          <form onSubmit={handleGuestAccess} className="space-y-4">
+            <div>
+              <label htmlFor="guestEmail" className="block text-sm font-medium text-neutral-700 mb-2">
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="guestEmail"
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                required
+                placeholder="your.email@example.com"
+                className="block w-full px-4 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
+              />
+            </div>
+            
+            {error && (
+              <div className="rounded-xl bg-red-50/50 border border-red-200/50 p-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-6 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Loading...' : 'View Order'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  if (!order) {
+    return null;
   }
 
   return (
@@ -132,6 +213,92 @@ export default function OrderConfirmationPage() {
           </div>
 
           <div className="p-8 space-y-8">
+            {/* Order Tracking Timeline */}
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-neutral-900">
+                  Order Tracking
+                </h2>
+              </div>
+              
+              {/* Tracking Timeline */}
+              {order.statusHistory && order.statusHistory.length > 0 ? (
+                <div className="relative">
+                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-neutral-200"></div>
+                  <div className="space-y-6">
+                    {order.statusHistory.map((status, index) => {
+                      const isLast = index === order.statusHistory!.length - 1;
+                      const statusConfig = getStatusConfig(status.status);
+                      
+                      return (
+                        <div key={status.id} className="relative flex items-start gap-4">
+                          <div className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full ${
+                            isLast ? 'bg-neutral-900' : 'bg-neutral-300'
+                          }`}>
+                            {isLast ? (
+                              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <div className="w-2 h-2 rounded-full bg-white"></div>
+                            )}
+                          </div>
+                          <div className="flex-1 pb-6">
+                            <div className="bg-neutral-50 rounded-xl p-4">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="font-semibold text-neutral-900 capitalize">{statusConfig.label}</p>
+                                <p className="text-xs text-neutral-500">
+                                  {new Date(status.created_at * 1000).toLocaleDateString('en-US', {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </p>
+                              </div>
+                              {status.message && (
+                                <p className="text-sm text-neutral-600">{status.message}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-neutral-50 rounded-xl p-6 text-center">
+                  <p className="text-neutral-600">No tracking information available yet.</p>
+                </div>
+              )}
+
+              {/* Tracking Number */}
+              {order.tracking_number && (
+                <div className="mt-6 bg-neutral-50 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">Tracking Number</p>
+                      <p className="text-base font-semibold text-neutral-900 font-mono">{order.tracking_number}</p>
+                    </div>
+                    <a
+                      href={`https://tracking.postnord.com/track/${order.tracking_number}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors"
+                    >
+                      Track Package
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Order Details */}
             <div>
               <div className="flex items-center gap-3 mb-6">
@@ -159,12 +326,10 @@ export default function OrderConfirmationPage() {
                   <dt className="text-xs text-neutral-500 uppercase tracking-wide mb-2">Status</dt>
                   <dd className="text-base font-semibold text-neutral-900 capitalize">{order.status}</dd>
                 </div>
-                {order.tracking_number && (
-                  <div className="bg-neutral-50 rounded-xl p-4">
-                    <dt className="text-xs text-neutral-500 uppercase tracking-wide mb-2">Tracking Number</dt>
-                    <dd className="text-base font-semibold text-neutral-900">{order.tracking_number}</dd>
-                  </div>
-                )}
+                <div className="bg-neutral-50 rounded-xl p-4">
+                  <dt className="text-xs text-neutral-500 uppercase tracking-wide mb-2">Payment Status</dt>
+                  <dd className="text-base font-semibold text-neutral-900 capitalize">{order.payment_status}</dd>
+                </div>
               </dl>
             </div>
 
@@ -276,5 +441,19 @@ export default function OrderConfirmationPage() {
       </div>
     </div>
   );
+}
+
+// Helper function to get status configuration
+function getStatusConfig(status: string): { label: string; icon: string } {
+  const statusMap: Record<string, { label: string; icon: string }> = {
+    pending: { label: 'Order Placed', icon: '📦' },
+    processing: { label: 'Processing', icon: '⚙️' },
+    shipped: { label: 'Shipped', icon: '🚚' },
+    delivered: { label: 'Delivered', icon: '✅' },
+    cancelled: { label: 'Cancelled', icon: '❌' },
+    refunded: { label: 'Refunded', icon: '↩️' },
+  };
+
+  return statusMap[status.toLowerCase()] || { label: status, icon: '📋' };
 }
 

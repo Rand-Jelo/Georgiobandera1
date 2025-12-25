@@ -18,6 +18,8 @@ import {
 } from '@/lib/db/queries/discount-codes';
 import { sendOrderConfirmationEmail } from '@/lib/email/order-confirmation';
 import { getOrderItems } from '@/lib/db/queries/orders';
+import { getUserByEmail, createUser } from '@/lib/db/queries/users';
+import { hashPassword } from '@/lib/auth/password';
 
 const createOrderSchema = z.object({
   shippingName: z.string().min(1),
@@ -34,6 +36,8 @@ const createOrderSchema = z.object({
   discountCode: z.string().nullable().optional(),
   orderNotes: z.string().optional(),
   giftMessage: z.string().optional(),
+  guestEmail: z.string().email().optional(),
+  createAccount: z.boolean().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -155,10 +159,44 @@ export async function POST(request: NextRequest) {
       // In production, you might want to verify the order status
     }
 
+    // Determine email for order
+    const orderEmail = session?.email || validated.guestEmail || validated.shippingName;
+    
+    // Create account if requested (guest checkout with account creation)
+    let userId = session?.userId;
+    if (validated.createAccount && validated.guestEmail && !session?.userId) {
+      try {
+        // Check if user already exists
+        const existingUser = await getUserByEmail(db, validated.guestEmail);
+        if (existingUser) {
+          userId = existingUser.id;
+        } else {
+          // Create user with random password (they can reset it later)
+          const randomPassword = crypto.randomUUID();
+          const passwordHash = await hashPassword(randomPassword);
+          
+          const nameParts = validated.shippingName.split(' ');
+          const newUser = await createUser(db, {
+            email: validated.guestEmail,
+            passwordHash,
+            name: validated.shippingName,
+            phone: validated.shippingPhone,
+          });
+          userId = newUser.id;
+          
+          // TODO: Send welcome email with password reset link
+          console.log('Account created for guest checkout:', validated.guestEmail);
+        }
+      } catch (err) {
+        console.error('Error creating account for guest:', err);
+        // Continue with order creation even if account creation fails
+      }
+    }
+
     // Create order
     const order = await createOrder(db, {
-      userId: session?.userId,
-      email: session?.email || validated.shippingName, // Fallback, should have email
+      userId: userId,
+      email: orderEmail,
       paymentMethod: validated.paymentMethod,
       paymentIntentId: validated.paymentIntentId || validated.paypalOrderId || undefined,
       subtotal,

@@ -2,6 +2,7 @@ import { D1Database } from '@cloudflare/workers-types';
 import { Order, OrderItem } from '@/types/database';
 import { queryDB, queryOne, executeDB } from '../client';
 import { generateOrderNumber } from '@/lib/utils';
+import { addOrderStatusHistory } from './order-tracking';
 
 export async function createOrder(
   db: D1Database,
@@ -103,6 +104,16 @@ export async function createOrder(
     throw new Error('Failed to create order');
   }
 
+  // Add initial status history
+  await addOrderStatusHistory(
+    db,
+    id,
+    order.status,
+    order.payment_status === 'paid' 
+      ? 'Order placed and payment confirmed'
+      : 'Order placed'
+  );
+
   return order;
 }
 
@@ -155,13 +166,17 @@ export async function getOrdersByUserId(
 export async function updateOrderStatus(
   db: D1Database,
   id: string,
-  status: Order['status']
+  status: Order['status'],
+  message?: string
 ): Promise<void> {
   await executeDB(
     db,
     'UPDATE orders SET status = ?, updated_at = unixepoch() WHERE id = ?',
     [status, id]
   );
+
+  // Add status history
+  await addOrderStatusHistory(db, id, status, message);
 }
 
 export async function updatePaymentStatus(
@@ -185,6 +200,36 @@ export async function updateTrackingNumber(
     db,
     'UPDATE orders SET tracking_number = ?, status = ?, updated_at = unixepoch() WHERE id = ?',
     [trackingNumber, 'shipped', id]
+  );
+
+  // Add status history for shipping
+  await addOrderStatusHistory(
+    db,
+    id,
+    'shipped',
+    `Order shipped with tracking number: ${trackingNumber}`
+  );
+}
+
+/**
+ * Update order status to delivered
+ */
+export async function markOrderAsDelivered(
+  db: D1Database,
+  id: string
+): Promise<void> {
+  await executeDB(
+    db,
+    'UPDATE orders SET status = ?, updated_at = unixepoch() WHERE id = ?',
+    ['delivered', id]
+  );
+
+  // Add status history for delivery
+  await addOrderStatusHistory(
+    db,
+    id,
+    'delivered',
+    'Order has been delivered'
   );
 }
 
