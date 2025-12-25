@@ -119,7 +119,6 @@ export default function CheckoutPage() {
 
   // Review step
   const [showReview, setShowReview] = useState(false);
-  const [reviewCompleted, setReviewCompleted] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -315,8 +314,8 @@ export default function CheckoutPage() {
   // Use 0 for shipping if not calculated yet
   const total = subtotal - discountAmount + (shippingCost ?? 0);
 
-  // Initialize payment when method is selected, address is complete
-  // Only require review completion if review step was shown
+  // Initialize payment when method is selected, address is complete, and review is shown
+  // Payment only initializes when review step is active (where payment forms are displayed)
   useEffect(() => {
     if (!formData.paymentMethod || shippingCost === null || total <= 0) {
       setStripeClientSecret(null);
@@ -324,9 +323,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    // If review step was shown, require it to be completed before initializing payment
-    // This prevents payment from initializing while user is still reviewing
-    if (showReview && !reviewCompleted) {
+    // Only initialize payment when review step is shown (where payment forms are displayed)
+    if (!showReview) {
       setStripeClientSecret(null);
       setPaypalOrderId(null);
       return;
@@ -389,7 +387,7 @@ export default function CheckoutPage() {
     };
 
     initializePayment();
-  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount, reviewCompleted, showReview]);
+  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount, showReview]);
 
   const handlePaymentSuccess = async (paymentId: string) => {
     setPaymentProcessing(true);
@@ -1217,41 +1215,92 @@ export default function CheckoutPage() {
                   </button>
                 </div>
 
-                {/* Payment Review */}
+                {/* Payment Method Selection */}
                 <div>
                   <h3 className="text-sm font-semibold text-neutral-900 mb-3">Payment Method</h3>
-                  {formData.paymentMethod ? (
-                    <>
-                      <div className="bg-neutral-50 rounded-xl p-4 text-sm text-neutral-700">
-                        <p className="font-medium">
-                          {formData.paymentMethod === 'stripe' ? 'Credit/Debit Card' : 'PayPal'}
-                        </p>
+                  <div className="space-y-3 mb-6">
+                    <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all ${
+                      formData.paymentMethod === 'stripe'
+                        ? 'border-neutral-900 bg-neutral-50'
+                        : 'border-neutral-200 hover:border-neutral-300 bg-white'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="stripe"
+                        checked={formData.paymentMethod === 'stripe'}
+                        onChange={handleChange}
+                        className="h-5 w-5 text-neutral-900 focus:ring-neutral-900"
+                      />
+                      <div className="ml-4">
+                        <div className="font-semibold text-neutral-900">Credit/Debit Card</div>
+                        <div className="text-sm text-neutral-500 mt-1">Visa, Mastercard, Amex, Klarna</div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowReview(false)}
-                        className="mt-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
-                      >
-                        Change payment method
-                      </button>
-                    </>
-                  ) : (
+                    </label>
+
+                    <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all ${
+                      formData.paymentMethod === 'paypal'
+                        ? 'border-neutral-900 bg-neutral-50'
+                        : 'border-neutral-200 hover:border-neutral-300 bg-white'
+                    }`}>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="paypal"
+                        checked={formData.paymentMethod === 'paypal'}
+                        onChange={handleChange}
+                        className="h-5 w-5 text-neutral-900 focus:ring-neutral-900"
+                      />
+                      <div className="ml-4">
+                        <div className="font-semibold text-neutral-900">PayPal</div>
+                        <div className="text-sm text-neutral-500 mt-1">Pay with your PayPal account</div>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Payment Forms */}
+                  {formData.paymentMethod === 'stripe' && stripeClientSecret && (
+                    <div className="mt-6 pt-6 border-t border-neutral-200">
+                      <StripePaymentWrapper
+                        clientSecret={stripeClientSecret}
+                        onSuccess={handlePaymentSuccess}
+                        onError={handlePaymentError}
+                        disabled={paymentProcessing || shippingCost === null}
+                      />
+                    </div>
+                  )}
+
+                  {formData.paymentMethod === 'paypal' && paypalOrderId && (
+                    <div className="mt-6 pt-6 border-t border-neutral-200">
+                      <PayPalPaymentWrapper
+                        orderId={paypalOrderId}
+                        onSuccess={handlePaymentSuccess}
+                        onError={handlePaymentError}
+                        disabled={paymentProcessing || shippingCost === null}
+                        total={total}
+                      />
+                    </div>
+                  )}
+
+                  {formData.paymentMethod && shippingCost === null && (
+                    <div className="mt-6 pt-6 border-t border-neutral-200">
+                      <p className="text-sm text-neutral-500 text-center">
+                        Please complete your shipping address to proceed with payment
+                      </p>
+                    </div>
+                  )}
+
+                  {!formData.paymentMethod && (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm text-yellow-800">
-                      <p>Please select a payment method to continue.</p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowReview(false);
-                          // Scroll to payment section
-                          setTimeout(() => {
-                            const paymentSection = document.querySelector('[data-payment-section]');
-                            paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 100);
-                        }}
-                        className="mt-2 text-sm text-yellow-700 hover:text-yellow-900 transition-colors underline"
-                      >
-                        Select payment method
-                      </button>
+                      <p>Please select a payment method above to complete your order.</p>
+                    </div>
+                  )}
+
+                  {formData.paymentMethod && (!stripeClientSecret && !paypalOrderId) && shippingCost !== null && (
+                    <div className="mt-6 pt-6 border-t border-neutral-200">
+                      <p className="text-sm text-neutral-500 text-center">
+                        Initializing payment...
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1342,35 +1391,6 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {/* Continue to Payment Button */}
-                <div className="pt-6 border-t border-neutral-200">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!formData.paymentMethod) {
-                        setShowReview(false);
-                        // Scroll to payment section
-                        setTimeout(() => {
-                          const paymentSection = document.querySelector('[data-payment-section]');
-                          paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
-                        return;
-                      }
-                      // Mark review as completed and proceed to payment
-                      setReviewCompleted(true);
-                      setShowReview(false);
-                      // Scroll to payment section
-                      setTimeout(() => {
-                        const paymentSection = document.querySelector('[data-payment-section]');
-                        paymentSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }, 100);
-                    }}
-                    disabled={!formData.paymentMethod}
-                    className="w-full py-3.5 px-6 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                  >
-                    {formData.paymentMethod ? 'Continue to Payment' : 'Select Payment Method First'}
-                  </button>
-                </div>
               </div>
             </div>
           </div>
