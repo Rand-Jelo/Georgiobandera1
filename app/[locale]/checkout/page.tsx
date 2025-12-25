@@ -1149,13 +1149,16 @@ export default function CheckoutPage() {
                   </div>
                 </dl>
 
-                {(!formData.paymentMethod || (formData.paymentMethod === 'stripe' && !stripeClientSecret) || (formData.paymentMethod === 'paypal' && !paypalOrderId)) && (
-                  <div className="mt-8 p-4 bg-neutral-50 rounded-xl border border-neutral-200">
-                    <p className="text-sm text-neutral-600 text-center">
-                      {!formData.paymentMethod 
-                        ? 'Please select a payment method above'
-                        : 'Initializing payment...'}
-                    </p>
+                {/* Review Order Button - Only show when address is complete */}
+                {!showReview && shippingCost !== null && formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry && (
+                  <div className="mt-8">
+                    <button
+                      type="button"
+                      onClick={() => setShowReview(true)}
+                      className="w-full py-3.5 px-6 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg"
+                    >
+                      Review Order
+                    </button>
                   </div>
                 )}
 
@@ -1396,18 +1399,6 @@ export default function CheckoutPage() {
           </div>
         )}
 
-        {/* Review Button */}
-        {!showReview && formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry && shippingCost !== null && (
-          <div className="mt-6 flex justify-end">
-            <button
-              type="button"
-              onClick={() => setShowReview(true)}
-              className="px-6 py-3 bg-neutral-100 text-neutral-900 rounded-full font-medium hover:bg-neutral-200 transition-all duration-300"
-            >
-              Review Order
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
