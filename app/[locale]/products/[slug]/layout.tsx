@@ -4,6 +4,9 @@ import { getProductBySlug, getProductImages } from '@/lib/db/queries/products';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://georgiobandera.se';
 
+// Force dynamic rendering for metadata generation
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata(
   { params }: { params: Promise<{ slug: string; locale: string }> }
 ): Promise<Metadata> {

@@ -5,8 +5,32 @@ import { getCategories } from '@/lib/db/queries/products';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://georgiobandera.se';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const revalidate = 3600; // Revalidate every hour
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const db = getDB();
+  let db;
+  try {
+    db = getDB();
+  } catch (error) {
+    // If database is not available during build, return basic sitemap
+    console.warn('Database not available during sitemap generation, returning basic sitemap');
+    return [
+      {
+        url: `${SITE_URL}/en`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 1,
+      },
+      {
+        url: `${SITE_URL}/sv`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 1,
+      },
+    ];
+  }
   
   const urls: MetadataRoute.Sitemap = [
     {
