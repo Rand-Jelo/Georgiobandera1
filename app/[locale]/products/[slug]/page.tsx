@@ -12,7 +12,10 @@ import QuantitySelector from '@/components/product/QuantitySelector';
 import WishlistButton from '@/components/product/WishlistButton';
 import ProductTabs from '@/components/product/ProductTabs';
 import PriceAlertButton from '@/components/product/PriceAlertButton';
+import { ProductStructuredData, BreadcrumbStructuredData } from '@/components/seo/StructuredData';
 import type { ProductReview } from '@/types/database';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://georgiobandera.se';
 
 interface ProductVariant {
   id: string;
@@ -498,8 +501,42 @@ export default function ProductPage() {
   const hasDiscount = product.compare_at_price && product.compare_at_price > getDisplayPrice();
   const inStock = isInStock();
 
+  // Build breadcrumb items for structured data
+  const breadcrumbItems = [
+    { name: 'Home', url: `${SITE_URL}/${locale}` },
+  ];
+  if (product.category) {
+    breadcrumbItems.push({
+      name: locale === 'sv' ? product.category.name_sv : product.category.name_en,
+      url: `${SITE_URL}/${locale}/shop?categories=${product.category.id}`,
+    });
+  }
+  breadcrumbItems.push({
+    name: productName,
+    url: `${SITE_URL}/${locale}/products/${product.slug}`,
+  });
+
   return (
     <div className="min-h-screen bg-neutral-50">
+      {/* Structured Data */}
+      <ProductStructuredData 
+        product={{
+          id: product.id,
+          name_en: product.name_en,
+          name_sv: product.name_sv,
+          description_en: product.description_en,
+          description_sv: product.description_sv,
+          price: product.price,
+          compare_at_price: product.compare_at_price,
+          sku: product.sku,
+          images: product.images,
+          category: product.category,
+        }}
+        locale={locale}
+        siteUrl={SITE_URL}
+      />
+      <BreadcrumbStructuredData items={breadcrumbItems} />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Breadcrumbs */}
         <nav className="mb-12" aria-label="Breadcrumb">
@@ -518,7 +555,7 @@ export default function ProductPage() {
                 </li>
                 <li>
                   <Link 
-                    href={`/categories/${product.category.slug}`}
+                    href={`/shop?categories=${product.category.id}`}
                     className="hover:text-neutral-900 transition-colors"
                   >
                     {locale === 'sv' ? product.category.name_sv : product.category.name_en}
