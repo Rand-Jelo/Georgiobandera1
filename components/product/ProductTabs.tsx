@@ -8,6 +8,7 @@ interface ProductTabsProps {
   sku?: string | null;
   stockQuantity: number;
   trackInventory: boolean;
+  size?: string | null;
   reviewsContent: React.ReactNode;
   shippingContent?: React.ReactNode;
 }
@@ -17,6 +18,7 @@ export default function ProductTabs({
   sku,
   stockQuantity,
   trackInventory,
+  size,
   reviewsContent,
   shippingContent,
 }: ProductTabsProps) {
@@ -73,6 +75,14 @@ export default function ProductTabs({
                 <>
                   <dt className="text-sm font-medium text-neutral-500">SKU</dt>
                   <dd className="text-sm text-neutral-900">{sku}</dd>
+                </>
+              )}
+              {size && (
+                <>
+                  <dt className="text-sm font-medium text-neutral-500">
+                    {t('size') || 'Size'}
+                  </dt>
+                  <dd className="text-sm text-neutral-900 font-medium">{size}</dd>
                 </>
               )}
               <dt className="text-sm font-medium text-neutral-500">

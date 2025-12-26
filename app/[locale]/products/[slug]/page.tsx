@@ -93,6 +93,7 @@ export default function ProductPage() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loadingRelated, setLoadingRelated] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [selectedColorName, setSelectedColorName] = useState<string | null>(null);
 
   useEffect(() => {
     if (slug) {
@@ -603,56 +604,172 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* Variants */}
-            {product.variants.length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-sm font-medium text-neutral-700 mb-4 uppercase tracking-wide">
-                  {t('selectVariant') || 'Select Variant'}
-                </h3>
-                <div className="space-y-3">
-                  {product.variants.map((variant) => {
-                    const variantName = locale === 'sv'
-                      ? variant.name_sv || variant.name_en
-                      : variant.name_en;
-                    
-                    const options: string[] = [];
-                    if (variant.option1_value) options.push(variant.option1_value);
-                    if (variant.option2_value) options.push(variant.option2_value);
-                    if (variant.option3_value) options.push(variant.option3_value);
-                    
-                    const displayName = variantName || options.join(' / ') || 'Variant';
-                    const isSelected = selectedVariant?.id === variant.id;
-                    const variantInStock = variant.stock_quantity > 0 || !variant.track_inventory;
+            {/* Variants - Separate Size and Color */}
+            {(() => {
+              // Separate variants into sizes and colors
+              const sizeVariants = product.variants.filter(v => 
+                v.option1_name?.toLowerCase() === 'size' && v.option1_value
+              );
+              const colorVariants = product.variants.filter(v => 
+                v.option2_name?.toLowerCase() === 'color' && v.option2_value
+              );
 
-                    return (
-                      <button
-                        key={variant.id}
-                        onClick={() => setSelectedVariant(variant)}
-                        disabled={!variantInStock}
-                        className={`w-full text-left px-5 py-3.5 rounded-xl border-2 transition-all ${
-                          isSelected
-                            ? 'border-neutral-900 bg-neutral-50 shadow-sm'
-                            : 'border-neutral-200 hover:border-neutral-300 bg-white hover:shadow-sm'
-                        } ${
-                          !variantInStock
-                            ? 'opacity-50 cursor-not-allowed'
-                            : 'cursor-pointer'
-                        }`}
+              // Get unique sizes and colors
+              const uniqueSizes = Array.from(new Set(sizeVariants.map(v => v.option1_value).filter(Boolean)));
+              
+              // Extract colors - try to get name from variant name or use hex
+              const uniqueColors = colorVariants.map(v => {
+                const hex = v.option2_value || '#000000';
+                // Try to extract color name from variant name
+                let name = locale === 'sv' 
+                  ? (v.name_sv || v.name_en || '')
+                  : (v.name_en || v.name_sv || '');
+                
+                // If no name from variant, try to get from hex color mapping
+                if (!name && hex.startsWith('#')) {
+                  // Common color names mapping
+                  const colorMap: Record<string, string> = {
+                    '#000000': 'Black',
+                    '#FFFFFF': 'White',
+                    '#FF0000': 'Red',
+                    '#00FF00': 'Green',
+                    '#0000FF': 'Blue',
+                    '#FFFF00': 'Yellow',
+                    '#FF00FF': 'Magenta',
+                    '#00FFFF': 'Cyan',
+                    '#FFA500': 'Orange',
+                    '#800080': 'Purple',
+                    '#FFC0CB': 'Pink',
+                    '#A52A2A': 'Brown',
+                    '#808080': 'Gray',
+                    '#000080': 'Navy',
+                    '#008000': 'Dark Green',
+                    '#800000': 'Maroon',
+                    '#FFD700': 'Gold',
+                    '#C0C0C0': 'Silver',
+                  };
+                  name = colorMap[hex.toUpperCase()] || hex;
+                }
+                
+                return {
+                  variant: v,
+                  hex: hex,
+                  name: name || hex,
+                };
+              }).filter((v, i, self) => 
+                i === self.findIndex(t => t.hex === v.hex)
+              );
+
+              return (
+                <>
+                  {/* Size Selection - Only show if multiple sizes */}
+                  {uniqueSizes.length > 1 && (
+                    <div className="mb-8">
+                      <label className="block text-sm font-medium text-neutral-700 mb-3 uppercase tracking-wide">
+                        {t('size') || 'Size'}
+                      </label>
+                      <select
+                        value={selectedVariant?.option1_value || ''}
+                        onChange={(e) => {
+                          const selectedSize = e.target.value;
+                          // Find variant with this size (and current color if selected)
+                          const currentColor = selectedVariant?.option2_value;
+                          let newVariant = sizeVariants.find(v => 
+                            v.option1_value === selectedSize && 
+                            (!currentColor || v.option2_value === currentColor)
+                          );
+                          // If no variant with both size and color, just find by size
+                          if (!newVariant) {
+                            newVariant = sizeVariants.find(v => v.option1_value === selectedSize);
+                          }
+                          if (newVariant) setSelectedVariant(newVariant);
+                        }}
+                        className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl bg-white text-neutral-900 font-medium focus:outline-none focus:border-neutral-900 transition-colors"
                       >
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-neutral-900">{displayName}</span>
-                          {variant.price && variant.price !== product.price && (
-                            <span className="text-sm font-medium text-neutral-600">
-                              {formatPrice(variant.price, 'SEK')}
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                        <option value="">{t('selectSize') || 'Select Size'}</option>
+                        {uniqueSizes.map((size) => {
+                          const sizeVariant = sizeVariants.find(v => v.option1_value === size);
+                          const inStock = sizeVariant && (sizeVariant.stock_quantity > 0 || !sizeVariant.track_inventory);
+                          return (
+                            <option 
+                              key={size} 
+                              value={size}
+                              disabled={!inStock}
+                            >
+                              {size} {!inStock && '(Out of Stock)'}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Color Selection - Show color swatches */}
+                  {uniqueColors.length > 0 && (
+                    <div className="mb-8">
+                      <label className="block text-sm font-medium text-neutral-700 mb-3 uppercase tracking-wide">
+                        {t('color') || 'Color'}
+                      </label>
+                      <div className="flex flex-wrap items-center gap-3">
+                        {uniqueColors.map((colorItem) => {
+                          const isHex = colorItem.hex.startsWith('#');
+                          const hexColor = isHex ? colorItem.hex : '#000000';
+                          const isSelected = selectedVariant?.option2_value === colorItem.hex;
+                          const colorVariant = colorVariants.find(v => v.option2_value === colorItem.hex);
+                          const inStock = colorVariant && (colorVariant.stock_quantity > 0 || !colorVariant.track_inventory);
+                          
+                          return (
+                            <div key={colorItem.hex} className="relative group">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  // Find variant with this color (and current size if selected)
+                                  const currentSize = selectedVariant?.option1_value;
+                                  let newVariant = colorVariants.find(v => 
+                                    v.option2_value === colorItem.hex && 
+                                    (!currentSize || v.option1_value === currentSize)
+                                  );
+                                  // If no variant with both color and size, just find by color
+                                  if (!newVariant) {
+                                    newVariant = colorVariants.find(v => v.option2_value === colorItem.hex);
+                                  }
+                                  if (newVariant) {
+                                    setSelectedVariant(newVariant);
+                                    setSelectedColorName(colorItem.name);
+                                    // Hide name after 2 seconds
+                                    setTimeout(() => setSelectedColorName(null), 2000);
+                                  }
+                                }}
+                                disabled={!inStock}
+                                className={`
+                                  relative w-12 h-12 rounded-full border-2 transition-all shadow-sm
+                                  ${isSelected 
+                                    ? 'border-neutral-900 scale-110 ring-2 ring-neutral-900 ring-offset-2' 
+                                    : 'border-neutral-300 hover:border-neutral-600 hover:scale-105'
+                                  }
+                                  ${!inStock ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                                `}
+                                style={{ backgroundColor: hexColor }}
+                                title={colorItem.name}
+                              />
+                              {/* Color name tooltip - appears on click */}
+                              {selectedColorName === colorItem.name && (
+                                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
+                                  <div className="bg-neutral-900 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg">
+                                    {colorItem.name}
+                                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-neutral-900 rotate-45"></div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
 
             {/* Stock Status */}
             <div className="mb-8">
@@ -722,6 +839,14 @@ export default function ProductPage() {
           sku={product.sku}
           stockQuantity={getStockQuantity()}
           trackInventory={getTrackInventory()}
+          size={(() => {
+            // If there's only one size, show it in specifications
+            const sizeVariants = product.variants.filter(v => 
+              v.option1_name?.toLowerCase() === 'size' && v.option1_value
+            );
+            const uniqueSizes = Array.from(new Set(sizeVariants.map(v => v.option1_value).filter(Boolean)));
+            return uniqueSizes.length === 1 ? uniqueSizes[0] : null;
+          })()}
           reviewsContent={
             <>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
