@@ -25,6 +25,10 @@ export async function GET(
       product.category_id ? getCategoryById(db, product.category_id) : null,
     ]);
 
+    // Add caching headers - product details can change, cache for 2 minutes
+    const headers = new Headers();
+    headers.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+    
     return NextResponse.json({
       product: {
         ...product,
@@ -37,7 +41,7 @@ export async function GET(
           slug: category.slug,
         } : null,
       },
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get product error:', error);
     return NextResponse.json(

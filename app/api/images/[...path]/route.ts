@@ -35,9 +35,12 @@ export async function GET(
       headers.set('content-type', object.httpMetadata.contentType);
     }
     
-    // Set cache control if available
+    // Set cache control - use R2 metadata if available, otherwise default to 1 hour
     if (object.httpMetadata?.cacheControl) {
       headers.set('cache-control', object.httpMetadata.cacheControl);
+    } else {
+      // Default cache for images: 1 hour, with stale-while-revalidate for 24 hours
+      headers.set('cache-control', 'public, max-age=3600, stale-while-revalidate=86400');
     }
     
     // Set etag

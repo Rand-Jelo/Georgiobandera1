@@ -31,7 +31,11 @@ export async function GET(request: NextRequest) {
       inStock,
     });
 
-    return NextResponse.json({ count: products.length });
+    // Add caching headers - count can change, cache for 1 minute
+    const headers = new Headers();
+    headers.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    
+    return NextResponse.json({ count: products.length }, { headers });
   } catch (error) {
     console.error('Get products count error:', error);
     return NextResponse.json(

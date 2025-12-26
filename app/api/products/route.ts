@@ -56,7 +56,18 @@ export async function GET(request: NextRequest) {
       })
     );
 
-    return NextResponse.json({ products: productsWithImages });
+    // Add caching headers - products change more frequently, cache for 2 minutes
+    // Shorter cache for search/filter queries, longer for static listings
+    const headers = new Headers();
+    if (search || categoryId || categoryIds || minPrice !== undefined || maxPrice !== undefined) {
+      // Dynamic queries - shorter cache (1 minute)
+      headers.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+    } else {
+      // Static listings (featured, all products) - longer cache (2 minutes)
+      headers.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
+    }
+    
+    return NextResponse.json({ products: productsWithImages }, { headers });
   } catch (error) {
     console.error('Get products error:', error);
     return NextResponse.json(

@@ -22,6 +22,10 @@ export async function GET() {
       );
     }
 
+    // Add caching headers - user info can change, cache for 30 seconds
+    const headers = new Headers();
+    headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60');
+    
     return NextResponse.json({
       user: {
         id: user.id,
@@ -30,7 +34,7 @@ export async function GET() {
         phone: user.phone,
         is_admin: user.is_admin || false,
       },
-    });
+    }, { headers });
   } catch (error) {
     console.error('Get user error:', error);
     return NextResponse.json(

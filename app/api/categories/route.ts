@@ -32,7 +32,11 @@ export async function GET(request: NextRequest) {
       children: buildCategoryTree(cat.id),
     }));
 
-    return NextResponse.json({ categories: categoriesWithChildren });
+    // Add caching headers - categories rarely change, cache for 10 minutes
+    const headers = new Headers();
+    headers.set('Cache-Control', 'public, max-age=600, stale-while-revalidate=300');
+    
+    return NextResponse.json({ categories: categoriesWithChildren }, { headers });
   } catch (error: any) {
     console.error('Get categories error:', error);
     const errorMessage = error?.message || 'Unknown error';
