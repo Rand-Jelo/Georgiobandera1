@@ -131,8 +131,40 @@ export default function CartPage() {
       
       // Build variant name from options
       const options: string[] = [];
-      if (item.variant.option1_value) options.push(item.variant.option1_value);
-      if (item.variant.option2_value) options.push(item.variant.option2_value);
+      if (item.variant.option1_value) {
+        options.push(item.variant.option1_value);
+      }
+      if (item.variant.option2_value) {
+        // Convert hex color codes to color names
+        const colorValue = item.variant.option2_value;
+        if (colorValue.startsWith('#')) {
+          // Color name mapping
+          const colorMap: Record<string, string> = {
+            '#000000': 'Black',
+            '#FFFFFF': 'White',
+            '#FF0000': 'Red',
+            '#00FF00': 'Green',
+            '#0000FF': 'Blue',
+            '#FFFF00': 'Yellow',
+            '#FF00FF': 'Magenta',
+            '#00FFFF': 'Cyan',
+            '#FFA500': 'Orange',
+            '#800080': 'Purple',
+            '#FFC0CB': 'Pink',
+            '#A52A2A': 'Brown',
+            '#808080': 'Gray',
+            '#000080': 'Navy',
+            '#008000': 'Dark Green',
+            '#800000': 'Maroon',
+            '#FFD700': 'Gold',
+            '#C0C0C0': 'Silver',
+          };
+          const colorName = colorMap[colorValue.toUpperCase()] || colorValue;
+          options.push(colorName);
+        } else {
+          options.push(colorValue);
+        }
+      }
       if (options.length > 0) {
         return `${productName} (${options.join(', ')})`;
       }

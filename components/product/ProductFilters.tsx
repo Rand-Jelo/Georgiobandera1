@@ -253,7 +253,7 @@ export default function ProductFilters({
           onClick={handleApply}
           className="flex-1 px-4 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors text-sm font-medium"
         >
-          {t('applyFilters') || 'Apply Filters'}
+          {t('apply') || 'Apply'}
         </button>
         <button
           onClick={handleReset}
