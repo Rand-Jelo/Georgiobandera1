@@ -7,12 +7,14 @@ import type { ProductReview } from '@/types/database';
 
 export default function AdminReviewsPage() {
   const router = useRouter();
+  const [allReviews, setAllReviews] = useState<ProductReview[]>([]);
   const [reviews, setReviews] = useState<ProductReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -46,13 +48,11 @@ export default function AdminReviewsPage() {
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
       }
-      if (debouncedSearch) {
-        params.append('search', debouncedSearch);
-      }
+      // Fetch all reviews without search - we'll filter client-side
       const url = `/api/admin/reviews${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
       const data = await response.json() as { reviews?: ProductReview[] };
-      setReviews(data.reviews || []);
+      setAllReviews(data.reviews || []);
     } catch (error) {
       console.error('Error fetching reviews:', error);
     } finally {
@@ -60,21 +60,36 @@ export default function AdminReviewsPage() {
     }
   };
 
-  // Debounce search query
+  // Client-side filtering
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
+    if (!isAdmin) return;
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    let filtered = [...allReviews];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(review => {
+        const name = review.name?.toLowerCase() || '';
+        const email = review.email?.toLowerCase() || '';
+        const title = review.title?.toLowerCase() || '';
+        const text = review.review_text?.toLowerCase() || '';
+        return name.includes(query) || 
+               email.includes(query) || 
+               title.includes(query) || 
+               text.includes(query);
+      });
+    }
+
+    setReviews(filtered);
+  }, [allReviews, searchQuery, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchReviews();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, debouncedSearch, isAdmin]);
+  }, [statusFilter, isAdmin]);
 
   const handleStatusChange = async (reviewId: string, newStatus: 'approved' | 'rejected') => {
     try {
@@ -261,44 +276,43 @@ export default function AdminReviewsPage() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      {review.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleStatusChange(review.id, 'approved')}
-                            className="px-3 py-1 text-sm font-medium rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30 transition-colors"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => handleStatusChange(review.id, 'rejected')}
-                            className="px-3 py-1 text-sm font-medium rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30 transition-colors"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      )}
-                      {review.status === 'approved' && (
-                        <button
-                          onClick={() => handleStatusChange(review.id, 'rejected')}
-                          className="px-3 py-1 text-sm font-medium rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30 transition-colors"
-                        >
-                          Reject
-                        </button>
-                      )}
-                      {review.status === 'rejected' && (
-                        <button
-                          onClick={() => handleStatusChange(review.id, 'approved')}
-                          className="px-3 py-1 text-sm font-medium rounded-lg bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30 transition-colors"
-                        >
-                          Approve
-                        </button>
-                      )}
+                    <div className="relative ml-4">
                       <button
-                        onClick={() => handleDelete(review.id)}
-                        className="px-3 py-1 text-sm font-medium rounded-lg text-red-400 hover:text-red-300 transition-colors"
+                        ref={(el) => {
+                          if (el && openMenuId === review.id && !menuPosition) {
+                            const rect = el.getBoundingClientRect();
+                            setMenuPosition({
+                              top: rect.bottom + 8,
+                              right: window.innerWidth - rect.right,
+                            });
+                          }
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (openMenuId === review.id) {
+                            setOpenMenuId(null);
+                            setMenuPosition(null);
+                          } else {
+                            setOpenMenuId(review.id);
+                            setMenuPosition(null); // Reset to trigger ref callback
+                          }
+                        }}
+                        className="p-2 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        aria-label="Review actions"
                       >
-                        Delete
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                          />
+                        </svg>
                       </button>
                     </div>
                   </div>
@@ -307,6 +321,98 @@ export default function AdminReviewsPage() {
             </div>
           )}
         </div>
+
+        {/* Dropdown menu - rendered outside to avoid clipping */}
+        {openMenuId && menuPosition && (() => {
+          const review = reviews.find(r => r.id === openMenuId);
+          if (!review) return null;
+          return (
+            <>
+              {/* Backdrop to close menu */}
+              <div
+                className="fixed inset-0 z-[100]"
+                onClick={() => {
+                  setOpenMenuId(null);
+                  setMenuPosition(null);
+                }}
+              />
+              {/* Dropdown menu */}
+              <div
+                className="fixed w-48 rounded-lg border border-white/10 bg-black/95 backdrop-blur-sm shadow-xl z-[101]"
+                style={{
+                  top: `${menuPosition.top}px`,
+                  right: `${menuPosition.right}px`,
+                }}
+              >
+                <div className="py-1">
+                  {review.status === 'pending' && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(null);
+                          setMenuPosition(null);
+                          handleStatusChange(review.id, 'approved');
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-green-400/10 transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(null);
+                          setMenuPosition(null);
+                          handleStatusChange(review.id, 'rejected');
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-yellow-400/10 transition-colors"
+                      >
+                        Reject
+                      </button>
+                    </>
+                  )}
+                  {review.status === 'approved' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(null);
+                        setMenuPosition(null);
+                        handleStatusChange(review.id, 'rejected');
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-yellow-400/10 transition-colors"
+                    >
+                      Reject
+                    </button>
+                  )}
+                  {review.status === 'rejected' && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(null);
+                        setMenuPosition(null);
+                        handleStatusChange(review.id, 'approved');
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-green-400/10 transition-colors"
+                    >
+                      Approve
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      setMenuPosition(null);
+                      handleDelete(review.id);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </>
+          );
+        })()}
       </div>
     </div>
   );

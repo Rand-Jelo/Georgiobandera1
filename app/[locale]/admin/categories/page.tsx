@@ -17,6 +17,8 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState('');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -142,18 +144,45 @@ export default function AdminCategoriesPage() {
             </div>
           </td>
           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <Link
-              href={`/admin/categories/${category.id}/edit`}
-              className="text-white hover:text-neutral-300 mr-4"
-            >
-              Edit
-            </Link>
-            <button
-              onClick={() => handleDelete(category.id, name)}
-              className="text-red-400 hover:text-red-300"
-            >
-              Delete
-            </button>
+            <div className="relative inline-block">
+              <button
+                ref={(el) => {
+                  if (el && openMenuId === category.id && !menuPosition) {
+                    const rect = el.getBoundingClientRect();
+                    setMenuPosition({
+                      top: rect.bottom + 8,
+                      right: window.innerWidth - rect.right,
+                    });
+                  }
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (openMenuId === category.id) {
+                    setOpenMenuId(null);
+                    setMenuPosition(null);
+                  } else {
+                    setOpenMenuId(category.id);
+                    setMenuPosition(null); // Reset to trigger ref callback
+                  }
+                }}
+                className="p-2 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                aria-label="Category actions"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                  />
+                </svg>
+              </button>
+            </div>
           </td>
         </tr>
         {category.children && category.children.length > 0 && (
@@ -243,6 +272,68 @@ export default function AdminCategoriesPage() {
             </table>
           </div>
         )}
+
+        {/* Dropdown menu - rendered outside table to avoid clipping */}
+        {openMenuId && menuPosition && (() => {
+          const findCategory = (cats: CategoryWithChildren[], id: string): CategoryWithChildren | null => {
+            for (const cat of cats) {
+              if (cat.id === id) return cat;
+              if (cat.children) {
+                const found = findCategory(cat.children, id);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+          const category = findCategory(categories, openMenuId);
+          if (!category) return null;
+          const categoryName = locale === 'sv' ? category.name_sv : category.name_en;
+          return (
+            <>
+              {/* Backdrop to close menu */}
+              <div
+                className="fixed inset-0 z-[100]"
+                onClick={() => {
+                  setOpenMenuId(null);
+                  setMenuPosition(null);
+                }}
+              />
+              {/* Dropdown menu */}
+              <div
+                className="fixed w-48 rounded-lg border border-white/10 bg-black/95 backdrop-blur-sm shadow-xl z-[101]"
+                style={{
+                  top: `${menuPosition.top}px`,
+                  right: `${menuPosition.right}px`,
+                }}
+              >
+                <div className="py-1">
+                  <Link
+                    href={`/admin/categories/${category.id}/edit`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      setMenuPosition(null);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors block"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      setMenuPosition(null);
+                      handleDelete(category.id, categoryName);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </>
+          );
+        })()}
       </div>
     </div>
   );

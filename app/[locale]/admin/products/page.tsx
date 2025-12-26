@@ -20,6 +20,8 @@ export default function AdminProductsPage() {
   const [bulkValue, setBulkValue] = useState<string>('');
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [categories, setCategories] = useState<Array<{ id: string; name_en: string; name_sv: string }>>([]);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -448,66 +450,173 @@ export default function AdminProductsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
-              {products.map((product) => {
-                const name = locale === 'sv' ? product.name_sv : product.name_en;
-                return (
-                  <tr key={product.id} className="hover:bg-black/30 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <input
-                        type="checkbox"
-                        checked={selectedProducts.has(product.id)}
-                        onChange={(e) => handleSelectProduct(product.id, e.target.checked)}
-                        className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">{name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-neutral-400">{product.sku || '-'}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-white">{product.price} SEK</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          product.status === 'active'
-                            ? 'bg-green-500/20 text-green-300'
-                            : product.status === 'draft'
-                            ? 'bg-yellow-500/20 text-yellow-300'
-                            : 'bg-gray-500/20 text-gray-300'
-                        }`}
-                      >
-                        {product.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-neutral-400">
-                        {product.track_inventory ? product.stock_quantity : '∞'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        href={`/admin/products/${product.id}/edit`}
-                        className="text-white hover:text-neutral-300 mr-4"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={(e) => handleDelete(product.id, e)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {products.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      <p className="text-neutral-400 text-lg font-medium mb-2">No products found</p>
+                      <p className="text-neutral-500 text-sm mb-4">
+                        {searchQuery || statusFilter !== 'all' 
+                          ? 'Try adjusting your search or filters'
+                          : 'Get started by creating your first product'
+                        }
+                      </p>
+                      {!searchQuery && statusFilter === 'all' && (
+                        <Link
+                          href="/admin/products/new"
+                          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-white text-black hover:bg-neutral-100 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add Your First Product
+                        </Link>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                products.map((product) => {
+                  const name = locale === 'sv' ? product.name_sv : product.name_en;
+                  return (
+                    <tr key={product.id} className="hover:bg-black/30 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedProducts.has(product.id)}
+                          onChange={(e) => handleSelectProduct(product.id, e.target.checked)}
+                          className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-white">{name}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-neutral-400">{product.sku || '-'}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-white">{product.price} SEK</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            product.status === 'active'
+                              ? 'bg-green-500/20 text-green-300'
+                              : product.status === 'draft'
+                              ? 'bg-yellow-500/20 text-yellow-300'
+                              : 'bg-gray-500/20 text-gray-300'
+                          }`}
+                        >
+                          {product.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-neutral-400">
+                          {product.track_inventory ? product.stock_quantity : '∞'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="relative inline-block">
+                          <button
+                            ref={(el) => {
+                              if (el && openMenuId === product.id && !menuPosition) {
+                                const rect = el.getBoundingClientRect();
+                                setMenuPosition({
+                                  top: rect.bottom + 8,
+                                  right: window.innerWidth - rect.right,
+                                });
+                              }
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (openMenuId === product.id) {
+                                setOpenMenuId(null);
+                                setMenuPosition(null);
+                              } else {
+                                setOpenMenuId(product.id);
+                                setMenuPosition(null); // Reset to trigger ref callback
+                              }
+                            }}
+                            className="p-2 text-neutral-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                            aria-label="Product actions"
+                          >
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
+
+        {/* Dropdown menu - rendered outside table to avoid clipping */}
+        {openMenuId && menuPosition && (() => {
+          const product = products.find(p => p.id === openMenuId);
+          if (!product) return null;
+          return (
+            <>
+              {/* Backdrop to close menu */}
+              <div
+                className="fixed inset-0 z-[100]"
+                onClick={() => {
+                  setOpenMenuId(null);
+                  setMenuPosition(null);
+                }}
+              />
+              {/* Dropdown menu */}
+              <div
+                className="fixed w-48 rounded-lg border border-white/10 bg-black/95 backdrop-blur-sm shadow-xl z-[101]"
+                style={{
+                  top: `${menuPosition.top}px`,
+                  right: `${menuPosition.right}px`,
+                }}
+              >
+                <div className="py-1">
+                  <Link
+                    href={`/admin/products/${product.id}/edit`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      setMenuPosition(null);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors block"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenuId(null);
+                      setMenuPosition(null);
+                      handleDelete(product.id, e);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </>
+          );
+        })()}
       </div>
     </div>
   );
