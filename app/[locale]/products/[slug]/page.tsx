@@ -615,7 +615,7 @@ export default function ProductPage() {
               );
 
               // Get unique sizes and colors
-              const uniqueSizes = Array.from(new Set(sizeVariants.map(v => v.option1_value).filter(Boolean)));
+              const uniqueSizes = Array.from(new Set(sizeVariants.map(v => v.option1_value).filter((s): s is string => Boolean(s))));
               
               // Extract colors - try to get name from variant name or use hex
               const uniqueColors = colorVariants.map(v => {
