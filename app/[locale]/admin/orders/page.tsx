@@ -71,7 +71,7 @@ export default function AdminOrdersPage() {
         const orderNumber = order.order_number?.toLowerCase() || '';
         const email = order.email?.toLowerCase() || '';
         const name = order.shipping_name?.toLowerCase() || '';
-        const address = `${order.shipping_address} ${order.shipping_city} ${order.shipping_postal_code} ${order.shipping_country}`.toLowerCase();
+        const address = `${order.shipping_address_line1 || ''} ${order.shipping_address_line2 || ''} ${order.shipping_city || ''} ${order.shipping_postal_code || ''} ${order.shipping_country || ''}`.toLowerCase();
         return orderNumber.includes(query) || 
                email.includes(query) || 
                name.includes(query) || 
