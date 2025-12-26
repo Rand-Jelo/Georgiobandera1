@@ -4,7 +4,8 @@ import { getSession } from '@/lib/auth/session';
 import { getDB } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
 import { queryOne, executeDB } from '@/lib/db/client';
-import { getProductVariants, createProductVariant, updateProductVariant, deleteProductVariant } from '@/lib/db/queries/products';
+import { getProductVariants, createProductVariant, updateProductVariant, deleteProductVariant, getProductImages } from '@/lib/db/queries/products';
+import { getR2Bucket } from '@/lib/db/client';
 import type { Product } from '@/types/database';
 
 const variantSchema = z.object({
@@ -317,11 +318,40 @@ export async function DELETE(
       );
     }
 
-    // Soft delete by setting status to archived
+    // Get all product images before deletion
+    const images = await getProductImages(db, id);
+
+    // Delete images from R2 storage
+    try {
+      const bucket = getR2Bucket();
+      for (const image of images) {
+        if (image.url.startsWith('/api/images/')) {
+          try {
+            const key = image.url.replace('/api/images/', '');
+            await bucket.delete(key);
+          } catch (error) {
+            console.error(`Error deleting image ${image.id} from R2:`, error);
+            // Continue with deletion even if R2 deletion fails
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error accessing R2 bucket:', error);
+      // Continue with database deletion even if R2 access fails
+    }
+
+    // Delete product reviews (no FK constraint, so manual deletion needed)
     await executeDB(
       db,
-      'UPDATE products SET status = ?, updated_at = unixepoch() WHERE id = ?',
-      ['archived', id]
+      'DELETE FROM product_reviews WHERE product_id = ?',
+      [id]
+    );
+
+    // Permanently delete the product (CASCADE will delete variants, images, cart_items, order_items, wishlist, price_alerts)
+    await executeDB(
+      db,
+      'DELETE FROM products WHERE id = ?',
+      [id]
     );
 
     return NextResponse.json({ success: true });

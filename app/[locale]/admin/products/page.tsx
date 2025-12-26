@@ -124,7 +124,7 @@ export default function AdminProductsPage() {
     e?.preventDefault();
     e?.stopPropagation();
     
-    if (!confirm('Are you sure you want to delete this product? It will be archived.')) {
+    if (!confirm('Are you sure you want to permanently delete this product? This action cannot be undone and will delete all related data (variants, images, reviews, etc.).')) {
       return;
     }
 
