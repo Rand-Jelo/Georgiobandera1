@@ -194,7 +194,7 @@ export default function Header() {
                               {category.children?.map((child) => (
                                 <li key={child.id}>
                                   <Link
-                                    href={`/categories/${child.slug}`}
+                                    href={`/shop?categories=${child.id}`}
                                     className="block rounded-md px-2 py-1 text-[13px] text-neutral-200 hover:bg-white/5 hover:text-white transition-colors"
                                     onClick={() => {
                                       setIsProductsOpen(false);
@@ -210,7 +210,7 @@ export default function Header() {
                         </>
                       ) : (
                         <Link
-                          href={`/categories/${category.slug}`}
+                          href={`/shop?categories=${category.id}`}
                           className="flex w-full items-center justify-between rounded-md px-2 py-1 text-left hover:bg-white/5 transition-colors"
                           onClick={() => {
                             setIsProductsOpen(false);
@@ -321,7 +321,7 @@ export default function Header() {
                   return (
                     <li key={category.id}>
                       <Link
-                        href={`/categories/${category.slug}`}
+                        href={`/shop?categories=${category.id}`}
                         className="block w-full text-left hover:text-white transition-colors duration-150"
                         onClick={() => setMobileOpen(false)}
                       >
@@ -332,7 +332,7 @@ export default function Header() {
                           {category.children?.map((child) => (
                             <li key={child.id}>
                               <Link
-                                href={`/categories/${child.slug}`}
+                                href={`/shop?categories=${child.id}`}
                                 className="block w-full text-left text-xs text-neutral-300 hover:text-white transition-colors duration-150"
                                 onClick={() => setMobileOpen(false)}
                               >
