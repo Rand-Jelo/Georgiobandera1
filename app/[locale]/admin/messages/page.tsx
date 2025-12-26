@@ -192,7 +192,18 @@ export default function AdminMessagesPage() {
 
         {messages.length === 0 && !loading ? (
           <div className="bg-black/50 border border-white/10 rounded-lg p-12 text-center">
-            <p className="text-neutral-400 text-lg">No messages found</p>
+            <div className="flex flex-col items-center justify-center">
+              <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <p className="text-neutral-400 text-lg font-medium mb-2">No messages found</p>
+              <p className="text-neutral-500 text-sm">
+                {searchQuery || statusFilter !== 'all' 
+                  ? 'Try adjusting your search or filters'
+                  : 'Messages from the contact form will appear here'
+                }
+              </p>
+            </div>
           </div>
         ) : (
           <div className="bg-black/50 border border-white/10 rounded-lg overflow-visible">

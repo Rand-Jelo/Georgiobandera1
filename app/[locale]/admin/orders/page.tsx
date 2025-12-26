@@ -169,7 +169,18 @@ export default function AdminOrdersPage() {
 
         {orders.length === 0 && !loading ? (
           <div className="bg-black/50 border border-white/10 rounded-lg p-12 text-center">
-            <p className="text-neutral-400 text-lg">No orders found</p>
+            <div className="flex flex-col items-center justify-center">
+              <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <p className="text-neutral-400 text-lg font-medium mb-2">No orders found</p>
+              <p className="text-neutral-500 text-sm">
+                {searchQuery || statusFilter !== 'all' 
+                  ? 'Try adjusting your search or filters'
+                  : 'Orders will appear here once customers start placing them'
+                }
+              </p>
+            </div>
           </div>
         ) : (
           <div className="bg-black/50 border border-white/10 rounded-lg overflow-visible">

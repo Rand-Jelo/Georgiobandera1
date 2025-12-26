@@ -224,10 +224,29 @@ export default function AdminDiscountCodesPage() {
         <div className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
           {codes.length === 0 && !loading ? (
             <div className="p-12 text-center">
-              <p className="text-neutral-400 mb-4">No discount codes found.</p>
-              <p className="text-sm text-yellow-400">
-                If you're seeing errors, make sure to run database migrations from the admin dashboard.
-              </p>
+              <div className="flex flex-col items-center justify-center">
+                <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-neutral-400 text-lg font-medium mb-2">No discount codes found</p>
+                <p className="text-neutral-500 text-sm mb-4">
+                  {searchQuery || activeFilter !== 'all' 
+                    ? 'Try adjusting your search or filters'
+                    : 'Create discount codes to offer promotions to your customers'
+                  }
+                </p>
+                {!searchQuery && activeFilter === 'all' && (
+                  <Link
+                    href="/admin/discount-codes/new"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-white text-black hover:bg-neutral-100 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create Your First Discount Code
+                  </Link>
+                )}
+              </div>
             </div>
           ) : (
             <table className="min-w-full divide-y divide-white/10">

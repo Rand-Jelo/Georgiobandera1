@@ -231,8 +231,19 @@ export default function AdminUsersPage() {
             <tbody className="divide-y divide-white/10">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-neutral-400">
-                    No users found
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <p className="text-neutral-400 text-lg font-medium mb-2">No users found</p>
+                      <p className="text-neutral-500 text-sm">
+                        {searchQuery 
+                          ? 'Try adjusting your search'
+                          : 'Users will appear here once they register'
+                        }
+                      </p>
+                    </div>
                   </td>
                 </tr>
               ) : (
