@@ -66,7 +66,7 @@ export async function generateMetadata(
           },
         ],
         locale: locale === 'sv' ? 'sv_SE' : 'en_US',
-        type: 'product',
+        type: 'website',
       },
       twitter: {
         card: 'summary_large_image',
