@@ -18,11 +18,11 @@ interface Customer {
 
 export default function AdminCustomersPage() {
   const router = useRouter();
+  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     checkAdminAccess();
@@ -52,14 +52,11 @@ export default function AdminCustomersPage() {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      if (debouncedSearch) {
-        params.append('search', debouncedSearch);
-      }
-      const url = `/api/admin/customers${params.toString() ? '?' + params.toString() : ''}`;
+      // Fetch all customers without search - we'll filter client-side
+      const url = `/api/admin/customers`;
       const response = await fetch(url);
       const data = await response.json() as { customers?: Customer[] };
-      setCustomers(data.customers || []);
+      setAllCustomers(data.customers || []);
     } catch (error) {
       console.error('Error fetching customers:', error);
     } finally {
@@ -67,21 +64,32 @@ export default function AdminCustomersPage() {
     }
   };
 
-  // Debounce search query
+  // Client-side filtering
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
+    if (!isAdmin) return;
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    let filtered = [...allCustomers];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(customer => {
+        const email = customer.email?.toLowerCase() || '';
+        const name = customer.name?.toLowerCase() || '';
+        return email.includes(query) || 
+               name.includes(query);
+      });
+    }
+
+    setCustomers(filtered);
+  }, [allCustomers, searchQuery, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchCustomers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, isAdmin]);
+  }, [isAdmin]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('sv-SE', {

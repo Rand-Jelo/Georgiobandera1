@@ -7,6 +7,7 @@ import type { User } from '@/types/database';
 
 export default function AdminUsersPage() {
   const router = useRouter();
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -14,7 +15,6 @@ export default function AdminUsersPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     checkAdminAccess();
@@ -45,14 +45,11 @@ export default function AdminUsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      if (debouncedSearch) {
-        params.append('search', debouncedSearch);
-      }
-      const url = `/api/admin/users${params.toString() ? '?' + params.toString() : ''}`;
+      // Fetch all users without search - we'll filter client-side
+      const url = `/api/admin/users`;
       const response = await fetch(url);
       const data = await response.json() as { users?: User[] };
-      setUsers(data.users || []);
+      setAllUsers(data.users || []);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -60,21 +57,34 @@ export default function AdminUsersPage() {
     }
   };
 
-  // Debounce search query
+  // Client-side filtering
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
+    if (!isAdmin) return;
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    let filtered = [...allUsers];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(user => {
+        const email = user.email?.toLowerCase() || '';
+        const name = user.name?.toLowerCase() || '';
+        const phone = user.phone?.toLowerCase() || '';
+        return email.includes(query) || 
+               name.includes(query) || 
+               phone.includes(query);
+      });
+    }
+
+    setUsers(filtered);
+  }, [allUsers, searchQuery, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, isAdmin]);
+  }, [isAdmin]);
 
   const handleToggleAdmin = async (userId: string, currentIsAdmin: boolean) => {
     if (!confirm(`Are you sure you want to ${currentIsAdmin ? 'remove admin status from' : 'make'} this user?`)) {

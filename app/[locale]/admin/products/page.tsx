@@ -9,12 +9,12 @@ import type { Product } from '@/types/database';
 export default function AdminProductsPage() {
   const router = useRouter();
   const locale = useLocale();
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'active' | 'archived'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState<'delete' | 'status' | 'category' | 'featured' | ''>('');
   const [bulkValue, setBulkValue] = useState<string>('');
@@ -77,13 +77,11 @@ export default function AdminProductsPage() {
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
       }
-      if (debouncedSearch) {
-        params.append('search', debouncedSearch);
-      }
+      // Fetch all products without search - we'll filter client-side
       const url = `/api/admin/products/list${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
       const data = await response.json() as { products?: Product[] };
-      setProducts(data.products || []);
+      setAllProducts(data.products || []);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -91,21 +89,36 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Debounce search query
+  // Client-side filtering
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
+    if (!isAdmin) return;
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    let filtered = [...allProducts];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(product => {
+        const nameEn = product.name_en?.toLowerCase() || '';
+        const nameSv = product.name_sv?.toLowerCase() || '';
+        const sku = product.sku?.toLowerCase() || '';
+        const slug = product.slug?.toLowerCase() || '';
+        return nameEn.includes(query) || 
+               nameSv.includes(query) || 
+               sku.includes(query) || 
+               slug.includes(query);
+      });
+    }
+
+    setProducts(filtered);
+  }, [allProducts, searchQuery, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchProducts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, debouncedSearch, isAdmin]);
+  }, [statusFilter, isAdmin]);
 
   const handleDelete = async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product? It will be archived.')) {

@@ -7,12 +7,12 @@ import type { Message } from '@/types/database';
 
 export default function AdminMessagesPage() {
   const router = useRouter();
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | Message['status']>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     checkAdminAccess();
@@ -46,13 +46,11 @@ export default function AdminMessagesPage() {
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
       }
-      if (debouncedSearch) {
-        params.append('search', debouncedSearch);
-      }
+      // Fetch all messages without search - we'll filter client-side
       const url = `/api/admin/messages${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
       const data = await response.json() as { messages?: Message[] };
-      setMessages(data.messages || []);
+      setAllMessages(data.messages || []);
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
@@ -60,21 +58,36 @@ export default function AdminMessagesPage() {
     }
   };
 
-  // Debounce search query
+  // Client-side filtering
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
+    if (!isAdmin) return;
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    let filtered = [...allMessages];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(message => {
+        const name = message.name?.toLowerCase() || '';
+        const email = message.email?.toLowerCase() || '';
+        const subject = message.subject?.toLowerCase() || '';
+        const messageText = message.message?.toLowerCase() || '';
+        return name.includes(query) || 
+               email.includes(query) || 
+               subject.includes(query) || 
+               messageText.includes(query);
+      });
+    }
+
+    setMessages(filtered);
+  }, [allMessages, searchQuery, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchMessages();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, debouncedSearch, isAdmin]);
+  }, [statusFilter, isAdmin]);
 
   const handleStatusChange = async (messageId: string, newStatus: Message['status']) => {
     try {

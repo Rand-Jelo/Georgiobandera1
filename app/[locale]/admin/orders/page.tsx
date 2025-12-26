@@ -7,12 +7,12 @@ import type { Order } from '@/types/database';
 
 export default function AdminOrdersPage() {
   const router = useRouter();
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | Order['status']>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   useEffect(() => {
     checkAdminAccess();
@@ -46,13 +46,11 @@ export default function AdminOrdersPage() {
       if (statusFilter !== 'all') {
         params.append('status', statusFilter);
       }
-      if (debouncedSearch) {
-        params.append('search', debouncedSearch);
-      }
+      // Fetch all orders without search - we'll filter client-side
       const url = `/api/admin/orders${params.toString() ? '?' + params.toString() : ''}`;
       const response = await fetch(url);
       const data = await response.json() as { orders?: Order[] };
-      setOrders(data.orders || []);
+      setAllOrders(data.orders || []);
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
@@ -60,21 +58,36 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // Debounce search query
+  // Client-side filtering
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 300);
+    if (!isAdmin) return;
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    let filtered = [...allOrders];
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(order => {
+        const orderNumber = order.order_number?.toLowerCase() || '';
+        const email = order.email?.toLowerCase() || '';
+        const name = order.shipping_name?.toLowerCase() || '';
+        const address = `${order.shipping_address} ${order.shipping_city} ${order.shipping_postal_code} ${order.shipping_country}`.toLowerCase();
+        return orderNumber.includes(query) || 
+               email.includes(query) || 
+               name.includes(query) || 
+               address.includes(query);
+      });
+    }
+
+    setOrders(filtered);
+  }, [allOrders, searchQuery, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchOrders();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, debouncedSearch, isAdmin]);
+  }, [statusFilter, isAdmin]);
 
   if (!isAdmin || loading) {
     return (
