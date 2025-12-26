@@ -50,15 +50,22 @@ export default function CartIcon({ showCount = true, ...props }: CartIconProps) 
 
   useEffect(() => {
     const handleCartUpdate = () => {
-      fetchCount();
+      fetchCount(true); // Force refresh to bypass cache
     };
     window.addEventListener('cart-updated', handleCartUpdate);
     return () => window.removeEventListener('cart-updated', handleCartUpdate);
   }, []);
 
-  const fetchCount = async () => {
+  const fetchCount = async (forceRefresh = false) => {
     try {
-      const response = await fetch('/api/cart/count');
+      // Add cache-busting parameter when force refresh is needed
+      const url = forceRefresh 
+        ? `/api/cart/count?t=${Date.now()}`
+        : '/api/cart/count';
+      
+      const response = await fetch(url, {
+        cache: forceRefresh ? 'no-store' : 'default',
+      });
       const data = await response.json() as { count?: number };
       setCount(data.count || 0);
     } catch (err) {
