@@ -120,7 +120,10 @@ export default function AdminProductsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, isAdmin]);
 
-  const handleDelete = async (productId: string) => {
+  const handleDelete = async (productId: string, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     if (!confirm('Are you sure you want to delete this product? It will be archived.')) {
       return;
     }
@@ -492,7 +495,8 @@ export default function AdminProductsPage() {
                         Edit
                       </Link>
                       <button
-                        onClick={() => handleDelete(product.id)}
+                        type="button"
+                        onClick={(e) => handleDelete(product.id, e)}
                         className="text-red-400 hover:text-red-300"
                       >
                         Delete
