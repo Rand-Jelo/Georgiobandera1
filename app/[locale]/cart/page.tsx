@@ -79,6 +79,8 @@ export default function CartPage() {
 
       if (response.ok) {
         await fetchCart();
+        // Trigger cart count refresh in header
+        window.dispatchEvent(new Event('cart-updated'));
       }
     } catch (err) {
       console.error('Failed to update quantity:', err);
@@ -96,6 +98,8 @@ export default function CartPage() {
 
       if (response.ok) {
         await fetchCart();
+        // Trigger cart count refresh in header
+        window.dispatchEvent(new Event('cart-updated'));
       }
     } catch (err) {
       console.error('Failed to remove item:', err);

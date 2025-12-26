@@ -13,7 +13,12 @@ export async function GET(request: NextRequest) {
     
     const count = items.reduce((sum, item) => sum + item.quantity, 0);
     
-    return NextResponse.json({ count });
+    // Add caching headers to reduce requests
+    // Cache for 10 seconds - balances freshness with request reduction
+    const headers = new Headers();
+    headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30');
+    
+    return NextResponse.json({ count }, { headers });
   } catch (error) {
     console.error('Get cart count error:', error);
     return NextResponse.json({ count: 0 });

@@ -32,8 +32,10 @@ export default function CartIcon({ showCount = true, ...props }: CartIconProps) 
 
   useEffect(() => {
     fetchCount();
-    const interval = setInterval(fetchCount, 5000);
-    return () => clearInterval(interval);
+    // Removed 5-second polling interval - now only fetches on:
+    // - Initial page load (above)
+    // - Visibility change (below)
+    // - Cart update events (below)
   }, []);
 
   useEffect(() => {
