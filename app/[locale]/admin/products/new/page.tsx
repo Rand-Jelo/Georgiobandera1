@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Category, ProductImage } from '@/types/database';
 import { optimizeImage, formatFileSize } from '@/lib/utils/imageOptimization';
+import ColorPicker from '@/components/admin/ColorPicker';
 
 interface CategoryWithChildren extends Category {
   children?: CategoryWithChildren[];
@@ -37,12 +38,18 @@ export default function NewProductPage() {
   const [createdProductId, setCreatedProductId] = useState<string | null>(null);
   const [images, setImages] = useState<ProductImage[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [variants, setVariants] = useState<Array<{
+  const [sizeVariants, setSizeVariants] = useState<Array<{
     id?: string;
-    option1_name: string;
-    option1_value: string;
-    option2_name: string;
-    option2_value: string;
+    value: string;
+    sku: string;
+    price: string;
+    stock_quantity: string;
+    track_inventory: boolean;
+  }>>([]);
+  const [colorVariants, setColorVariants] = useState<Array<{
+    id?: string;
+    name: string;
+    hex: string;
     sku: string;
     price: string;
     stock_quantity: string;
@@ -123,14 +130,11 @@ export default function NewProductPage() {
     });
   };
 
-  const addVariant = () => {
-    setVariants((prev) => [
+  const addSizeVariant = () => {
+    setSizeVariants((prev) => [
       ...prev,
       {
-        option1_name: 'Size',
-        option1_value: '',
-        option2_name: 'Color',
-        option2_value: '',
+        value: '',
         sku: '',
         price: '',
         stock_quantity: '0',
@@ -139,12 +143,38 @@ export default function NewProductPage() {
     ]);
   };
 
-  const removeVariant = (index: number) => {
-    setVariants((prev) => prev.filter((_, i) => i !== index));
+  const removeSizeVariant = (index: number) => {
+    setSizeVariants((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateVariant = (index: number, field: string, value: string | boolean) => {
-    setVariants((prev) =>
+  const updateSizeVariant = (index: number, field: string, value: string | boolean) => {
+    setSizeVariants((prev) =>
+      prev.map((v, i) =>
+        i === index ? { ...v, [field]: value } : v
+      )
+    );
+  };
+
+  const addColorVariant = () => {
+    setColorVariants((prev) => [
+      ...prev,
+      {
+        name: '',
+        hex: '#000000',
+        sku: '',
+        price: '',
+        stock_quantity: '0',
+        track_inventory: true,
+      },
+    ]);
+  };
+
+  const removeColorVariant = (index: number) => {
+    setColorVariants((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateColorVariant = (index: number, field: string, value: string | boolean) => {
+    setColorVariants((prev) =>
       prev.map((v, i) =>
         i === index ? { ...v, [field]: value } : v
       )
@@ -178,16 +208,30 @@ export default function NewProductPage() {
           compare_at_price: formData.compare_at_price ? parseFloat(formData.compare_at_price) : null,
           stock_quantity: parseInt(formData.stock_quantity),
           category_id: formData.category_id || null,
-          variants: variants.map(v => ({
-            option1_name: v.option1_name || null,
-            option1_value: v.option1_value || null,
-            option2_name: v.option2_name || null,
-            option2_value: v.option2_value || null,
-            sku: v.sku || null,
-            price: v.price ? parseFloat(v.price) : null,
-            stock_quantity: parseInt(v.stock_quantity) || 0,
-            track_inventory: v.track_inventory,
-          })),
+          variants: [
+            // Size variants
+            ...sizeVariants.map(v => ({
+              option1_name: 'Size',
+              option1_value: v.value || null,
+              option2_name: null,
+              option2_value: null,
+              sku: v.sku || null,
+              price: v.price ? parseFloat(v.price) : null,
+              stock_quantity: parseInt(v.stock_quantity) || 0,
+              track_inventory: v.track_inventory,
+            })),
+            // Color variants
+            ...colorVariants.map(v => ({
+              option1_name: null,
+              option1_value: null,
+              option2_name: 'Color',
+              option2_value: v.hex || v.name || null,
+              sku: v.sku || null,
+              price: v.price ? parseFloat(v.price) : null,
+              stock_quantity: parseInt(v.stock_quantity) || 0,
+              track_inventory: v.track_inventory,
+            })),
+          ],
         }),
       });
 
@@ -616,93 +660,58 @@ export default function NewProductPage() {
             </div>
           )}
 
-          {/* Variants Section */}
+          {/* Size Variants Section */}
           <div className="pt-6 border-t border-white/10">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">Product Variants (Size & Color)</h3>
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-1">Size Variants</h3>
+                <p className="text-sm text-neutral-400">Add independent size options (S, M, L, etc.)</p>
+              </div>
               <button
                 type="button"
-                onClick={addVariant}
+                onClick={addSizeVariant}
                 className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
               >
-                + Add Variant
+                + Add Size
               </button>
             </div>
 
-            {variants.length === 0 ? (
+            {sizeVariants.length === 0 ? (
               <p className="text-neutral-400 text-sm mb-4">
-                No variants added. Click "Add Variant" to add size and color options.
+                No size variants added. Click "Add Size" to add size options.
               </p>
             ) : (
               <div className="space-y-4">
-                {variants.map((variant, index) => (
+                {sizeVariants.map((variant, index) => (
                   <div
-                    key={index}
+                    key={`size-${index}`}
                     className="p-4 rounded-lg border border-white/10 bg-black/30"
                   >
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-medium text-white">Variant {index + 1}</h4>
+                      <h4 className="text-sm font-medium text-white">Size Variant {index + 1}</h4>
                       <button
                         type="button"
-                        onClick={() => removeVariant(index)}
+                        onClick={() => removeSizeVariant(index)}
                         className="text-red-400 hover:text-red-300 text-sm"
                       >
                         Remove
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
                         <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Size Label
+                          Size Value *
                         </label>
                         <input
                           type="text"
-                          value={variant.option1_name}
-                          onChange={(e) => updateVariant(index, 'option1_name', e.target.value)}
-                          placeholder="Size"
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Size Value
-                        </label>
-                        <input
-                          type="text"
-                          value={variant.option1_value}
-                          onChange={(e) => updateVariant(index, 'option1_value', e.target.value)}
+                          value={variant.value}
+                          onChange={(e) => updateSizeVariant(index, 'value', e.target.value)}
                           placeholder="S, M, L, XL"
+                          required
                           className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                         />
                       </div>
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Color Label
-                        </label>
-                        <input
-                          type="text"
-                          value={variant.option2_name}
-                          onChange={(e) => updateVariant(index, 'option2_name', e.target.value)}
-                          placeholder="Color"
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Color Value
-                        </label>
-                        <input
-                          type="text"
-                          value={variant.option2_value}
-                          onChange={(e) => updateVariant(index, 'option2_value', e.target.value)}
-                          placeholder="Red, Blue, Black"
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="block text-xs font-medium text-neutral-300 mb-1">
                           SKU
@@ -710,7 +719,7 @@ export default function NewProductPage() {
                         <input
                           type="text"
                           value={variant.sku}
-                          onChange={(e) => updateVariant(index, 'sku', e.target.value)}
+                          onChange={(e) => updateSizeVariant(index, 'sku', e.target.value)}
                           placeholder="Variant SKU"
                           className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                         />
@@ -723,7 +732,7 @@ export default function NewProductPage() {
                           type="number"
                           step="0.01"
                           value={variant.price}
-                          onChange={(e) => updateVariant(index, 'price', e.target.value)}
+                          onChange={(e) => updateSizeVariant(index, 'price', e.target.value)}
                           placeholder="Override base price"
                           className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                         />
@@ -736,7 +745,7 @@ export default function NewProductPage() {
                           type="number"
                           min="0"
                           value={variant.stock_quantity}
-                          onChange={(e) => updateVariant(index, 'stock_quantity', e.target.value)}
+                          onChange={(e) => updateSizeVariant(index, 'stock_quantity', e.target.value)}
                           className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                         />
                       </div>
@@ -747,10 +756,128 @@ export default function NewProductPage() {
                         <input
                           type="checkbox"
                           checked={variant.track_inventory}
-                          onChange={(e) => updateVariant(index, 'track_inventory', e.target.checked)}
+                          onChange={(e) => updateSizeVariant(index, 'track_inventory', e.target.checked)}
                           className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
                         />
-                        <span className="text-xs text-neutral-300">Track inventory for this variant</span>
+                        <span className="text-xs text-neutral-300">Track inventory for this size</span>
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Color Variants Section */}
+          <div className="pt-6 border-t border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-white mb-1">Color Variants</h3>
+                <p className="text-sm text-neutral-400">Add independent color options with color picker</p>
+              </div>
+              <button
+                type="button"
+                onClick={addColorVariant}
+                className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
+              >
+                + Add Color
+              </button>
+            </div>
+
+            {colorVariants.length === 0 ? (
+              <p className="text-neutral-400 text-sm mb-4">
+                No color variants added. Click "Add Color" to add color options.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {colorVariants.map((variant, index) => (
+                  <div
+                    key={`color-${index}`}
+                    className="p-4 rounded-lg border border-white/10 bg-black/30"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-sm font-medium text-white">Color Variant {index + 1}</h4>
+                      <button
+                        type="button"
+                        onClick={() => removeColorVariant(index)}
+                        className="text-red-400 hover:text-red-300 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-300 mb-1">
+                          Color Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={variant.name}
+                          onChange={(e) => updateColorVariant(index, 'name', e.target.value)}
+                          placeholder="Red, Blue, Black"
+                          required
+                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                        />
+                      </div>
+                      <div>
+                        <ColorPicker
+                          value={variant.hex}
+                          onChange={(color) => updateColorVariant(index, 'hex', color)}
+                          label="Color"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-300 mb-1">
+                          SKU
+                        </label>
+                        <input
+                          type="text"
+                          value={variant.sku}
+                          onChange={(e) => updateColorVariant(index, 'sku', e.target.value)}
+                          placeholder="Variant SKU"
+                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-300 mb-1">
+                          Price (SEK) - Optional
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={variant.price}
+                          onChange={(e) => updateColorVariant(index, 'price', e.target.value)}
+                          placeholder="Override base price"
+                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-300 mb-1">
+                          Stock Quantity
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={variant.stock_quantity}
+                          onChange={(e) => updateColorVariant(index, 'stock_quantity', e.target.value)}
+                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-3">
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={variant.track_inventory}
+                          onChange={(e) => updateColorVariant(index, 'track_inventory', e.target.checked)}
+                          className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                        />
+                        <span className="text-xs text-neutral-300">Track inventory for this color</span>
                       </label>
                     </div>
                   </div>
