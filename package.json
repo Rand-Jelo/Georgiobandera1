@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:cf": "opennextjs-cloudflare build && xcopy /E /I /Y .open-next\\assets\\* .open-next\\ && copy /Y .open-next\\worker.js .open-next\\_worker.js",
+    "build:cf": "opennextjs-cloudflare build && node -e \"const fs=require('fs');const path=require('path');function cpDir(src,dest){if(!fs.existsSync(dest))fs.mkdirSync(dest,{recursive:true});const entries=fs.readdirSync(src,{withFileTypes:true});for(const entry of entries){const srcPath=path.join(src,entry.name);const destPath=path.join(dest,entry.name);if(entry.isDirectory()){cpDir(srcPath,destPath);}else{fs.copyFileSync(srcPath,destPath);}}}cpDir('.open-next/assets','.open-next');fs.copyFileSync('.open-next/worker.js','.open-next/_worker.js');\"",
     "preview:cf": "opennextjs-cloudflare preview",
     "start": "next start",
     "lint": "eslint",
