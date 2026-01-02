@@ -32,7 +32,6 @@ export default function Header() {
   const t = useTranslations('common');
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [hiddenOnScroll, setHiddenOnScroll] = useState(false);
   const [openParentId, setOpenParentId] = useState<string | null>(null);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
@@ -58,25 +57,6 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    let lastY = window.scrollY;
-
-    const onScroll = () => {
-      const currentY = window.scrollY;
-
-      if (currentY > lastY && currentY > 80) {
-        setHiddenOnScroll(true);
-      } else {
-        setHiddenOnScroll(false);
-      }
-
-      lastY = currentY;
-    };
-
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
         productsRef.current &&
@@ -97,11 +77,7 @@ export default function Header() {
   };
 
   return (
-    <header
-      className={`sticky top-0 z-40 border-b border-white/10 bg-black/95 text-white backdrop-blur shadow-[0_10px_30px_rgba(0,0,0,0.7)] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-gradient-to-r after:from-white/20 after:to-transparent transition-transform duration-500 ${
-        hiddenOnScroll ? '-translate-y-full' : 'translate-y-0'
-      }`}
-    >
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-black/95 text-white backdrop-blur shadow-[0_10px_30px_rgba(0,0,0,0.7)] after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[1px] after:bg-gradient-to-r after:from-white/20 after:to-transparent">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-0">
         {/* Logo */}
         <Link href="/" className="flex items-center ml-16">
@@ -118,7 +94,7 @@ export default function Header() {
         <nav className="hidden items-center gap-12 text-sm font-medium md:flex">
           <Link
             href="/"
-            className={`rounded-full px-2 py-1 hover:bg-white/5 hover:text-neutral-100 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`rounded-full px-2 py-1 hover:bg-white/5 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
               pathname === '/' || pathname === '/en' || pathname === '/sv'
                 ? 'bg-white/5'
                 : ''
@@ -130,7 +106,7 @@ export default function Header() {
           {/* Products with dropdown */}
           <div className="relative" ref={productsRef}>
             <button
-              className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm tracking-wide hover:bg-white/5 hover:text-neutral-100 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm tracking-wide hover:bg-white/5 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow"
               type="button"
               onClick={() =>
                 setIsProductsOpen((prev) => {
@@ -195,7 +171,7 @@ export default function Header() {
                                 <li key={child.id}>
                                   <Link
                                     href={`/shop?categories=${child.id}`}
-                                    className="block rounded-md px-2 py-1 text-[13px] text-neutral-200 hover:bg-white/5 hover:text-white transition-colors"
+                                    className="block rounded-md px-2 py-1 text-[13px] text-neutral-200 hover:bg-white/5 hover:text-amber-400 transition-all duration-300 hover:gold-glow"
                                     onClick={() => {
                                       setIsProductsOpen(false);
                                       setOpenParentId(null);
@@ -211,7 +187,7 @@ export default function Header() {
                       ) : (
                         <Link
                           href={`/shop?categories=${category.id}`}
-                          className="flex w-full items-center justify-between rounded-md px-2 py-1 text-left hover:bg-white/5 transition-colors"
+                          className="flex w-full items-center justify-between rounded-md px-2 py-1 text-left hover:bg-white/5 hover:text-amber-400 transition-all duration-300 hover:gold-glow"
                           onClick={() => {
                             setIsProductsOpen(false);
                             setOpenParentId(null);
@@ -229,7 +205,7 @@ export default function Header() {
 
           <Link
             href="/about"
-            className={`rounded-full px-2 py-1 hover:bg-white/5 hover:text-neutral-100 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`rounded-full px-2 py-1 hover:bg-white/5 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
               pathname.includes('/about') ? 'bg-white/5' : ''
             }`}
           >
@@ -238,7 +214,7 @@ export default function Header() {
 
           <Link
             href="/contact"
-            className={`rounded-full px-2 py-1 hover:bg-white/5 hover:text-neutral-100 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            className={`rounded-full px-2 py-1 hover:bg-white/5 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
               pathname.includes('/contact') ? 'bg-white/5' : ''
             }`}
           >
@@ -251,7 +227,7 @@ export default function Header() {
           <Link
             href={pathname}
             locale="en"
-            className={`uppercase tracking-wide hover:text-neutral-200 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`uppercase tracking-wide hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
               currentLocale === 'en' ? 'text-white font-semibold' : ''
             }`}
           >
@@ -260,7 +236,7 @@ export default function Header() {
           <Link
             href={pathname}
             locale="sv"
-            className={`uppercase tracking-wide hover:text-neutral-200 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`uppercase tracking-wide hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
               currentLocale === 'sv' ? 'text-white font-semibold' : ''
             }`}
           >
@@ -305,7 +281,7 @@ export default function Header() {
           <div className="mx-auto max-w-6xl px-4 py-4 space-y-3">
             <Link
               href="/"
-              className="block hover:text-neutral-200 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              className="block hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow"
               onClick={() => setMobileOpen(false)}
             >
               {t('home')}
@@ -322,7 +298,7 @@ export default function Header() {
                     <li key={category.id}>
                       <Link
                         href={`/shop?categories=${category.id}`}
-                        className="block w-full text-left hover:text-white transition-colors duration-150"
+                        className="block w-full text-left hover:text-amber-400 transition-all duration-300 hover:gold-glow"
                         onClick={() => setMobileOpen(false)}
                       >
                         {getCategoryName(category)}
@@ -333,7 +309,7 @@ export default function Header() {
                             <li key={child.id}>
                               <Link
                                 href={`/shop?categories=${child.id}`}
-                                className="block w-full text-left text-xs text-neutral-300 hover:text-white transition-colors duration-150"
+                                className="block w-full text-left text-xs text-neutral-300 hover:text-amber-400 transition-all duration-300 hover:gold-glow-sm"
                                 onClick={() => setMobileOpen(false)}
                               >
                                 {getCategoryName(child)}
@@ -350,7 +326,7 @@ export default function Header() {
 
             <Link
               href="/about"
-              className="block hover:text-neutral-200 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              className="block hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow"
               onClick={() => setMobileOpen(false)}
             >
               {t('about')}
@@ -358,7 +334,7 @@ export default function Header() {
 
             <Link
               href="/contact"
-              className="block hover:text-neutral-200 transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+              className="block hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow"
               onClick={() => setMobileOpen(false)}
             >
               {t('contact')}
@@ -368,10 +344,10 @@ export default function Header() {
               <Link
                 href={pathname}
                 locale="en"
-                className={`uppercase tracking-wide text-xs ${
+                className={`uppercase tracking-wide text-xs transition-all duration-300 hover:gold-glow ${
                   currentLocale === 'en'
                     ? 'text-white font-semibold'
-                    : 'text-neutral-400 hover:text-neutral-200'
+                    : 'text-neutral-400 hover:text-amber-400'
                 }`}
                 onClick={() => setMobileOpen(false)}
               >
@@ -380,10 +356,10 @@ export default function Header() {
               <Link
                 href={pathname}
                 locale="sv"
-                className={`uppercase tracking-wide text-xs ${
+                className={`uppercase tracking-wide text-xs transition-all duration-300 hover:gold-glow ${
                   currentLocale === 'sv'
                     ? 'text-white font-semibold'
-                    : 'text-neutral-400 hover:text-neutral-200'
+                    : 'text-neutral-400 hover:text-amber-400'
                 }`}
                 onClick={() => setMobileOpen(false)}
               >

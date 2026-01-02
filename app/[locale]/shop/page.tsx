@@ -281,10 +281,10 @@ export default function ShopPage() {
 
   if (loading && products.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto"></div>
-          <p className="mt-4 text-neutral-500 font-medium">Loading products...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-amber-500"></div>
+          <p className="mt-6 text-neutral-500 font-light tracking-wide">Loading products...</p>
         </div>
       </div>
     );
@@ -292,114 +292,88 @@ export default function ShopPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-red-600 font-medium">{error}</p>
+          <p className="text-red-600 font-light">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <div className="mb-12">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-6">
-            <div>
-              <h1 className="text-5xl font-light tracking-tight text-neutral-900 mb-2">{t('shop')}</h1>
-              <p className="text-neutral-500 text-lg">
-                {totalCount > 0 
-                  ? `Discover ${totalCount} premium products`
-                  : 'Browse our collection'
-                }
+    <div className="min-h-screen bg-white">
+      {/* Hero Section - Matching Homepage */}
+      <section className="relative bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white py-20 lg:py-24 overflow-hidden">
+        {/* Elegant background pattern */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,_transparent,_transparent_2px,_rgba(255,255,255,0.02)_2px,_rgba(255,255,255,0.02)_4px)]" />
+        </div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+
+        <div className="relative max-w-[1600px] mx-auto px-6">
+          <div className="max-w-4xl">
+            {/* Elegant subtitle */}
+            <div className="inline-block mb-6">
+              <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
+                Our Collection
               </p>
+              <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent" />
             </div>
             
-            {/* Search Bar - Inline with title and controls */}
-            <div className="flex-1 max-w-md mx-auto lg:mx-0">
+            {/* Main heading */}
+            <h1 className="text-5xl font-extralight tracking-[0.02em] leading-[1.1] mb-6 sm:text-6xl lg:text-7xl">
+              {t('shop')}
+            </h1>
+            
+            {/* Description */}
+            <p className="text-lg text-neutral-300 font-light leading-relaxed max-w-2xl mb-8">
+              {totalCount > 0 
+                ? `Discover ${totalCount} premium products crafted for excellence`
+                : 'Browse our curated collection of professional hair care products'
+              }
+            </p>
+
+            {/* Search Bar - Integrated */}
+            <div className="max-w-2xl">
               <SearchInput />
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* View Mode Toggle */}
-              <div className="flex items-center gap-1 border border-neutral-200 rounded-full p-1 bg-white shadow-sm">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-2.5 rounded-full transition-all duration-300 ${
-                    viewMode === 'grid'
-                      ? 'bg-neutral-900 text-white shadow-lg scale-105'
-                      : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
-                  }`}
-                  aria-label="Grid view"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-2.5 rounded-full transition-all duration-300 ${
-                    viewMode === 'list'
-                      ? 'bg-neutral-900 text-white shadow-lg scale-105'
-                      : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50'
-                  }`}
-                  aria-label="List view"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              </div>
-
-              {/* Sort Dropdown */}
-              <select
-                value={sortBy}
-                onChange={(e) => handleSortChange(e.target.value as SortOption)}
-                className="px-5 py-2.5 bg-white border border-neutral-200 rounded-full text-neutral-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all shadow-sm hover:shadow-md"
-              >
-                <option value="newest">{tProduct('sortNewest') || 'Newest'}</option>
-                <option value="oldest">{tProduct('sortOldest') || 'Oldest'}</option>
-                <option value="price_asc">{tProduct('sortPriceLow') || 'Price: Low to High'}</option>
-                <option value="price_desc">{tProduct('sortPriceHigh') || 'Price: High to Low'}</option>
-                <option value="name_asc">{tProduct('sortNameAsc') || 'Name: A-Z'}</option>
-                <option value="name_desc">{tProduct('sortNameDesc') || 'Name: Z-A'}</option>
-              </select>
-
-              {/* Filters Button (Mobile) */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 border border-neutral-900 rounded-full text-white text-sm font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-                {tProduct('filters') || 'Filters'}
-              </button>
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="flex gap-8">
-          {/* Filters Sidebar (Desktop) */}
-          <aside className="hidden lg:block w-72 flex-shrink-0">
-            <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden sticky top-8">
-              <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-lg font-semibold text-neutral-900">{tProduct('filters') || 'Filters'}</h2>
+      {/* Main Content Area */}
+      <div className="max-w-[1600px] mx-auto px-6 py-12 lg:py-16">
+
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16">
+          {/* Filters Sidebar (Desktop) - Redesigned */}
+          <aside className="hidden lg:block w-80 flex-shrink-0">
+            <div className="sticky top-8">
+              {/* Filter Header */}
+              <div className="mb-8 pb-6 border-b border-neutral-200/50">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-sm font-light uppercase tracking-[0.3em] text-neutral-500">
+                    {tProduct('filters') || 'Filters'}
+                  </h2>
+                  {(filters.categoryIds.length > 0 || filters.minPrice !== undefined || filters.maxPrice !== undefined || filters.inStock !== undefined) && (
+                    <button
+                      onClick={handleFiltersChange.bind(null, { categoryIds: [], minPrice: undefined, maxPrice: undefined, inStock: undefined })}
+                      className="text-xs font-light text-neutral-400 hover:text-amber-600 transition-colors duration-300"
+                    >
+                      Clear all
+                    </button>
+                  )}
                 </div>
+                <div className="h-px w-12 bg-gradient-to-r from-amber-500/40 to-transparent mt-4" />
               </div>
-              <div className="p-6">
+              
+              {/* Filters Content */}
+              <div className="space-y-8">
                 <ProductFilters
                   categories={categories}
                   locale={locale}
@@ -410,19 +384,22 @@ export default function ShopPage() {
             </div>
           </aside>
 
-          {/* Filters Modal (Mobile) */}
+          {/* Filters Modal (Mobile) - Refined */}
           {showFilters && (
-            <div className="fixed inset-0 z-40 lg:hidden">
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowFilters(false)} />
-              <div className="absolute right-0 top-0 h-full w-80 bg-white overflow-y-auto shadow-2xl">
-                <div className="sticky top-0 bg-white border-b border-neutral-100 px-6 py-4 flex items-center justify-between z-10">
-                  <h2 className="text-lg font-semibold text-neutral-900">{tProduct('filters') || 'Filters'}</h2>
+            <div className="fixed inset-0 z-50 lg:hidden">
+              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowFilters(false)} />
+              <div className="absolute right-0 top-0 h-full w-full max-w-sm bg-white overflow-y-auto shadow-2xl">
+                <div className="sticky top-0 bg-white border-b border-neutral-200/50 px-6 py-5 flex items-center justify-between z-10 backdrop-blur-sm">
+                  <div>
+                    <h2 className="text-sm font-light uppercase tracking-[0.3em] text-neutral-500 mb-1">{tProduct('filters') || 'Filters'}</h2>
+                    <div className="h-px w-12 bg-gradient-to-r from-amber-500/40 to-transparent" />
+                  </div>
                   <button
                     onClick={() => setShowFilters(false)}
-                    className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-full transition-colors"
+                    className="p-2 text-neutral-400 hover:text-neutral-900 transition-colors duration-300"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
@@ -439,23 +416,94 @@ export default function ShopPage() {
             </div>
           )}
 
-          {/* Products Grid/List */}
-          <div className="flex-1">
+          {/* Main Products Area */}
+          <div className="flex-1 min-w-0">
+            {/* Toolbar - Refined */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
+              {/* Results count */}
+              {totalCount > 0 && (
+                <div>
+                  <p className="text-xs font-light text-neutral-400 tracking-wide uppercase">
+                    Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount}
+                  </p>
+                </div>
+              )}
+
+              {/* Controls */}
+              <div className="flex items-center gap-3">
+                {/* View Mode Toggle - Refined */}
+                <div className="flex items-center gap-1 border border-neutral-200/50 rounded-full p-1 bg-white/50 backdrop-blur-sm">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-full transition-all duration-300 ${
+                      viewMode === 'grid'
+                        ? 'bg-neutral-900 text-white shadow-md'
+                        : 'text-neutral-500 hover:text-amber-600'
+                    }`}
+                    aria-label="Grid view"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-full transition-all duration-300 ${
+                      viewMode === 'list'
+                        ? 'bg-neutral-900 text-white shadow-md'
+                        : 'text-neutral-500 hover:text-amber-600'
+                    }`}
+                    aria-label="List view"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Sort Dropdown - Refined */}
+                <select
+                  value={sortBy}
+                  onChange={(e) => handleSortChange(e.target.value as SortOption)}
+                  className="px-4 py-2 bg-white/50 backdrop-blur-sm border border-neutral-200/50 rounded-full text-neutral-900 text-sm font-light tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
+                >
+                  <option value="newest">{tProduct('sortNewest') || 'Newest'}</option>
+                  <option value="oldest">{tProduct('sortOldest') || 'Oldest'}</option>
+                  <option value="price_asc">{tProduct('sortPriceLow') || 'Price: Low to High'}</option>
+                  <option value="price_desc">{tProduct('sortPriceHigh') || 'Price: High to Low'}</option>
+                  <option value="name_asc">{tProduct('sortNameAsc') || 'Name: A-Z'}</option>
+                  <option value="name_desc">{tProduct('sortNameDesc') || 'Name: Z-A'}</option>
+                </select>
+
+                {/* Filters Button (Mobile) */}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="lg:hidden inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-full text-xs font-light tracking-wide hover:bg-neutral-800 transition-all duration-300"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  {tProduct('filters') || 'Filters'}
+                </button>
+              </div>
+            </div>
+
+            {/* Products Grid/List */}
             {products.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-20 h-20 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-10 h-10 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              <div className="text-center py-32">
+                <div className="w-24 h-24 rounded-full bg-neutral-50 flex items-center justify-center mx-auto mb-8">
+                  <svg className="w-12 h-12 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                   </svg>
                 </div>
-                <p className="text-neutral-600 text-lg font-medium mb-2">No products found</p>
-                <p className="text-neutral-500 text-sm">Try adjusting your filters or search terms</p>
+                <p className="text-neutral-600 text-xl font-light tracking-wide mb-3">No products found</p>
+                <p className="text-neutral-400 text-sm font-light">Try adjusting your filters or search terms</p>
               </div>
             ) : (
               <>
                 <div className={viewMode === 'grid' 
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
-                  : 'space-y-4'
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-12'
+                  : 'space-y-8'
                 }>
                   {products.map((product) => (
                     <ProductCard
@@ -469,65 +517,64 @@ export default function ShopPage() {
                   ))}
                 </div>
 
-                {/* Pagination */}
+                {/* Pagination - Refined */}
                 {totalPages > 1 && (
-                  <div className="mt-16 flex items-center justify-center gap-3">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-neutral-200 rounded-full text-neutral-900 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300 shadow-sm hover:shadow-md"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      Previous
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                      // Show first page, last page, current page, and pages around current
-                      if (
-                        page === 1 ||
-                        page === totalPages ||
-                        (page >= currentPage - 1 && page <= currentPage + 1)
-                      ) {
-                        return (
-                          <button
-                            key={page}
-                            onClick={() => handlePageChange(page)}
-                            className={`px-5 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
-                              currentPage === page
-                                ? 'bg-neutral-900 text-white shadow-lg scale-105'
-                                : 'bg-white border border-neutral-200 text-neutral-900 hover:bg-neutral-50 hover:border-neutral-300 shadow-sm hover:shadow-md'
-                            }`}
-                          >
-                            {page}
-                          </button>
-                        );
-                      } else if (page === currentPage - 2 || page === currentPage + 2) {
-                        return <span key={page} className="text-neutral-400 px-2">...</span>;
-                      }
-                      return null;
-                    })}
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-neutral-200 rounded-full text-neutral-900 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300 shadow-sm hover:shadow-md"
-                    >
-                      Next
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                  <div className="mt-24 flex flex-col items-center gap-6">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-neutral-200/50 rounded-full text-neutral-700 text-xs font-light tracking-wide disabled:opacity-30 disabled:cursor-not-allowed hover:bg-neutral-50 hover:border-amber-500/30 hover:text-amber-600 transition-all duration-300"
+                        aria-label="Previous page"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <button
+                              key={page}
+                              onClick={() => handlePageChange(page)}
+                              className={`px-4 py-2 rounded-full text-xs font-light tracking-wide transition-all duration-300 ${
+                                currentPage === page
+                                  ? 'bg-neutral-900 text-white'
+                                  : 'text-neutral-600 hover:text-amber-600 hover:bg-neutral-50'
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          );
+                        } else if (page === currentPage - 2 || page === currentPage + 2) {
+                          return <span key={page} className="text-neutral-300 px-1">...</span>;
+                        }
+                        return null;
+                      })}
+                      
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-neutral-200/50 rounded-full text-neutral-700 text-xs font-light tracking-wide disabled:opacity-30 disabled:cursor-not-allowed hover:bg-neutral-50 hover:border-amber-500/30 hover:text-amber-600 transition-all duration-300"
+                        aria-label="Next page"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                    
+                    {/* Page indicator */}
+                    <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-400">
+                      Page {currentPage} of {totalPages}
+                    </p>
                   </div>
                 )}
-
-                {/* Results count */}
-                <div className="mt-10 text-center">
-                  <p className="text-neutral-500 text-sm font-medium">
-                    Showing <span className="text-neutral-900 font-semibold">{((currentPage - 1) * ITEMS_PER_PAGE) + 1}</span>-
-                    <span className="text-neutral-900 font-semibold">{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)}</span> of{' '}
-                    <span className="text-neutral-900 font-semibold">{totalCount}</span> products
-                  </p>
-                </div>
               </>
             )}
           </div>

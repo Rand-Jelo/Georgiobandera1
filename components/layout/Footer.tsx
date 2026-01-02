@@ -106,7 +106,7 @@ export default function Footer() {
                     <li key={category.id}>
                       <Link
                         href={`/categories/${category.slug}`}
-                        className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
+                        className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:gold-glow"
                       >
                         {name}
                       </Link>
@@ -128,7 +128,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/about"
-                  className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
+                  className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:text-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                 >
                   {tCommon('about')}
                 </Link>
@@ -136,7 +136,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
+                  className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:text-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                 >
                   {tCommon('contact')}
                 </Link>
@@ -153,7 +153,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/legal/terms"
-                  className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
+                  className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:text-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                 >
                   Terms &amp; conditions
                 </Link>
@@ -161,7 +161,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/legal/privacy"
-                  className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
+                  className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:text-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                 >
                   Privacy policy
                 </Link>
@@ -169,7 +169,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/legal/shipping"
-                  className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
+                  className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:text-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                 >
                   Shipping policy
                 </Link>
@@ -177,7 +177,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/legal/returns"
-                  className="hover:text-neutral-100 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-neutral-100 underline-offset-4"
+                  className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:text-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                 >
                   Returns &amp; refunds
                 </Link>
@@ -199,23 +199,23 @@ export default function Footer() {
               <Link
                 href="https://www.instagram.com"
                 aria-label="Georgio Bandera on Instagram"
-                className="text-neutral-400 hover:text-neutral-50 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                className="text-neutral-400 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
               >
-                <InstagramIcon className="h-4 w-4 hover:scale-110" />
+                <InstagramIcon className="h-4 w-4 hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
               </Link>
               <Link
                 href="https://www.facebook.com"
                 aria-label="Georgio Bandera on Facebook"
-                className="text-neutral-400 hover:text-neutral-50 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                className="text-neutral-400 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
               >
-                <FacebookIcon className="h-4 w-4 hover:scale-110" />
+                <FacebookIcon className="h-4 w-4 hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
               </Link>
               <Link
                 href="https://www.tiktok.com"
                 aria-label="Georgio Bandera on TikTok"
-                className="text-neutral-400 hover:text-neutral-50 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                className="text-neutral-400 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
               >
-                <TiktokIcon className="h-4 w-4 hover:scale-110" />
+                <TiktokIcon className="h-4 w-4 hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
               </Link>
             </div>
 
@@ -226,10 +226,10 @@ export default function Footer() {
               <Link
                 href={pathname}
                 locale="en"
-                className={`text-[11px] uppercase tracking-wide transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                className={`text-[11px] uppercase tracking-wide transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
                   currentLocale === 'en'
                     ? 'text-neutral-200 font-semibold'
-                    : 'hover:text-neutral-200'
+                    : 'hover:text-amber-400'
                 }`}
               >
                 EN
@@ -237,10 +237,10 @@ export default function Footer() {
               <Link
                 href={pathname}
                 locale="sv"
-                className={`text-[11px] uppercase tracking-wide transition-colors duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                className={`text-[11px] uppercase tracking-wide transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
                   currentLocale === 'sv'
                     ? 'text-neutral-200 font-semibold'
-                    : 'hover:text-neutral-200'
+                    : 'hover:text-amber-400'
                 }`}
               >
                 SV

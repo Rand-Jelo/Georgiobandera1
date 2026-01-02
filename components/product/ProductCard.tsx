@@ -69,58 +69,65 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
 
   if (viewMode === 'list') {
     return (
-      <div className="group relative bg-white border border-neutral-200 rounded-xl overflow-hidden">
-        <div onClick={handleCardClick} className="flex gap-6 cursor-pointer">
-          <div className="flex gap-6 flex-1">
-            <div className="relative w-32 h-32 flex-shrink-0 overflow-hidden rounded-lg">
-              {product.images && product.images.length > 0 ? (
-                <Image
-                  src={imageUrl}
-                  alt={product.images[0]?.alt_text_en || name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="128px"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-xs text-neutral-400 bg-neutral-50">
-                  No image
+      <article className="group relative bg-white border-b border-neutral-200/50 transition-all duration-300 hover:bg-neutral-50/30">
+        <div onClick={handleCardClick} className="flex gap-8 cursor-pointer py-6">
+          {/* Image */}
+          <div className="relative w-32 h-32 flex-shrink-0 bg-neutral-50">
+            {product.images && product.images.length > 0 ? (
+              <Image
+                src={imageUrl}
+                alt={product.images[0]?.alt_text_en || name}
+                fill
+                className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                sizes="128px"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <div className="text-center">
+                  <div className="inline-block h-px w-8 bg-gradient-to-r from-transparent via-neutral-300 to-transparent mb-2" />
+                  <p className="text-[9px] font-light uppercase tracking-[0.2em] text-neutral-300">Image</p>
                 </div>
-              )}
-              {hasDiscount && (
-                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                  Sale
-                </div>
-              )}
-            </div>
-          <div className="flex-1 flex items-center justify-between py-4 pr-4">
-            <div className="flex-1">
+              </div>
+            )}
+            {hasDiscount && (
+              <div className="absolute top-2 right-2 bg-amber-500 px-2 py-0.5">
+                <p className="text-[8px] font-light uppercase tracking-[0.3em] text-white">Sale</p>
+              </div>
+            )}
+          </div>
+          
+          {/* Content */}
+          <div className="flex-1 flex items-center justify-between min-w-0">
+            <div className="flex-1 min-w-0 pr-8">
               {categoryName && (
-                <p className="text-xs uppercase tracking-[0.15em] text-neutral-500 font-medium mb-1">
+                <p className="text-[9px] uppercase tracking-[0.4em] text-neutral-400 font-light mb-2">
                   {categoryName}
                 </p>
               )}
-              <h3 className="text-lg font-medium tracking-tight text-neutral-900 group-hover:text-neutral-600 transition-colors mb-2">
+              <h3 className="text-lg font-extralight tracking-wide text-neutral-900 group-hover:text-amber-600 transition-colors duration-300 mb-2 leading-tight">
                 {name}
               </h3>
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-medium text-neutral-900">
+              <div className="flex items-baseline gap-3">
+                <span className="text-base font-light text-neutral-900">
                   {formatPrice(product.price, 'SEK')}
                 </span>
                 {hasDiscount && (
-                  <span className="text-sm text-neutral-500 line-through">
+                  <span className="text-sm text-neutral-400 line-through font-extralight">
                     {formatPrice(product.compare_at_price!, 'SEK')}
                   </span>
                 )}
               </div>
             </div>
+            
+            {/* Add to Cart */}
             {showQuickAdd && (
               <button
                 onClick={handleQuickAdd}
                 disabled={adding || quickAddSuccess}
-                className="px-6 py-2 bg-neutral-900 text-white rounded-lg font-medium text-sm hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2.5 bg-neutral-900 text-white text-xs font-light uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               >
                 {quickAddSuccess ? (
-                  'Added!'
+                  'Added'
                 ) : adding ? (
                   'Adding...'
                 ) : (
@@ -129,64 +136,91 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               </button>
             )}
           </div>
-          </div>
         </div>
-      </div>
+      </article>
     );
   }
 
   return (
-    <div className="group relative" onClick={handleCardClick}>
+    <article className="group relative" onClick={handleCardClick}>
       <div className="block cursor-pointer">
-        <div className="relative w-full overflow-hidden rounded-2xl border border-neutral-200 bg-neutral-50 aspect-[4/5]">
+        {/* Image Container - Refined */}
+        <div className="relative w-full overflow-hidden bg-neutral-50 aspect-[3/4] mb-6">
           {product.images && product.images.length > 0 ? (
-            <Image
-              src={imageUrl}
-              alt={product.images[0]?.alt_text_en || name}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-            />
+            <>
+              <Image
+                src={imageUrl}
+                alt={product.images[0]?.alt_text_en || name}
+                fill
+                className="object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              />
+              {/* Subtle overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </>
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-neutral-400 bg-neutral-50">
-              Product image coming soon
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center space-y-3">
+                <div className="inline-block h-px w-12 bg-gradient-to-r from-transparent via-neutral-300 to-transparent" />
+                <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-300">Image</p>
+              </div>
             </div>
           )}
+          
+          {/* Sale Badge - Refined */}
           {hasDiscount && (
-            <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-              Sale
+            <div className="absolute top-4 right-4 z-10">
+              <div className="bg-amber-500 px-3 py-1">
+                <p className="text-[9px] font-light uppercase tracking-[0.3em] text-white">
+                  Sale
+                </p>
+              </div>
             </div>
           )}
         </div>
 
-        <div className="mt-4 space-y-1">
+        {/* Content - Refined Typography */}
+        <div className="space-y-3">
           {categoryName && (
-            <p className="text-xs uppercase tracking-[0.15em] text-neutral-500 font-medium">
+            <p className="text-[9px] uppercase tracking-[0.4em] text-neutral-400 font-light">
               {categoryName}
             </p>
           )}
-          <h3 className="text-base font-medium tracking-tight text-neutral-900 group-hover:text-neutral-600 transition-colors">
+          
+          <h3 className="text-lg font-extralight tracking-wide text-neutral-900 leading-tight group-hover:text-amber-600 transition-colors duration-300">
             {name}
           </h3>
           
-          <div className="flex items-baseline gap-2 mt-1">
-            <span className="text-base font-medium text-neutral-900">
-              {formatPrice(product.price, 'SEK')}
-            </span>
-            {hasDiscount && (
-              <span className="text-sm text-neutral-500 line-through">
-                {formatPrice(product.compare_at_price!, 'SEK')}
+          {/* Price - Refined */}
+          <div className="flex items-baseline gap-3 pt-1">
+            {hasDiscount ? (
+              <>
+                <span className="text-base font-light text-neutral-900">
+                  {formatPrice(product.price, 'SEK')}
+                </span>
+                <span className="text-sm text-neutral-400 line-through font-extralight">
+                  {formatPrice(product.compare_at_price!, 'SEK')}
+                </span>
+              </>
+            ) : (
+              <span className="text-base font-light text-neutral-900">
+                {formatPrice(product.price, 'SEK')}
               </span>
             )}
           </div>
+          
+          {/* Subtle divider */}
+          <div className="h-px w-0 bg-gradient-to-r from-amber-500/50 to-transparent transition-all duration-500 group-hover:w-full mt-4" />
+          
+          {/* Add to Cart Button - Refined */}
           {showQuickAdd && (
             <button
               onClick={handleQuickAdd}
               disabled={adding || quickAddSuccess}
-              className="mt-3 w-full px-4 py-2 bg-neutral-900 text-white rounded-lg font-medium text-sm hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-6 w-full px-5 py-3 bg-neutral-900 text-white text-xs font-light uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {quickAddSuccess ? (
-                'Added!'
+                'Added'
               ) : adding ? (
                 'Adding...'
               ) : (
@@ -196,6 +230,6 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
           )}
         </div>
       </div>
-    </div>
+    </article>
   );
 }

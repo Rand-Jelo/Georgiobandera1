@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:cf": "opennextjs-cloudflare build && cp -r .open-next/assets/* .open-next/ && cp .open-next/worker.js .open-next/_worker.js",
+    "build:cf": "opennextjs-cloudflare build && xcopy /E /I /Y .open-next\\assets\\* .open-next\\ && copy /Y .open-next\\worker.js .open-next\\_worker.js",
     "preview:cf": "opennextjs-cloudflare preview",
     "start": "next start",
     "lint": "eslint",

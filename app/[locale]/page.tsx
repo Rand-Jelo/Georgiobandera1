@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Hero from '@/components/home/Hero';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
+import BrandStory from '@/components/home/BrandStory';
+import Collections from '@/components/home/Collections';
 
 interface Product {
   id: string;
@@ -47,9 +49,11 @@ export default function HomePage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col bg-neutral-50">
+    <main className="flex min-h-screen flex-col">
       <Hero />
       <FeaturedProducts products={featuredProducts} loading={loading} />
+      <BrandStory />
+      <Collections />
     </main>
   );
 }

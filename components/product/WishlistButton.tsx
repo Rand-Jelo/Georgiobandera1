@@ -116,10 +116,10 @@ export default function WishlistButton({
     <button
       onClick={handleToggle}
       disabled={toggling}
-      className={`${sizeClasses[size]} flex items-center justify-center rounded-full border-2 transition-all focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:ring-offset-2 ${
+      className={`${sizeClasses[size]} flex items-center justify-center border border-neutral-200/50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500/30 ${
         isInWishlist
-          ? 'border-red-500 bg-red-50 text-red-600 hover:bg-red-100'
-          : 'border-neutral-300 bg-white text-neutral-600 hover:border-neutral-400 hover:bg-neutral-50'
+          ? 'bg-neutral-50 text-neutral-900 hover:bg-neutral-100'
+          : 'bg-white/50 backdrop-blur-sm text-neutral-500 hover:text-neutral-900 hover:bg-white'
       } disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
       aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
       title={isInWishlist ? t('removeFromWishlist') || 'Remove from wishlist' : t('addToWishlist') || 'Add to wishlist'}

@@ -98,77 +98,77 @@ export default function ProductFilters({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-neutral-200 p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-neutral-900">
-          {t('filters') || 'Filters'}
-        </h3>
-        {onClose && (
+    <div className="space-y-6">
+      {onClose && (
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-neutral-200/50">
+          <h3 className="text-lg font-light tracking-wide text-neutral-900">
+            {t('filters') || 'Filters'}
+          </h3>
           <button
             onClick={onClose}
-            className="text-neutral-500 hover:text-neutral-900"
+            className="text-neutral-400 hover:text-neutral-900 transition-colors duration-300"
             aria-label="Close filters"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Categories */}
-      <div className="mb-6">
-        <h4 className="text-sm font-medium text-neutral-900 mb-3">
+      <div>
+        <h4 className="text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
           {t('categories') || 'Categories'}
         </h4>
-        <div className="space-y-1 max-h-64 overflow-y-auto">
+        <div className="space-y-2 max-h-64 overflow-y-auto">
           {parentCategories.map((category) => {
             const categoryName = locale === 'sv' ? category.name_sv : category.name_en;
             const hasChildren = category.children && category.children.length > 0;
             const isExpanded = expandedCategories.has(category.id);
             
             return (
-              <div key={category.id} className="space-y-1">
+              <div key={category.id} className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer flex-1">
+                  <label className="flex items-center gap-3 cursor-pointer flex-1 group">
                     <input
                       type="checkbox"
                       checked={localFilters.categoryIds.includes(category.id)}
                       onChange={() => handleCategoryToggle(category.id)}
-                      className="w-4 h-4 text-neutral-900 border-neutral-300 rounded focus:ring-neutral-900"
+                      className="w-4 h-4 text-amber-500 border-neutral-300 rounded focus:ring-amber-500/30 focus:ring-2 transition-colors"
                     />
-                    <span className="text-sm text-neutral-700 font-medium">{categoryName}</span>
+                    <span className="text-sm text-neutral-700 font-light group-hover:text-amber-600 transition-colors duration-300">{categoryName}</span>
                   </label>
                   {hasChildren && (
                     <button
                       onClick={() => toggleCategoryExpansion(category.id)}
-                      className="p-1 text-neutral-500 hover:text-neutral-900 transition-colors"
+                      className="p-1 text-neutral-400 hover:text-amber-600 transition-colors duration-300"
                       aria-label={isExpanded ? 'Collapse' : 'Expand'}
                     >
                       <svg
-                        className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
                   )}
                 </div>
                 {hasChildren && isExpanded && (
-                  <div className="ml-6 space-y-1 border-l-2 border-neutral-200 pl-3">
+                  <div className="ml-7 space-y-2 border-l border-neutral-200/50 pl-4">
                     {category.children!.map((child) => {
                       const childName = locale === 'sv' ? child.name_sv : child.name_en;
                       return (
-                        <label key={child.id} className="flex items-center gap-2 cursor-pointer">
+                        <label key={child.id} className="flex items-center gap-3 cursor-pointer group">
                           <input
                             type="checkbox"
                             checked={localFilters.categoryIds.includes(child.id)}
                             onChange={() => handleCategoryToggle(child.id)}
-                            className="w-4 h-4 text-neutral-900 border-neutral-300 rounded focus:ring-neutral-900"
+                            className="w-4 h-4 text-amber-500 border-neutral-300 rounded focus:ring-amber-500/30 focus:ring-2 transition-colors"
                           />
-                          <span className="text-sm text-neutral-600">{childName}</span>
+                          <span className="text-sm text-neutral-600 font-light group-hover:text-amber-600 transition-colors duration-300">{childName}</span>
                         </label>
                       );
                     })}
@@ -181,83 +181,83 @@ export default function ProductFilters({
       </div>
 
       {/* Price Range */}
-      <div className="mb-6">
-        <h4 className="text-sm font-medium text-neutral-900 mb-3">
+      <div>
+        <h4 className="text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
           {t('priceRange') || 'Price Range'}
         </h4>
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <input
               type="number"
               min="0"
               placeholder="Min"
               value={priceRange.min || ''}
               onChange={(e) => handlePriceChange('min', parseFloat(e.target.value) || 0)}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm text-neutral-900 bg-white focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 placeholder:text-neutral-400"
+              className="w-full px-4 py-2.5 border border-neutral-200/50 rounded-full text-sm text-neutral-900 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 placeholder:text-neutral-400 font-light transition-all"
             />
-            <span className="text-neutral-500">-</span>
+            <span className="text-neutral-400 font-light">-</span>
             <input
               type="number"
               min="0"
               placeholder="Max"
               value={priceRange.max || ''}
               onChange={(e) => handlePriceChange('max', parseFloat(e.target.value) || 10000)}
-              className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm text-neutral-900 bg-white focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 placeholder:text-neutral-400"
+              className="w-full px-4 py-2.5 border border-neutral-200/50 rounded-full text-sm text-neutral-900 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 placeholder:text-neutral-400 font-light transition-all"
             />
           </div>
         </div>
       </div>
 
       {/* Availability */}
-      <div className="mb-6">
-        <h4 className="text-sm font-medium text-neutral-900 mb-3">
+      <div>
+        <h4 className="text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
           {t('availability') || 'Availability'}
         </h4>
         <div className="space-y-2">
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="radio"
               name="stock"
               checked={localFilters.inStock === true}
               onChange={() => handleStockToggle(true)}
-              className="w-4 h-4 text-neutral-900 border-neutral-300 focus:ring-neutral-900"
+              className="w-4 h-4 text-amber-500 border-neutral-300 focus:ring-amber-500/30 focus:ring-2"
             />
-            <span className="text-sm text-neutral-700">{t('inStock') || 'In Stock'}</span>
+            <span className="text-sm text-neutral-700 font-light group-hover:text-amber-600 transition-colors duration-300">{t('inStock') || 'In Stock'}</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="radio"
               name="stock"
               checked={localFilters.inStock === false}
               onChange={() => handleStockToggle(false)}
-              className="w-4 h-4 text-neutral-900 border-neutral-300 focus:ring-neutral-900"
+              className="w-4 h-4 text-amber-500 border-neutral-300 focus:ring-amber-500/30 focus:ring-2"
             />
-            <span className="text-sm text-neutral-700">{t('outOfStock') || 'Out of Stock'}</span>
+            <span className="text-sm text-neutral-700 font-light group-hover:text-amber-600 transition-colors duration-300">{t('outOfStock') || 'Out of Stock'}</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex items-center gap-3 cursor-pointer group">
             <input
               type="radio"
               name="stock"
               checked={localFilters.inStock === undefined}
               onChange={() => handleStockToggle(undefined)}
-              className="w-4 h-4 text-neutral-900 border-neutral-300 focus:ring-neutral-900"
+              className="w-4 h-4 text-amber-500 border-neutral-300 focus:ring-amber-500/30 focus:ring-2"
             />
-            <span className="text-sm text-neutral-700">{t('all') || 'All'}</span>
+            <span className="text-sm text-neutral-700 font-light group-hover:text-amber-600 transition-colors duration-300">{t('all') || 'All'}</span>
           </label>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 pt-4 border-t border-neutral-200/50">
         <button
           onClick={handleApply}
-          className="flex-1 px-4 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 transition-colors text-sm font-medium"
+          className="flex-1 px-5 py-2.5 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-all duration-300 text-sm font-light tracking-wide shadow-sm hover:shadow-md"
         >
           {t('apply') || 'Apply'}
         </button>
         <button
           onClick={handleReset}
-          className="px-4 py-2 border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors text-sm font-medium"
+          className="px-5 py-2.5 border border-neutral-200/50 text-neutral-700 rounded-full hover:bg-neutral-50 hover:border-amber-500/30 hover:text-amber-600 transition-all duration-300 text-sm font-light tracking-wide"
         >
           {t('reset') || 'Reset'}
         </button>

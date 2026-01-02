@@ -84,10 +84,10 @@ export default function PriceAlertButton({
     <button
       onClick={handleToggle}
       disabled={toggling}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium ${
+      className={`flex items-center gap-2 px-5 py-2.5 border border-neutral-200/50 transition-all duration-300 text-xs font-light uppercase tracking-[0.2em] ${
         hasAlert
-          ? 'border-green-500 bg-green-50 text-green-700 hover:bg-green-100'
-          : 'border-neutral-300 bg-white text-neutral-700 hover:border-neutral-400 hover:bg-neutral-50'
+          ? 'bg-neutral-50 text-neutral-900 hover:bg-neutral-100'
+          : 'bg-white/50 backdrop-blur-sm text-neutral-600 hover:text-neutral-900 hover:bg-white'
       } disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
       title={hasAlert ? t('removePriceAlert') || 'Remove price alert' : t('notifyPriceDrop') || 'Notify me when price drops'}
     >

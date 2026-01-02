@@ -470,10 +470,10 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto"></div>
-          <p className="mt-4 text-neutral-500 font-medium">Loading product...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-amber-500"></div>
+          <p className="mt-6 text-neutral-500 font-light tracking-wide">Loading product...</p>
         </div>
       </div>
     );
@@ -481,14 +481,14 @@ export default function ProductPage() {
 
   if (error || !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-red-600 font-medium">{error || 'Product not found'}</p>
+          <p className="text-red-600 font-light">{error || 'Product not found'}</p>
         </div>
       </div>
     );
@@ -517,7 +517,7 @@ export default function ProductPage() {
   });
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-white">
       {/* Structured Data */}
       <ProductStructuredData 
         product={{
@@ -537,26 +537,24 @@ export default function ProductPage() {
       />
       <BreadcrumbStructuredData items={breadcrumbItems} />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-[1600px] mx-auto px-6 py-12 lg:py-16">
         {/* Breadcrumbs */}
-        <nav className="mb-12" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm text-neutral-500 font-medium">
+        <nav className="mb-8 pb-6 border-b border-neutral-200/50" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 text-xs font-light uppercase tracking-[0.2em] text-neutral-500">
             <li>
-              <Link href="/" className="hover:text-neutral-900 transition-colors">
+              <Link href="/" className="hover:text-amber-600 transition-colors duration-300">
                 Home
               </Link>
             </li>
             {product.category && (
               <>
                 <li>
-                  <svg className="w-4 h-4 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                  </svg>
+                  <span className="mx-2">/</span>
                 </li>
                 <li>
                   <Link 
                     href={`/shop?categories=${product.category.id}`}
-                    className="hover:text-neutral-900 transition-colors"
+                    className="hover:text-amber-600 transition-colors duration-300"
                   >
                     {locale === 'sv' ? product.category.name_sv : product.category.name_en}
                   </Link>
@@ -564,22 +562,20 @@ export default function ProductPage() {
               </>
             )}
             <li>
-              <svg className="w-4 h-4 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
+              <span className="mx-2">/</span>
             </li>
-            <li className="text-neutral-900 font-semibold" aria-current="page">
+            <li className="text-neutral-900" aria-current="page">
               {getDisplayName()}
             </li>
           </ol>
         </nav>
 
-        <div className="lg:grid lg:grid-cols-2 lg:gap-16 mb-16">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-20 mb-20">
           {/* Images */}
           <div className="mb-12 lg:mb-0">
             {product.images.length > 0 ? (
               <>
-                <div className="aspect-square bg-gradient-to-br from-neutral-50 to-white rounded-2xl overflow-hidden mb-6 border border-neutral-100 shadow-lg relative">
+                <div className="aspect-square bg-neutral-50 overflow-hidden mb-8 relative">
                   <Image
                     src={product.images[selectedImageIndex]?.url || product.images[0].url}
                     alt={product.images[selectedImageIndex]?.alt_text_en || productName}
@@ -595,10 +591,10 @@ export default function ProductPage() {
                       <button
                         key={image.id}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`aspect-square bg-white rounded-xl overflow-hidden border-2 transition-all shadow-sm hover:shadow-md ${
+                        className={`aspect-square bg-neutral-50 overflow-hidden border transition-all duration-300 ${
                           selectedImageIndex === index
-                            ? 'border-neutral-900 ring-2 ring-neutral-900 ring-offset-2 scale-105'
-                            : 'border-neutral-200 hover:border-neutral-300'
+                            ? 'border-neutral-900'
+                            : 'border-neutral-200/50 hover:border-neutral-300'
                         }`}
                       >
                         <Image
@@ -614,12 +610,10 @@ export default function ProductPage() {
                 )}
               </>
             ) : (
-              <div className="aspect-square bg-gradient-to-br from-neutral-50 to-white rounded-2xl flex items-center justify-center border border-neutral-100 shadow-lg">
-                <div className="text-center">
-                  <svg className="w-16 h-16 text-neutral-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="text-neutral-400 text-sm font-medium">No image available</span>
+              <div className="aspect-square bg-neutral-50 flex items-center justify-center">
+                <div className="text-center space-y-3">
+                  <div className="inline-block h-px w-16 bg-gradient-to-r from-transparent via-neutral-300 to-transparent" />
+                  <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-300">No image</p>
                 </div>
               </div>
             )}
@@ -627,15 +621,28 @@ export default function ProductPage() {
 
           {/* Product Info */}
           <div className="flex flex-col">
-            <h1 className="text-5xl font-light tracking-tight text-neutral-900 mb-6">{getDisplayName()}</h1>
+            {/* Product Title */}
+            <div className="mb-6">
+              {product.category && (
+                <div className="inline-block mb-3">
+                  <p className="text-[10px] font-light uppercase tracking-[0.4em] text-neutral-500">
+                    {locale === 'sv' ? product.category.name_sv : product.category.name_en}
+                  </p>
+                  <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent" />
+                </div>
+              )}
+              <h1 className="text-4xl font-extralight tracking-[0.02em] leading-[1.1] text-neutral-900 sm:text-5xl lg:text-6xl mb-6">
+                {getDisplayName()}
+              </h1>
+            </div>
 
             {/* Price */}
-            <div className="flex items-baseline gap-4 mb-8">
-              <span className="text-3xl font-semibold text-neutral-900">
+            <div className="flex items-baseline gap-4 mb-10 pb-10 border-b border-neutral-200/50">
+              <span className="text-2xl font-light text-neutral-900">
                 {formatPrice(getDisplayPrice(), 'SEK')}
               </span>
               {hasDiscount && (
-                <span className="text-xl text-neutral-400 line-through font-medium">
+                <span className="text-lg text-neutral-400 line-through font-extralight">
                   {formatPrice(product.compare_at_price!, 'SEK')}
                 </span>
               )}
@@ -701,8 +708,8 @@ export default function ProductPage() {
                 <>
                   {/* Size Selection - Only show if multiple sizes */}
                   {uniqueSizes.length > 1 && (
-                    <div className="mb-8">
-                      <label className="block text-sm font-medium text-neutral-700 mb-3 uppercase tracking-wide">
+                    <div className="mb-10">
+                      <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
                         {t('size') || 'Size'}
                       </label>
                       <select
@@ -721,7 +728,7 @@ export default function ProductPage() {
                           }
                           if (newVariant) setSelectedVariant(newVariant);
                         }}
-                        className="w-full px-4 py-3 border-2 border-neutral-200 rounded-xl bg-white text-neutral-900 font-medium focus:outline-none focus:border-neutral-900 transition-colors"
+                        className="w-full px-5 py-3 border border-neutral-200/50 bg-white/50 backdrop-blur-sm text-neutral-900 text-sm font-light tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
                       >
                         <option value="">{t('selectSize') || 'Select Size'}</option>
                         {uniqueSizes.map((size) => {
@@ -743,8 +750,8 @@ export default function ProductPage() {
 
                   {/* Color Selection - Show color swatches */}
                   {uniqueColors.length > 0 && (
-                    <div className="mb-8">
-                      <label className="block text-sm font-medium text-neutral-700 mb-3 uppercase tracking-wide">
+                    <div className="mb-10">
+                      <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
                         {t('color') || 'Color'}
                       </label>
                       <div className="flex flex-wrap items-center gap-3">
@@ -779,12 +786,12 @@ export default function ProductPage() {
                                 }}
                                 disabled={!inStock}
                                 className={`
-                                  relative w-12 h-12 rounded-full border-2 transition-all shadow-sm
+                                  relative w-12 h-12 border transition-all duration-300
                                   ${isSelected 
-                                    ? 'border-neutral-900 scale-110 ring-2 ring-neutral-900 ring-offset-2' 
-                                    : 'border-neutral-300 hover:border-neutral-600 hover:scale-105'
+                                    ? 'border-neutral-900' 
+                                    : 'border-neutral-200/50 hover:border-neutral-300'
                                   }
-                                  ${!inStock ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+                                  ${!inStock ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
                                 `}
                                 style={{ backgroundColor: hexColor }}
                                 title={colorItem.name}
@@ -809,28 +816,24 @@ export default function ProductPage() {
             })()}
 
             {/* Stock Status */}
-            <div className="mb-8">
+            <div className="mb-10">
               {inStock ? (
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-full">
-                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-green-700 font-medium text-sm">{t('inStock') || 'In Stock'}</span>
+                <div className="inline-flex items-center gap-2 px-4 py-2 border border-neutral-200/50">
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <span className="text-xs font-light uppercase tracking-[0.2em] text-neutral-600">{t('inStock') || 'In Stock'}</span>
                 </div>
               ) : (
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-full">
-                  <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-red-700 font-medium text-sm">{t('outOfStock') || 'Out of Stock'}</span>
+                <div className="inline-flex items-center gap-2 px-4 py-2 border border-neutral-200/50">
+                  <div className="w-2 h-2 bg-red-500 rounded-full" />
+                  <span className="text-xs font-light uppercase tracking-[0.2em] text-neutral-600">{t('outOfStock') || 'Out of Stock'}</span>
                 </div>
               )}
             </div>
 
             {/* Quantity Selector */}
             {inStock && (
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+              <div className="mb-10">
+                <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
                   {t('quantity') || 'Quantity'}
                 </label>
                 <QuantitySelector
@@ -845,7 +848,7 @@ export default function ProductPage() {
             )}
 
             {/* Add to Cart and Wishlist */}
-            <div className="mb-8 flex items-center gap-3">
+            <div className="mb-10 flex items-center gap-4">
               <AddToCartButton
                 productId={product.id}
                 variantId={selectedVariant?.id}
@@ -860,7 +863,7 @@ export default function ProductPage() {
             </div>
 
             {/* Price Alert */}
-            <div className="mb-8">
+            <div className="mb-10">
               <PriceAlertButton
                 productId={product.id}
                 currentPrice={getDisplayPrice()}
@@ -886,17 +889,17 @@ export default function ProductPage() {
           })()}
           reviewsContent={
             <>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-12 pb-8 border-b border-neutral-200/50">
                 <div>
-                  <h2 className="text-2xl font-semibold text-neutral-900 mb-3">Customer Reviews</h2>
+                  <h2 className="text-2xl font-extralight tracking-wide text-neutral-900 mb-4">Customer Reviews</h2>
                   {reviewStats && reviewStats.total > 0 && (
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
                         {renderStars(Math.round(reviewStats.average))}
-                        <span className="text-lg font-semibold text-neutral-900">
+                        <span className="text-lg font-light text-neutral-900">
                           {reviewStats.average.toFixed(1)}
                         </span>
-                        <span className="text-neutral-600 text-sm">
+                        <span className="text-neutral-500 text-sm font-light">
                           ({reviewStats.total} {reviewStats.total === 1 ? 'review' : 'reviews'})
                         </span>
                       </div>
@@ -906,7 +909,7 @@ export default function ProductPage() {
                 {!hasReviewed && (
                   <button
                     onClick={() => setShowReviewForm(!showReviewForm)}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg font-medium text-sm whitespace-nowrap"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white text-xs font-light uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all duration-300 whitespace-nowrap"
                   >
                     {showReviewForm ? (
                       <>
@@ -934,7 +937,7 @@ export default function ProductPage() {
 
               {/* Review Form */}
               {showReviewForm && (
-                <div className="mb-12 p-8 bg-white rounded-2xl border border-neutral-100 shadow-sm">
+                <div className="mb-12 p-10 bg-white border border-neutral-200/50">
                   {reviewSuccess ? (
                     <div className="text-center py-4">
                       <p className="text-green-600 font-medium mb-4">
@@ -952,9 +955,9 @@ export default function ProductPage() {
                     </div>
                   ) : (
                     <form onSubmit={handleSubmitReview} className="space-y-5">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <label htmlFor="review-name" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                          <label htmlFor="review-name" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
                             Name *
                           </label>
                           <input
@@ -963,11 +966,11 @@ export default function ProductPage() {
                             required
                             value={reviewFormData.name}
                             onChange={(e) => setReviewFormData({ ...reviewFormData, name: e.target.value })}
-                            className="w-full px-5 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white transition-all"
+                            className="w-full px-5 py-3 border border-neutral-200/50 bg-white/50 backdrop-blur-sm text-neutral-900 text-sm font-light focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
                           />
                         </div>
                         <div>
-                          <label htmlFor="review-email" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                          <label htmlFor="review-email" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
                             Email *
                           </label>
                           <input
@@ -976,13 +979,13 @@ export default function ProductPage() {
                             required
                             value={reviewFormData.email}
                             onChange={(e) => setReviewFormData({ ...reviewFormData, email: e.target.value })}
-                            className="w-full px-5 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white transition-all"
+                            className="w-full px-5 py-3 border border-neutral-200/50 bg-white/50 backdrop-blur-sm text-neutral-900 text-sm font-light focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-3">
+                        <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
                           Rating *
                         </label>
                         {renderStars(reviewFormData.rating, true, (rating) =>
@@ -991,20 +994,20 @@ export default function ProductPage() {
                       </div>
 
                       <div>
-                        <label htmlFor="review-title" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                          Review Title <span className="text-neutral-400 font-normal">(optional)</span>
+                        <label htmlFor="review-title" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
+                          Review Title <span className="text-neutral-400 font-normal normal-case">(optional)</span>
                         </label>
                         <input
                           type="text"
                           id="review-title"
                           value={reviewFormData.title}
                           onChange={(e) => setReviewFormData({ ...reviewFormData, title: e.target.value })}
-                          className="w-full px-5 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white transition-all"
+                          className="w-full px-5 py-3 border border-neutral-200/50 bg-white/50 backdrop-blur-sm text-neutral-900 text-sm font-light focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
                         />
                       </div>
 
                       <div>
-                        <label htmlFor="review-text" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
+                        <label htmlFor="review-text" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
                           Your Review *
                         </label>
                         <textarea
@@ -1014,10 +1017,10 @@ export default function ProductPage() {
                           minLength={10}
                           value={reviewFormData.review_text}
                           onChange={(e) => setReviewFormData({ ...reviewFormData, review_text: e.target.value })}
-                          className="w-full px-5 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 bg-white resize-none transition-all"
+                          className="w-full px-5 py-3 border border-neutral-200/50 bg-white/50 backdrop-blur-sm text-neutral-900 text-sm font-light resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
                           placeholder="Share your experience with this product..."
                         />
-                        <p className="mt-2 text-xs text-neutral-500 font-medium">
+                        <p className="mt-2 text-xs text-neutral-400 font-light">
                           Minimum 10 characters
                         </p>
                       </div>
@@ -1036,7 +1039,7 @@ export default function ProductPage() {
                       <button
                         type="submit"
                         disabled={submittingReview}
-                        className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-neutral-900 text-white rounded-full hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm disabled:hover:scale-100"
+                        className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-neutral-900 text-white text-xs font-light uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {submittingReview ? (
                           <>
@@ -1062,24 +1065,24 @@ export default function ProductPage() {
 
               {/* Reviews List */}
               {reviews.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-neutral-600">No reviews yet. Be the first to review this product!</p>
+                <div className="text-center py-16">
+                  <p className="text-neutral-500 font-light">No reviews yet. Be the first to review this product!</p>
                 </div>
               ) : (
-                <div className="space-y-8">
+                <div className="space-y-12">
                   {reviews.map((review) => (
-                    <div key={review.id} className="border-b border-neutral-200 pb-8 last:border-b-0">
-                      <div className="flex items-start justify-between mb-3">
+                    <div key={review.id} className="border-b border-neutral-200/50 pb-12 last:border-b-0">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
                           {review.title && (
-                            <h4 className="font-semibold text-neutral-900 mb-2 text-lg">
+                            <h4 className="font-light text-neutral-900 mb-3 text-lg tracking-wide">
                               {review.title}
                             </h4>
                           )}
-                          <div className="flex items-center gap-3 mb-3">
-                            <p className="text-sm font-medium text-neutral-900">{review.name}</p>
-                            <span className="text-neutral-400">•</span>
-                            <p className="text-sm text-neutral-500">
+                          <div className="flex items-center gap-3 mb-4">
+                            <p className="text-sm font-light text-neutral-900">{review.name}</p>
+                            <span className="text-neutral-300">•</span>
+                            <p className="text-sm text-neutral-400 font-light">
                               {new Date(review.created_at * 1000).toLocaleDateString()}
                             </p>
                           </div>
@@ -1088,7 +1091,7 @@ export default function ProductPage() {
                           {renderStars(review.rating)}
                         </div>
                       </div>
-                      <p className="text-neutral-700 mb-4 leading-relaxed">{review.review_text}</p>
+                      <p className="text-neutral-600 mb-6 leading-relaxed font-light">{review.review_text}</p>
                       <button
                         onClick={() => handleMarkHelpful(review.id)}
                         disabled={helpfulClicked.has(review.id)}
@@ -1118,8 +1121,8 @@ export default function ProductPage() {
 
               {/* Rating Distribution */}
               {reviewStats && reviewStats.total > 0 && (
-                <div className="mt-12 p-8 bg-white rounded-2xl border border-neutral-100 shadow-sm">
-                  <h3 className="text-base font-semibold text-neutral-900 mb-5 uppercase tracking-wide text-sm">Rating Distribution</h3>
+                <div className="mt-16 p-10 bg-white border border-neutral-200/50">
+                  <h3 className="text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-8">Rating Distribution</h3>
                   <div className="space-y-3">
                     {reviewStats.ratingDistribution.map(({ rating, count }) => {
                       const percentage = reviewStats.total > 0 ? (count / reviewStats.total) * 100 : 0;
@@ -1150,14 +1153,14 @@ export default function ProductPage() {
 
         {/* Related Products Section */}
         {product.category_id && (
-          <div className="mt-20 border-t border-neutral-200 pt-16">
-            <h2 className="text-3xl font-light tracking-tight text-neutral-900 mb-12">Related Products</h2>
+          <div className="mt-24 border-t border-neutral-200/50 pt-16">
+            <h2 className="text-3xl font-extralight tracking-wide text-neutral-900 mb-12">Related Products</h2>
             {loadingRelated ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>
               </div>
             ) : relatedProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 lg:gap-12">
                 {relatedProducts.map((relatedProduct) => {
                   const relatedName = locale === 'sv' ? relatedProduct.name_sv : relatedProduct.name_en;
                   const relatedImageUrl = relatedProduct.images?.[0]?.url;
@@ -1169,52 +1172,64 @@ export default function ProductPage() {
                       href={`/products/${relatedProduct.slug}`}
                       className="group"
                     >
-                      <div className="relative w-full overflow-hidden rounded-2xl border border-neutral-100 bg-white aspect-[4/5] mb-4 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="relative w-full overflow-hidden bg-neutral-50 aspect-[3/4] mb-6">
                         {relatedImageUrl ? (
                           <Image
                             src={relatedImageUrl}
                             alt={relatedName}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="object-cover group-hover:scale-[1.03] transition-transform duration-700"
                             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center text-sm text-neutral-400 bg-neutral-50">
-                            No image
+                          <div className="flex h-full items-center justify-center">
+                            <div className="text-center space-y-3">
+                              <div className="inline-block h-px w-12 bg-gradient-to-r from-transparent via-neutral-300 to-transparent" />
+                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-300">Image</p>
+                            </div>
                           </div>
                         )}
                         {relatedHasDiscount && (
-                          <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                            Sale
+                          <div className="absolute top-4 right-4 z-10">
+                            <div className="bg-amber-500 px-3 py-1">
+                              <p className="text-[9px] font-light uppercase tracking-[0.3em] text-white">Sale</p>
+                            </div>
                           </div>
                         )}
                       </div>
-                      <div className="space-y-1">
+                      <div className="space-y-3">
                         {relatedProduct.category && (
-                          <p className="text-xs uppercase tracking-[0.15em] text-neutral-500 font-medium">
+                          <p className="text-[9px] uppercase tracking-[0.4em] text-neutral-400 font-light">
                             {locale === 'sv' ? relatedProduct.category.name_sv : relatedProduct.category.name_en}
                           </p>
                         )}
-                        <h3 className="text-sm font-medium tracking-tight text-neutral-900 group-hover:text-neutral-600 transition-colors line-clamp-2">
+                        <h3 className="text-lg font-extralight tracking-wide text-neutral-900 group-hover:text-amber-600 transition-colors duration-300 leading-tight">
                           {relatedName}
                         </h3>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-sm font-semibold text-neutral-900">
-                            {formatPrice(relatedProduct.price, 'SEK')}
-                          </span>
-                          {relatedHasDiscount && (
-                            <span className="text-xs text-neutral-500 line-through">
-                              {formatPrice(relatedProduct.compare_at_price!, 'SEK')}
+                        <div className="flex items-baseline gap-3 pt-1">
+                          {relatedHasDiscount ? (
+                            <>
+                              <span className="text-base font-light text-neutral-900">
+                                {formatPrice(relatedProduct.price, 'SEK')}
+                              </span>
+                              <span className="text-sm text-neutral-400 line-through font-extralight">
+                                {formatPrice(relatedProduct.compare_at_price!, 'SEK')}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-base font-light text-neutral-900">
+                              {formatPrice(relatedProduct.price, 'SEK')}
                             </span>
                           )}
                         </div>
+                        <div className="h-px w-0 bg-gradient-to-r from-amber-500/50 to-transparent transition-all duration-500 group-hover:w-full mt-4" />
                       </div>
                     </Link>
                   );
                 })}
               </div>
             ) : (
-              <p className="text-neutral-500 text-center py-8">No related products found.</p>
+              <p className="text-neutral-400 text-center py-12 font-light">No related products found.</p>
             )}
           </div>
         )}
