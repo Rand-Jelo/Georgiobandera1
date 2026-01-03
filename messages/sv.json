@@ -115,7 +115,9 @@
     "loggingIn": "Loggar in...",
     "registering": "Skapar konto...",
     "passwordMismatch": "Lösenorden matchar inte",
-    "passwordTooShort": "Lösenordet måste vara minst 8 tecken"
+    "passwordTooShort": "Lösenordet måste vara minst 8 tecken",
+    "welcome": "Välkommen tillbaka",
+    "joinUs": "Gå med oss"
   },
   "profile": {
     "title": "Min profil",
@@ -160,6 +162,7 @@
   },
   "orders": {
     "title": "Orderhistorik",
+    "orderHistory": "Orderhistorik",
     "noOrders": "Du har inte lagt några beställningar än",
     "orderNumber": "Order #",
     "date": "Datum",
@@ -196,6 +199,15 @@
     "send": "Skicka meddelande",
     "sending": "Skickar...",
     "success": "Ditt meddelande har skickats! Vi återkommer så snart som möjligt."
+  },
+  "wishlist": {
+    "title": "Min önskelista",
+    "empty": "Din önskelista är tom",
+    "emptyTitle": "Inga produkter i din önskelista",
+    "emptyDescription": "Börja lägga till produkter du älskar i din önskelista",
+    "browseProducts": "Bläddra produkter",
+    "item": "produkt",
+    "items": "produkter"
   }
 }
 

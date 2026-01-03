@@ -105,10 +105,10 @@ export default function OrderConfirmationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto"></div>
-          <p className="mt-4 text-neutral-500 font-medium">Loading order...</p>
+          <p className="mt-4 text-neutral-500 font-light">Loading order...</p>
         </div>
       </div>
     );
@@ -116,17 +116,17 @@ export default function OrderConfirmationPage() {
 
   if (error && !showGuestForm) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <p className="text-red-600 mb-6 font-medium">{error}</p>
+          <p className="text-red-600 mb-6 font-light">{error}</p>
           <Link
             href="/orders"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white text-sm font-light uppercase tracking-wider hover:bg-neutral-800 transition-all duration-300"
           >
             View all orders
           </Link>
@@ -137,44 +137,68 @@ export default function OrderConfirmationPage() {
 
   if (showGuestForm && !order) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 py-16 px-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-neutral-100 p-8">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-semibold text-neutral-900 mb-2">View Your Order</h1>
-            <p className="text-neutral-600">Enter your email address to view order {orderNumber}</p>
+      <div className="min-h-screen bg-white">
+        {/* Dark Hero Section */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white">
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
+            <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,_transparent,_transparent_2px,_rgba(255,255,255,0.02)_2px,_rgba(255,255,255,0.02)_4px)]" />
           </div>
-          
-          <form onSubmit={handleGuestAccess} className="space-y-4">
-            <div>
-              <label htmlFor="guestEmail" className="block text-sm font-medium text-neutral-700 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="guestEmail"
-                value={guestEmail}
-                onChange={(e) => setGuestEmail(e.target.value)}
-                required
-                placeholder="your.email@example.com"
-                className="block w-full px-4 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-              />
-            </div>
-            
-            {error && (
-              <div className="rounded-xl bg-red-50/50 border border-red-200/50 p-3">
-                <p className="text-sm text-red-800">{error}</p>
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+          <div className="relative mx-auto max-w-7xl px-6 py-24">
+            <div className="max-w-2xl mx-auto text-center space-y-6">
+              <div className="inline-block">
+                <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
+                  View Order
+                </p>
+                <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
               </div>
-            )}
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-6 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Loading...' : 'View Order'}
-            </button>
-          </form>
-        </div>
+              <h1 className="text-4xl font-extralight tracking-wide sm:text-5xl lg:text-6xl">
+                Order #{orderNumber}
+              </h1>
+            </div>
+          </div>
+        </section>
+
+        {/* Form Section */}
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md w-full mx-auto">
+            <div className="bg-white border border-neutral-200/50 overflow-hidden">
+              <form className="px-8 py-10 space-y-6" onSubmit={handleGuestAccess}>
+                <div>
+                  <label htmlFor="guestEmail" className="block text-xs font-light uppercase tracking-wider text-neutral-700 mb-3">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="guestEmail"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    required
+                    placeholder="your.email@example.com"
+                    className="block w-full px-5 py-3.5 border border-neutral-200/50 bg-white/80 backdrop-blur-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/30 transition-all text-sm font-light"
+                  />
+                </div>
+                
+                {error && (
+                  <div className="bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm">
+                    <p className="text-sm text-red-800">{error}</p>
+                  </div>
+                )}
+                
+                <div className="pt-6 border-t border-neutral-200/50">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-4 px-6 border border-transparent text-sm font-light uppercase tracking-wider text-white bg-neutral-900 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                  >
+                    {loading ? 'Loading...' : 'View Order'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
       </div>
     );
   }
@@ -184,52 +208,48 @@ export default function OrderConfirmationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-16">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-2xl shadow-lg border border-neutral-100 overflow-hidden">
-          {/* Success Message */}
-          <div className="text-center py-12 px-8 bg-gradient-to-br from-green-50 to-white border-b border-neutral-100">
-            <div className="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-green-100 mb-6 shadow-lg">
-              <svg
-                className="h-10 w-10 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+    <div className="min-h-screen bg-white">
+      {/* Dark Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,_transparent,_transparent_2px,_rgba(255,255,255,0.02)_2px,_rgba(255,255,255,0.02)_4px)]" />
+        </div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+        <div className="relative mx-auto max-w-7xl px-6 py-24">
+          <div className="max-w-2xl mx-auto text-center space-y-6">
+            <div className="inline-block">
+              <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
+                Order Details
+              </p>
+              <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
             </div>
-            <h1 className="text-4xl font-light tracking-tight text-neutral-900 mb-3">
-              Order Confirmed!
+            <h1 className="text-4xl font-extralight tracking-wide sm:text-5xl lg:text-6xl">
+              Order #{order.order_number}
             </h1>
-            <p className="text-lg text-neutral-600">
-              Thank you for your order. We've sent a confirmation email.
+            <p className="text-sm font-light tracking-wide text-neutral-400 sm:text-base">
+              {new Date(order.created_at * 1000).toLocaleDateString()}
             </p>
           </div>
+        </div>
+      </section>
 
-          <div className="p-8 space-y-8">
-            {/* Order Tracking Timeline */}
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h2 className="text-xl font-semibold text-neutral-900">
-                  Order Tracking
-                </h2>
-              </div>
+      {/* Order Content */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+
+          {/* Order Tracking Timeline */}
+          <div className="bg-white border border-neutral-200/50">
+            <div className="p-8 border-b border-neutral-200/50">
+              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">
+                Order Tracking
+              </h2>
+            </div>
+            <div className="p-8">
               
-              {/* Tracking Timeline */}
               {order.statusHistory && order.statusHistory.length > 0 ? (
                 <div className="relative">
-                  <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-neutral-200"></div>
+                  <div className="absolute left-4 top-0 bottom-0 w-px bg-neutral-200/50"></div>
                   <div className="space-y-6">
                     {order.statusHistory.map((status, index) => {
                       const isLast = index === order.statusHistory!.length - 1;
@@ -237,7 +257,7 @@ export default function OrderConfirmationPage() {
                       
                       return (
                         <div key={status.id} className="relative flex items-start gap-4">
-                          <div className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full ${
+                          <div className={`relative z-10 flex items-center justify-center w-8 h-8 ${
                             isLast ? 'bg-neutral-900' : 'bg-neutral-300'
                           }`}>
                             {isLast ? (
@@ -245,14 +265,14 @@ export default function OrderConfirmationPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                               </svg>
                             ) : (
-                              <div className="w-2 h-2 rounded-full bg-white"></div>
+                              <div className="w-2 h-2 bg-white"></div>
                             )}
                           </div>
                           <div className="flex-1 pb-6">
-                            <div className="bg-neutral-50 rounded-xl p-4">
+                            <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
                               <div className="flex items-center justify-between mb-2">
-                                <p className="font-semibold text-neutral-900 capitalize">{statusConfig.label}</p>
-                                <p className="text-xs text-neutral-500">
+                                <p className="font-light text-neutral-900 uppercase tracking-wide text-sm">{statusConfig.label}</p>
+                                <p className="text-xs text-neutral-500 font-light">
                                   {new Date(status.created_at * 1000).toLocaleDateString('en-US', {
                                     month: 'short',
                                     day: 'numeric',
@@ -263,7 +283,7 @@ export default function OrderConfirmationPage() {
                                 </p>
                               </div>
                               {status.message && (
-                                <p className="text-sm text-neutral-600">{status.message}</p>
+                                <p className="text-sm text-neutral-600 font-light">{status.message}</p>
                               )}
                             </div>
                           </div>
@@ -273,24 +293,23 @@ export default function OrderConfirmationPage() {
                   </div>
                 </div>
               ) : (
-                <div className="bg-neutral-50 rounded-xl p-6 text-center">
-                  <p className="text-neutral-600">No tracking information available yet.</p>
+                <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-6 text-center">
+                  <p className="text-neutral-600 font-light">No tracking information available yet.</p>
                 </div>
               )}
 
-              {/* Tracking Number */}
               {order.tracking_number && (
-                <div className="mt-6 bg-neutral-50 rounded-xl p-4">
+                <div className="mt-6 bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">Tracking Number</p>
-                      <p className="text-base font-semibold text-neutral-900 font-mono">{order.tracking_number}</p>
+                      <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1 font-light">Tracking Number</p>
+                      <p className="text-base font-light text-neutral-900 font-mono">{order.tracking_number}</p>
                     </div>
                     <a
                       href={`https://tracking.postnord.com/track/${order.tracking_number}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors"
+                      className="px-4 py-2 bg-neutral-900 text-white text-xs font-light uppercase tracking-wider hover:bg-neutral-800 transition-colors"
                     >
                       Track Package
                     </a>
@@ -298,82 +317,70 @@ export default function OrderConfirmationPage() {
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Order Details */}
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <h2 className="text-xl font-semibold text-neutral-900">
-                  Order Details
-                </h2>
-              </div>
+          {/* Order Details */}
+          <div className="bg-white border border-neutral-200/50">
+            <div className="p-8 border-b border-neutral-200/50">
+              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">
+                Order Details
+              </h2>
+            </div>
+            <div className="p-8">
               <dl className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-neutral-50 rounded-xl p-4">
-                  <dt className="text-xs text-neutral-500 uppercase tracking-wide mb-2">Order Number</dt>
-                  <dd className="text-base font-semibold text-neutral-900">{order.order_number}</dd>
+                <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
+                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">Order Number</dt>
+                  <dd className="text-base font-light text-neutral-900">{order.order_number}</dd>
                 </div>
-                <div className="bg-neutral-50 rounded-xl p-4">
-                  <dt className="text-xs text-neutral-500 uppercase tracking-wide mb-2">Date</dt>
-                  <dd className="text-base font-semibold text-neutral-900">
+                <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
+                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">Date</dt>
+                  <dd className="text-base font-light text-neutral-900">
                     {new Date(order.created_at * 1000).toLocaleDateString()}
                   </dd>
                 </div>
-                <div className="bg-neutral-50 rounded-xl p-4">
-                  <dt className="text-xs text-neutral-500 uppercase tracking-wide mb-2">Status</dt>
-                  <dd className="text-base font-semibold text-neutral-900 capitalize">{order.status}</dd>
+                <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
+                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">Status</dt>
+                  <dd className="text-base font-light text-neutral-900 uppercase tracking-wide">{order.status}</dd>
                 </div>
-                <div className="bg-neutral-50 rounded-xl p-4">
-                  <dt className="text-xs text-neutral-500 uppercase tracking-wide mb-2">Payment Status</dt>
-                  <dd className="text-base font-semibold text-neutral-900 capitalize">{order.payment_status}</dd>
+                <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
+                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">Payment Status</dt>
+                  <dd className="text-base font-light text-neutral-900 uppercase tracking-wide">{order.payment_status}</dd>
                 </div>
               </dl>
             </div>
+          </div>
 
-            {/* Order Items */}
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                </div>
-                <h2 className="text-xl font-semibold text-neutral-900">Items</h2>
-              </div>
-              <div className="space-y-3">
-                {order.items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-start p-4 bg-neutral-50 rounded-xl">
-                    <div className="flex-1 pr-4">
-                      <p className="font-semibold text-neutral-900">{item.product_name}</p>
-                      {item.variant_name && (
-                        <p className="text-sm text-neutral-500 mt-1">{item.variant_name}</p>
-                      )}
-                      <p className="text-sm text-neutral-500 mt-1">Quantity: {item.quantity}</p>
-                    </div>
-                    <p className="font-semibold text-neutral-900 whitespace-nowrap">
-                      {formatPrice(item.total, order.currency)}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          {/* Order Items */}
+          <div className="bg-white border border-neutral-200/50">
+            <div className="p-8 border-b border-neutral-200/50">
+              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">Items</h2>
             </div>
-
-            {/* Shipping Address */}
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+            <div className="p-8 space-y-3">
+              {order.items.map((item) => (
+                <div key={item.id} className="flex justify-between items-start p-4 bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50">
+                  <div className="flex-1 pr-4">
+                    <p className="font-light text-neutral-900">{item.product_name}</p>
+                    {item.variant_name && (
+                      <p className="text-sm text-neutral-500 mt-1 font-light">{item.variant_name}</p>
+                    )}
+                    <p className="text-sm text-neutral-500 mt-1 font-light">Quantity: {item.quantity}</p>
+                  </div>
+                  <p className="font-light text-neutral-900 whitespace-nowrap">
+                    {formatPrice(item.total, order.currency)}
+                  </p>
                 </div>
-                <h2 className="text-xl font-semibold text-neutral-900">Shipping Address</h2>
-              </div>
-              <div className="bg-neutral-50 rounded-xl p-6 text-sm text-neutral-600">
-                <p className="font-semibold text-neutral-900 mb-2">{order.shipping_name}</p>
+              ))}
+            </div>
+          </div>
+
+          {/* Shipping Address */}
+          <div className="bg-white border border-neutral-200/50">
+            <div className="p-8 border-b border-neutral-200/50">
+              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">Shipping Address</h2>
+            </div>
+            <div className="p-8">
+              <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-6 text-sm text-neutral-600 font-light">
+                <p className="font-light text-neutral-900 mb-2">{order.shipping_name}</p>
                 <p>{order.shipping_address_line1}</p>
                 {order.shipping_address_line2 && <p>{order.shipping_address_line2}</p>}
                 <p>
@@ -382,63 +389,60 @@ export default function OrderConfirmationPage() {
                 <p>{order.shipping_country}</p>
               </div>
             </div>
+          </div>
 
-            {/* Order Summary */}
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h2 className="text-xl font-semibold text-neutral-900">Order Summary</h2>
-              </div>
-              <div className="bg-neutral-50 rounded-xl p-6">
+          {/* Order Summary */}
+          <div className="bg-white border border-neutral-200/50">
+            <div className="p-8 border-b border-neutral-200/50">
+              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">Order Summary</h2>
+            </div>
+            <div className="p-8">
+              <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-6">
                 <dl className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <dt className="text-neutral-600 font-medium">Subtotal (incl. VAT)</dt>
-                    <dd className="text-neutral-900 font-semibold">{formatPrice(order.subtotal, order.currency)}</dd>
+                    <dt className="text-neutral-600 font-light">Subtotal (incl. VAT)</dt>
+                    <dd className="text-neutral-900 font-light">{formatPrice(order.subtotal, order.currency)}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-neutral-600 font-medium">Shipping</dt>
-                    <dd className="text-neutral-900 font-semibold">{formatPrice(order.shipping_cost, order.currency)}</dd>
+                    <dt className="text-neutral-600 font-light">Shipping</dt>
+                    <dd className="text-neutral-900 font-light">{formatPrice(order.shipping_cost, order.currency)}</dd>
                   </div>
-                  <div className="flex justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-200">
+                  <div className="flex justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-200/50 font-light">
                     <dt>VAT included in subtotal</dt>
                     <dd>{formatPrice(order.tax, order.currency)}</dd>
                   </div>
-                  <div className="flex justify-between text-lg font-semibold border-t border-neutral-200 pt-3 mt-3">
+                  <div className="flex justify-between text-lg font-light border-t border-neutral-200/50 pt-3 mt-3">
                     <dt className="text-neutral-900">Total</dt>
                     <dd className="text-neutral-900">{formatPrice(order.subtotal + order.shipping_cost, order.currency)}</dd>
                   </div>
                 </dl>
               </div>
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-neutral-100">
-              <Link
-                href="/shop"
-                className="flex-1 inline-flex items-center justify-center gap-2 text-center bg-white border border-neutral-200 text-neutral-900 py-3 px-6 rounded-full font-medium hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                Continue Shopping
-              </Link>
-              <Link
-                href="/orders"
-                className="flex-1 inline-flex items-center justify-center gap-2 text-center bg-neutral-900 text-white py-3 px-6 rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg"
-              >
-                View All Orders
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-            </div>
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link
+              href="/shop"
+              className="flex-1 inline-flex items-center justify-center gap-2 text-center bg-white border border-neutral-200/50 text-neutral-900 py-4 px-6 text-sm font-light uppercase tracking-wider hover:bg-neutral-50 hover:border-neutral-300 transition-all duration-300"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Continue Shopping
+            </Link>
+            <Link
+              href="/orders"
+              className="flex-1 inline-flex items-center justify-center gap-2 text-center bg-neutral-900 text-white py-4 px-6 text-sm font-light uppercase tracking-wider hover:bg-neutral-800 transition-all duration-300"
+            >
+              View All Orders
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

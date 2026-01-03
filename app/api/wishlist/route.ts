@@ -6,7 +6,7 @@ import {
   addToWishlist,
   isInWishlist,
 } from '@/lib/db/queries/wishlist';
-import { getProductById } from '@/lib/db/queries/products';
+import { getProductById, getProductImages } from '@/lib/db/queries/products';
 import { z } from 'zod';
 
 const addItemSchema = z.object({
@@ -26,13 +26,27 @@ export async function GET(request: NextRequest) {
     const db = getDB();
     const items = await getWishlistItems(db, session.userId);
 
-    // Enrich with product data
+    // Enrich with product data including images
     const enrichedItems = await Promise.all(
       items.map(async (item) => {
         const product = await getProductById(db, item.product_id);
+        if (product) {
+          const images = await getProductImages(db, item.product_id);
+          return {
+            ...item,
+            product: {
+              ...product,
+              images: images.map(img => ({
+                url: img.url,
+                alt_text_en: img.alt_text_en,
+                alt_text_sv: img.alt_text_sv,
+              })),
+            },
+          };
+        }
         return {
           ...item,
-          product,
+          product: null,
         };
       })
     );

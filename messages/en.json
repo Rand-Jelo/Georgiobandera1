@@ -115,7 +115,9 @@
     "loggingIn": "Signing in...",
     "registering": "Creating account...",
     "passwordMismatch": "Passwords do not match",
-    "passwordTooShort": "Password must be at least 8 characters"
+    "passwordTooShort": "Password must be at least 8 characters",
+    "welcome": "Welcome Back",
+    "joinUs": "Join Us"
   },
   "profile": {
     "title": "My Profile",
@@ -160,6 +162,7 @@
   },
   "orders": {
     "title": "Order History",
+    "orderHistory": "Order History",
     "noOrders": "You haven't placed any orders yet",
     "orderNumber": "Order #",
     "date": "Date",
@@ -196,6 +199,15 @@
     "send": "Send Message",
     "sending": "Sending...",
     "success": "Your message has been sent successfully! We will get back to you soon."
+  },
+  "wishlist": {
+    "title": "My Wishlist",
+    "empty": "Your wishlist is empty",
+    "emptyTitle": "No items in your wishlist",
+    "emptyDescription": "Start adding products you love to your wishlist",
+    "browseProducts": "Browse Products",
+    "item": "item",
+    "items": "items"
   }
 }
 

@@ -118,8 +118,8 @@ export default function CheckoutPage() {
   const [orderNotes, setOrderNotes] = useState('');
   const [giftMessage, setGiftMessage] = useState('');
 
-  // Review step
-  const [showReview, setShowReview] = useState(false);
+  // Multi-step checkout state
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1); // 1: Shipping, 2: Payment, 3: Review
 
   // Address validation
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
@@ -343,7 +343,7 @@ export default function CheckoutPage() {
     }
 
     // Only initialize payment when review step is shown (where payment forms are displayed)
-    if (!showReview) {
+    if (currentStep !== 3) {
       setStripeClientSecret(null);
       setPaypalOrderId(null);
       return;
@@ -406,7 +406,7 @@ export default function CheckoutPage() {
     };
 
     initializePayment();
-  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount, showReview]);
+  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount, currentStep]);
 
   const handlePaymentSuccess = async (paymentId: string) => {
     setPaymentProcessing(true);
@@ -483,6 +483,27 @@ export default function CheckoutPage() {
   const handlePaymentError = (errorMessage: string) => {
     setError(errorMessage);
     setPaymentProcessing(false);
+  };
+
+  const handlePlaceOrder = async () => {
+    if (!formData.paymentMethod) {
+      setError('Please select a payment method');
+      return;
+    }
+
+    if (!isShippingComplete()) {
+      setError('Please complete your shipping information');
+      setCurrentStep(1);
+      return;
+    }
+
+    // If payment method is selected, the payment forms should handle the order placement
+    // This function is mainly for validation and triggering payment
+    setProcessing(true);
+    setError('');
+
+    // The actual order placement happens in handlePaymentSuccess
+    // which is called by the payment components after successful payment
   };
 
   // Auto-detect shipping region when country changes
@@ -585,12 +606,45 @@ export default function CheckoutPage() {
     setDiscountError('');
   };
 
+  // Validation functions
+  const isShippingComplete = () => {
+    return !!(
+      formData.shippingName &&
+      formData.shippingAddressLine1 &&
+      formData.shippingCity &&
+      formData.shippingPostalCode &&
+      formData.shippingCountry &&
+      formData.shippingRegionId &&
+      shippingCost !== null
+    );
+  };
+
+  const isPaymentComplete = () => {
+    return !!formData.paymentMethod;
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 1 && isShippingComplete()) {
+      setCurrentStep(2);
+    } else if (currentStep === 2 && isPaymentComplete()) {
+      setCurrentStep(3);
+    }
+  };
+
+  const handlePreviousStep = () => {
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    } else if (currentStep === 3) {
+      setCurrentStep(2);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto"></div>
-          <p className="mt-4 text-neutral-500 font-medium">Loading checkout...</p>
+          <p className="mt-4 text-neutral-500 font-light">Loading checkout...</p>
         </div>
       </div>
     );
@@ -598,398 +652,737 @@ export default function CheckoutPage() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
+      <div className="min-h-screen bg-white">
+        {/* Dark Hero Section */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white">
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
+            <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,_transparent,_transparent_2px,_rgba(255,255,255,0.02)_2px,_rgba(255,255,255,0.02)_4px)]" />
           </div>
-          <p className="text-neutral-600 mb-6 font-medium">Your cart is empty</p>
-          <button
-            onClick={() => router.push('/shop')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Continue Shopping
-          </button>
-        </div>
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+          <div className="relative mx-auto max-w-7xl px-6 py-24">
+            <div className="max-w-2xl mx-auto text-center space-y-6">
+              <div className="inline-block">
+                <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
+                  Checkout
+                </p>
+                <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
+              </div>
+              <h1 className="text-4xl font-extralight tracking-wide sm:text-5xl lg:text-6xl">
+                {t('title')}
+              </h1>
+            </div>
+          </div>
+        </section>
+
+        {/* Empty Cart */}
+        <section className="py-16 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md mx-auto text-center">
+            <div className="w-20 h-20 mx-auto flex items-center justify-center mb-6">
+              <svg className="w-full h-full text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <p className="text-neutral-600 mb-6 font-light">Your cart is empty</p>
+            <button
+              onClick={() => router.push('/shop')}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white text-sm font-light uppercase tracking-wider hover:bg-neutral-800 transition-all duration-300"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Continue Shopping
+            </button>
+          </div>
+        </section>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-neutral-50 py-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-5xl font-light tracking-tight text-neutral-900 mb-8">{t('title')}</h1>
+  const steps = [
+    { number: 1, label: 'Shipping', icon: 'location' },
+    { number: 2, label: 'Payment', icon: 'payment' },
+    { number: 3, label: 'Review', icon: 'check' },
+  ];
 
-        {/* Progress Indicator */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between max-w-3xl">
-            <div className={`flex items-center ${showReview ? 'text-neutral-400' : 'text-neutral-900'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                showReview ? 'border-neutral-300 bg-white' : 'border-neutral-900 bg-neutral-900 text-white'
-              }`}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Dark Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,_transparent,_transparent_2px,_rgba(255,255,255,0.02)_2px,_rgba(255,255,255,0.02)_4px)]" />
+        </div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+        <div className="relative mx-auto max-w-7xl px-6 py-16">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <div className="inline-block mb-6">
+                <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
+                  Secure Checkout
+                </p>
+                <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
               </div>
-              <span className="ml-3 text-sm font-medium hidden sm:block">Shipping</span>
+              <h1 className="text-4xl font-extralight tracking-wide sm:text-5xl lg:text-6xl mb-4">
+                {t('title')}
+              </h1>
             </div>
-            <div className={`flex-1 h-0.5 mx-4 ${showReview ? 'bg-neutral-300' : 'bg-neutral-900'}`} />
-            <div className={`flex items-center ${showReview ? 'text-neutral-900' : 'text-neutral-400'}`}>
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                showReview ? 'border-neutral-900 bg-neutral-900 text-white' : 'border-neutral-300 bg-white'
-              }`}>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+
+            {/* Progress Indicator */}
+            <div className="max-w-3xl mx-auto">
+              <div className="flex items-center justify-between">
+                {steps.map((step, index) => {
+                  const isActive = currentStep === step.number;
+                  const isCompleted = currentStep > step.number;
+                  const isLast = index === steps.length - 1;
+
+                  return (
+                    <div key={step.number} className="flex items-center flex-1">
+                      <div className="flex flex-col items-center flex-1">
+                        <div className={`relative flex items-center justify-center w-12 h-12 border-2 transition-all duration-300 ${
+                          isActive || isCompleted
+                            ? 'border-amber-500 bg-amber-500 text-white'
+                            : 'border-neutral-600 bg-transparent text-neutral-500'
+                        }`}>
+                          {isCompleted ? (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : step.icon === 'location' ? (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          ) : step.icon === 'payment' ? (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                          ) : (
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className={`mt-3 text-xs font-light uppercase tracking-wider hidden sm:block ${
+                          isActive ? 'text-amber-400' : isCompleted ? 'text-neutral-400' : 'text-neutral-600'
+                        }`}>
+                          {step.label}
+                        </span>
+                      </div>
+                      {!isLast && (
+                        <div className={`flex-1 h-px mx-4 transition-all duration-300 ${
+                          isCompleted ? 'bg-amber-500' : 'bg-neutral-700'
+                        }`} />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-              <span className="ml-3 text-sm font-medium hidden sm:block">Review</span>
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="lg:grid lg:grid-cols-12 lg:gap-x-12">
-          {/* Left Column - Shipping & Payment */}
-          <div className="lg:col-span-7 space-y-6">
-            {/* Shipping Information */}
-            <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
-              <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+      {/* Checkout Content */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-neutral-50">
+        <div className="max-w-[1400px] mx-auto">
+          <div className="flex flex-col lg:flex-row gap-12">
+            {/* Left Column - Main Checkout Steps */}
+            <div className="flex-1 space-y-8 min-w-0">
+              {/* Step 1: Shipping Information */}
+              {currentStep === 1 && (
+                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
+                  <div className="px-10 py-8 border-b border-neutral-200/30">
+                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
+                      {t('shippingInfo')}
+                    </h2>
                   </div>
-                  <h2 className="text-xl font-semibold text-neutral-900">
-                    {t('shippingInfo')}
-                  </h2>
-                </div>
-              </div>
-              <div className="p-6">
-                {/* Saved Addresses Selector */}
-                {savedAddresses.length > 0 && (
-                  <div className="mb-6 pb-6 border-b border-neutral-200">
-                    <label className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Use Saved Address
-                    </label>
-                    <select
-                      value={selectedAddressId || ''}
-                      onChange={(e) => {
-                        const addressId = e.target.value;
-                        if (addressId) {
-                          const address = savedAddresses.find(a => a.id === addressId);
-                          if (address) {
-                            handleSelectSavedAddress(address);
-                          }
-                        } else {
-                          setSelectedAddressId(null);
-                        }
-                      }}
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                    >
-                      <option value="">Select a saved address...</option>
-                      {savedAddresses.map((address) => (
-                        <option key={address.id} value={address.id}>
-                          {address.label || `${address.first_name} ${address.last_name}`} - {address.city}, {address.country}
-                        </option>
-                      ))}
-                    </select>
-                    {selectedAddressId && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedAddressId(null);
-                          setFormData({
-                            shippingName: '',
-                            shippingAddressLine1: '',
-                            shippingAddressLine2: '',
-                            shippingCity: '',
-                            shippingPostalCode: '',
-                            shippingCountry: 'SE',
-                            shippingPhone: '',
-                            shippingRegionId: '',
-                            paymentMethod: '' as 'stripe' | 'paypal' | '',
-                          });
-                        }}
-                        className="mt-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
-                      >
-                        Use different address
-                      </button>
+                  <div className="p-10">
+                    {/* Saved Addresses Selector */}
+                    {savedAddresses.length > 0 && (
+                      <div className="mb-10 pb-10 border-b border-neutral-200/30">
+                        <label className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                          Use Saved Address
+                        </label>
+                        <select
+                          value={selectedAddressId || ''}
+                          onChange={(e) => {
+                            const addressId = e.target.value;
+                            if (addressId) {
+                              const address = savedAddresses.find(a => a.id === addressId);
+                              if (address) {
+                                handleSelectSavedAddress(address);
+                              }
+                            } else {
+                              setSelectedAddressId(null);
+                            }
+                          }}
+                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                        >
+                          <option value="">Select a saved address...</option>
+                          {savedAddresses.map((address) => (
+                            <option key={address.id} value={address.id}>
+                              {address.label || `${address.first_name} ${address.last_name}`} - {address.city}, {address.country}
+                            </option>
+                          ))}
+                        </select>
+                        {selectedAddressId && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedAddressId(null);
+                              setFormData({
+                                shippingName: '',
+                                shippingAddressLine1: '',
+                                shippingAddressLine2: '',
+                                shippingCity: '',
+                                shippingPostalCode: '',
+                                shippingCountry: 'SE',
+                                shippingPhone: '',
+                                shippingRegionId: '',
+                                paymentMethod: '' as 'stripe' | 'paypal' | '',
+                              });
+                            }}
+                            className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
+                          >
+                            Use different address
+                          </button>
+                        )}
+                      </div>
                     )}
-                  </div>
-                )}
 
-                <div className="space-y-5">
-                  <div>
-                    <label htmlFor="shippingName" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="shippingName"
-                      name="shippingName"
-                      required
-                      value={formData.shippingName}
-                      onChange={handleChange}
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                    />
-                  </div>
+                    <div className="space-y-8">
+                      <div>
+                        <label htmlFor="shippingName" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                          Full Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          id="shippingName"
+                          name="shippingName"
+                          required
+                          value={formData.shippingName}
+                          onChange={handleChange}
+                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                          placeholder="John Doe"
+                        />
+                      </div>
 
-                  <div>
-                    <label htmlFor="shippingAddressLine1" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Address Line 1 <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="shippingAddressLine1"
-                      name="shippingAddressLine1"
-                      required
-                      value={formData.shippingAddressLine1}
-                      onChange={handleChange}
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                    />
-                  </div>
+                      <div>
+                        <label htmlFor="shippingAddressLine1" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                          Address Line 1 <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          id="shippingAddressLine1"
+                          name="shippingAddressLine1"
+                          required
+                          value={formData.shippingAddressLine1}
+                          onChange={handleChange}
+                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                          placeholder="Street address"
+                        />
+                      </div>
 
-                  <div>
-                    <label htmlFor="shippingAddressLine2" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Address Line 2 <span className="text-neutral-400 font-normal">(Optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="shippingAddressLine2"
-                      name="shippingAddressLine2"
-                      value={formData.shippingAddressLine2}
-                      onChange={handleChange}
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                    />
-                  </div>
+                      <div>
+                        <label htmlFor="shippingAddressLine2" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                          Address Line 2 <span className="text-neutral-400 font-normal normal-case">(Optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          id="shippingAddressLine2"
+                          name="shippingAddressLine2"
+                          value={formData.shippingAddressLine2}
+                          onChange={handleChange}
+                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                          placeholder="Apartment, suite, etc."
+                        />
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-5">
-                    <div>
-                      <label htmlFor="shippingCity" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                        City <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="shippingCity"
-                        name="shippingCity"
-                        required
-                        value={formData.shippingCity}
-                        onChange={handleChange}
-                        className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="shippingPostalCode" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                        Postal Code <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        id="shippingPostalCode"
-                        name="shippingPostalCode"
-                        required
-                        value={formData.shippingPostalCode}
-                        onChange={handleChange}
-                        className={`block w-full px-5 py-3 border rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 transition-all text-sm ${
-                          addressErrors.shippingPostalCode
-                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                            : 'border-neutral-200 focus:ring-neutral-900 focus:border-neutral-900'
-                        }`}
-                      />
-                      {addressErrors.shippingPostalCode && (
-                        <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {addressErrors.shippingPostalCode}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="shippingCountry" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Country <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="shippingCountry"
-                      name="shippingCountry"
-                      required
-                      value={formData.shippingCountry}
-                      onChange={handleChange}
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                    >
-                      <option value="">Select a country</option>
-                      {COUNTRIES.map((country) => (
-                        <option key={country.code} value={country.code}>
-                          {country.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="shippingPhone" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Phone <span className="text-neutral-400 font-normal">(Optional)</span>
-                    </label>
-                    <input
-                      type="tel"
-                      id="shippingPhone"
-                      name="shippingPhone"
-                      value={formData.shippingPhone}
-                      onChange={handleChange}
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                    />
-                  </div>
-
-                  {selectedRegion && (
-                    <div className="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
-                      <div className="flex items-center justify-between">
+                      <div className="grid grid-cols-2 gap-6">
                         <div>
-                          <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">Shipping Region</p>
-                          <p className="text-sm font-semibold text-neutral-900">
-                            {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
-                          </p>
+                          <label htmlFor="shippingCity" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                            City <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="shippingCity"
+                            name="shippingCity"
+                            required
+                            value={formData.shippingCity}
+                            onChange={handleChange}
+                            className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                            placeholder="City"
+                          />
                         </div>
-                        <div className="text-right">
-                          <p className="text-xs text-neutral-500 uppercase tracking-wide mb-1">Base Price</p>
-                          <p className="text-sm font-semibold text-neutral-900">
-                            {formatPrice(selectedRegion.base_price, 'SEK')}
-                          </p>
+
+                        <div>
+                          <label htmlFor="shippingPostalCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                            Postal Code <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="shippingPostalCode"
+                            name="shippingPostalCode"
+                            required
+                            value={formData.shippingPostalCode}
+                            onChange={handleChange}
+                            className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
+                              addressErrors.shippingPostalCode
+                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                                : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                            }`}
+                            placeholder="12345"
+                          />
+                          {addressErrors.shippingPostalCode && (
+                            <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {addressErrors.shippingPostalCode}
+                            </p>
+                          )}
                         </div>
                       </div>
-                      {selectedRegion.free_shipping_threshold && (
-                        <p className="mt-2 text-xs text-neutral-500">
-                          Free shipping on orders over {formatPrice(selectedRegion.free_shipping_threshold, 'SEK')}
-                        </p>
+
+                      <div>
+                        <label htmlFor="shippingCountry" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                          Country <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                          id="shippingCountry"
+                          name="shippingCountry"
+                          required
+                          value={formData.shippingCountry}
+                          onChange={handleChange}
+                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                        >
+                          <option value="">Select a country</option>
+                          {COUNTRIES.map((country) => (
+                            <option key={country.code} value={country.code}>
+                              {country.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="shippingPhone" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                          Phone <span className="text-neutral-400 font-normal normal-case">(Optional)</span>
+                        </label>
+                        <input
+                          type="tel"
+                          id="shippingPhone"
+                          name="shippingPhone"
+                          value={formData.shippingPhone}
+                          onChange={handleChange}
+                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                          placeholder="+46 70 123 45 67"
+                        />
+                      </div>
+
+                      {selectedRegion && (
+                        <div className="bg-neutral-50 border border-neutral-200/30 p-6">
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">Shipping Region</p>
+                              <p className="text-sm font-light text-neutral-900 tracking-wide">
+                                {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">Base Price</p>
+                              <p className="text-sm font-light text-neutral-900 tracking-wide">
+                                {formatPrice(selectedRegion.base_price, 'SEK')}
+                              </p>
+                            </div>
+                          </div>
+                          {selectedRegion.free_shipping_threshold && (
+                            <p className="text-xs text-neutral-500 font-light tracking-wide pt-3 border-t border-neutral-200/30">
+                              Free shipping on orders over {formatPrice(selectedRegion.free_shipping_threshold, 'SEK')}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Save Address Option */}
+                      {!selectedAddressId && (
+                        <div className="flex items-center pt-2">
+                          <input
+                            type="checkbox"
+                            id="saveAddress"
+                            checked={showSaveAddress}
+                            onChange={(e) => setShowSaveAddress(e.target.checked)}
+                            className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
+                          />
+                          <label htmlFor="saveAddress" className="ml-3 text-sm text-neutral-700 font-light tracking-wide">
+                            Save this address for future orders
+                          </label>
+                        </div>
                       )}
                     </div>
-                  )}
-
-                  {/* Save Address Option */}
-                  {!selectedAddressId && (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id="saveAddress"
-                        checked={showSaveAddress}
-                        onChange={(e) => setShowSaveAddress(e.target.checked)}
-                        className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
-                      />
-                      <label htmlFor="saveAddress" className="ml-2 text-sm text-neutral-700">
-                        Save this address for future orders
-                      </label>
-                    </div>
-                  )}
+                  </div>
                 </div>
-              </div>
-            </div>
+              )}
 
-            {/* Guest Checkout - Email & Account Creation */}
-            {!showReview && isLoggedIn === false && (
-              <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
-                <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <h2 className="text-xl font-semibold text-neutral-900">
+              {/* Guest Checkout - Email & Account Creation */}
+              {currentStep === 1 && isLoggedIn === false && (
+                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
+                  <div className="px-10 py-8 border-b border-neutral-200/30">
+                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
                       Contact Information
                     </h2>
                   </div>
-                </div>
-                <div className="p-6 space-y-5">
-                  <div>
-                    <label htmlFor="guestEmail" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Email Address <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      id="guestEmail"
-                      name="guestEmail"
-                      required
-                      value={guestEmail}
-                      onChange={(e) => setGuestEmail(e.target.value)}
-                      placeholder="your.email@example.com"
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                    />
-                    <p className="mt-2 text-xs text-neutral-500">
-                      We'll send your order confirmation to this email
-                    </p>
-                  </div>
-
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="createAccount"
-                      checked={createAccount}
-                      onChange={(e) => setCreateAccount(e.target.checked)}
-                      className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
-                    />
-                    <label htmlFor="createAccount" className="ml-2 text-sm text-neutral-700">
-                      Create an account for faster checkout next time
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Order Notes & Gift Message */}
-            {!showReview && (
-              <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
-                <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
+                  <div className="p-10 space-y-8">
+                    <div>
+                      <label htmlFor="guestEmail" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                        Email Address <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        id="guestEmail"
+                        name="guestEmail"
+                        required
+                        value={guestEmail}
+                        onChange={(e) => setGuestEmail(e.target.value)}
+                        placeholder="your.email@example.com"
+                        className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                      />
+                      <p className="mt-3 text-xs text-neutral-500 font-light tracking-wide">
+                        We'll send your order confirmation to this email
+                      </p>
                     </div>
-                    <h2 className="text-xl font-semibold text-neutral-900">
+
+                    <div className="flex items-center pt-2">
+                      <input
+                        type="checkbox"
+                        id="createAccount"
+                        checked={createAccount}
+                        onChange={(e) => setCreateAccount(e.target.checked)}
+                        className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
+                      />
+                      <label htmlFor="createAccount" className="ml-3 text-sm text-neutral-700 font-light tracking-wide">
+                        Create an account for faster checkout next time
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Order Notes & Gift Message */}
+              {currentStep === 1 && (
+                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
+                  <div className="px-10 py-8 border-b border-neutral-200/30">
+                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
                       Additional Information
                     </h2>
                   </div>
-                </div>
-                <div className="p-6 space-y-5">
-                  <div>
-                    <label htmlFor="orderNotes" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Order Notes <span className="text-neutral-400 font-normal">(Optional)</span>
-                    </label>
-                    <textarea
-                      id="orderNotes"
-                      name="orderNotes"
-                      rows={3}
-                      value={orderNotes}
-                      onChange={(e) => setOrderNotes(e.target.value)}
-                      placeholder="Special instructions for your order..."
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm resize-none"
-                    />
+                  <div className="p-10 space-y-8">
+                    <div>
+                      <label htmlFor="orderNotes" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                        Order Notes <span className="text-neutral-400 font-normal normal-case">(Optional)</span>
+                      </label>
+                      <textarea
+                        id="orderNotes"
+                        name="orderNotes"
+                        rows={4}
+                        value={orderNotes}
+                        onChange={(e) => setOrderNotes(e.target.value)}
+                        placeholder="Special instructions for your order..."
+                        className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide resize-none"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="giftMessage" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                        Gift Message <span className="text-neutral-400 font-normal normal-case">(Optional)</span>
+                      </label>
+                      <textarea
+                        id="giftMessage"
+                        name="giftMessage"
+                        rows={4}
+                        value={giftMessage}
+                        onChange={(e) => setGiftMessage(e.target.value)}
+                        placeholder="Add a personal message for the recipient..."
+                        className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide resize-none"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label htmlFor="giftMessage" className="block text-sm font-medium text-neutral-700 mb-3 tracking-wide">
-                      Gift Message <span className="text-neutral-400 font-normal">(Optional)</span>
-                    </label>
-                    <textarea
-                      id="giftMessage"
-                      name="giftMessage"
-                      rows={3}
-                      value={giftMessage}
-                      onChange={(e) => setGiftMessage(e.target.value)}
-                      placeholder="Add a personal message for the recipient..."
-                      className="block w-full px-5 py-3 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm resize-none"
-                    />
+                </div>
+              )}
+
+              {/* Step 2: Payment */}
+              {currentStep === 2 && (
+                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
+                  <div className="px-10 py-8 border-b border-neutral-200/30">
+                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
+                      Payment Method
+                    </h2>
+                  </div>
+                  <div className="p-10">
+                    <div className="space-y-4">
+                      {/* Stripe Payment Option */}
+                      <div
+                        onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'stripe' }))}
+                        className={`p-6 border cursor-pointer transition-all duration-200 ${
+                          formData.paymentMethod === 'stripe'
+                            ? 'border-neutral-900 bg-neutral-50'
+                            : 'border-neutral-200/40 bg-white hover:border-neutral-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-5">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="stripe"
+                              checked={formData.paymentMethod === 'stripe'}
+                              onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as 'stripe' | 'paypal' }))}
+                              className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300"
+                            />
+                            <div>
+                              <p className="text-sm font-light text-neutral-900 tracking-wide">Credit / Debit Card</p>
+                              <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">Secure payment via Stripe</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            {/* Visa Logo - Official */}
+                            <div className="w-14 h-9 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
+                              <img
+                                src="/visa-logo-official.png"
+                                alt="Visa"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                            {/* Mastercard Logo - Official */}
+                            <div className="w-14 h-9 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
+                              <img
+                                src="/mastercard-logo-official.svg"
+                                alt="Mastercard"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* PayPal Payment Option */}
+                      <div
+                        onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'paypal' }))}
+                        className={`p-6 border cursor-pointer transition-all duration-200 ${
+                          formData.paymentMethod === 'paypal'
+                            ? 'border-neutral-900 bg-neutral-50'
+                            : 'border-neutral-200/40 bg-white hover:border-neutral-300'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-5">
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value="paypal"
+                              checked={formData.paymentMethod === 'paypal'}
+                              onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as 'stripe' | 'paypal' }))}
+                              className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300"
+                            />
+                            <div>
+                              <p className="text-sm font-light text-neutral-900 tracking-wide">PayPal</p>
+                              <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">Pay with your PayPal account</p>
+                            </div>
+                          </div>
+                          <div className="w-20 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
+                            {/* PayPal Logo - Official */}
+                            <img
+                              src="/paypal-logo-official.jpg"
+                              alt="PayPal Logo"
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+
+                    {/* Navigation Buttons */}
+                    <div className="mt-10 pt-8 border-t border-neutral-200/30 flex gap-4">
+                      <button
+                        type="button"
+                        onClick={handlePreviousStep}
+                        className="flex-1 py-5 px-6 border border-neutral-200/40 text-sm font-light uppercase tracking-[0.15em] text-neutral-900 bg-white hover:bg-neutral-50 transition-all duration-200"
+                      >
+                        <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back
+                      </button>
+                      {formData.paymentMethod && (
+                        <button
+                          type="button"
+                          onClick={handleNextStep}
+                          className="flex-1 py-5 px-6 border border-transparent text-sm font-light uppercase tracking-[0.15em] text-white bg-neutral-900 hover:bg-neutral-800 transition-all duration-200"
+                        >
+                          Review Order
+                          <svg className="w-4 h-4 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+
+              {/* Step 3: Review */}
+              {currentStep === 3 && (
+                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
+                  <div className="px-10 py-8 border-b border-neutral-200/30">
+                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
+                      Review Your Order
+                    </h2>
+                  </div>
+                  <div className="p-10 space-y-10">
+                    {/* Shipping Address Review */}
+                    <div>
+                      <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">Shipping Address</h3>
+                      <div className="bg-neutral-50 border border-neutral-200/30 p-6">
+                        <p className="font-light text-neutral-900 text-sm tracking-wide">{formData.shippingName}</p>
+                        <p className="font-light text-neutral-900 text-sm tracking-wide mt-1">{formData.shippingAddressLine1}</p>
+                        {formData.shippingAddressLine2 && (
+                          <p className="font-light text-neutral-900 text-sm tracking-wide">{formData.shippingAddressLine2}</p>
+                        )}
+                        <p className="font-light text-neutral-900 text-sm tracking-wide mt-1">
+                          {formData.shippingPostalCode} {formData.shippingCity}
+                        </p>
+                        <p className="font-light text-neutral-900 text-sm tracking-wide">
+                          {COUNTRIES.find(c => c.code === formData.shippingCountry)?.name || formData.shippingCountry}
+                        </p>
+                        {formData.shippingPhone && (
+                          <p className="font-light text-neutral-900 text-sm tracking-wide mt-1">{formData.shippingPhone}</p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(1)}
+                        className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
+                      >
+                        Edit address
+                      </button>
+                    </div>
+
+                    {/* Payment Method Review */}
+                    <div>
+                      <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">Payment Method</h3>
+                      <div className="bg-neutral-50 border border-neutral-200/30 p-6">
+                        <p className="font-light text-neutral-900 text-sm tracking-wide capitalize">
+                          {formData.paymentMethod === 'stripe' ? 'Credit / Debit Card' : 'PayPal'}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentStep(2)}
+                        className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
+                      >
+                        Change payment method
+                      </button>
+                    </div>
+
+                    {/* Order Notes & Gift Message */}
+                    {(orderNotes || giftMessage) && (
+                      <div>
+                        <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">Additional Information</h3>
+                        <div className="bg-neutral-50 border border-neutral-200/30 p-6 space-y-5">
+                          {orderNotes && (
+                            <div>
+                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">Order Notes</p>
+                              <p className="text-sm font-light text-neutral-900 tracking-wide">{orderNotes}</p>
+                            </div>
+                          )}
+                          {giftMessage && (
+                            <div>
+                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">Gift Message</p>
+                              <p className="text-sm font-light text-neutral-900 tracking-wide">{giftMessage}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Payment Forms */}
+                    {formData.paymentMethod === 'stripe' && stripeClientSecret && (
+                      <div className="pt-6 border-t border-neutral-200/50">
+                        <Elements
+                          stripe={loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')}
+                          options={{
+                            clientSecret: stripeClientSecret,
+                            appearance: {
+                              theme: 'stripe',
+                              variables: {
+                                colorPrimary: '#000000',
+                                colorBackground: '#ffffff',
+                                colorText: '#171717',
+                                colorDanger: '#ef4444',
+                                fontFamily: 'system-ui, sans-serif',
+                                spacingUnit: '4px',
+                                borderRadius: '0px',
+                              },
+                            },
+                          } as StripeElementsOptions}
+                        >
+                          <StripePaymentWrapper
+                            clientSecret={stripeClientSecret}
+                            onSuccess={handlePaymentSuccess}
+                            onError={handlePaymentError}
+                            disabled={paymentProcessing}
+                          />
+                        </Elements>
+                      </div>
+                    )}
+
+                    {formData.paymentMethod === 'paypal' && paypalOrderId && (
+                      <div className="pt-6 border-t border-neutral-200/50">
+                        <PayPalScriptProvider
+                          options={{
+                            clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '',
+                            currency: 'SEK',
+                            intent: 'capture',
+                          }}
+                        >
+                          <PayPalPaymentWrapper
+                            orderId={paypalOrderId}
+                            onSuccess={handlePaymentSuccess}
+                            onError={handlePaymentError}
+                            disabled={paymentProcessing}
+                            total={subtotal + (shippingCost || 0)}
+                          />
+                        </PayPalScriptProvider>
+                      </div>
+                    )}
+
+                    {formData.paymentMethod && !stripeClientSecret && !paypalOrderId && shippingCost !== null && (
+                      <div className="pt-6 border-t border-neutral-200/50">
+                        <p className="text-sm text-neutral-500 text-center font-light">
+                          Initializing payment...
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Navigation Buttons */}
+                    <div className="pt-8 border-t border-neutral-200/30 flex gap-4">
+                      <button
+                        type="button"
+                        onClick={handlePreviousStep}
+                        className="flex-1 py-5 px-6 border border-neutral-200/40 text-sm font-light uppercase tracking-[0.15em] text-neutral-900 bg-white hover:bg-neutral-50 transition-all duration-200"
+                      >
+                        <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Back
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
 
 
             {error && (
@@ -1004,22 +1397,15 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          {/* Right Column - Order Summary */}
-          <div className="lg:col-span-5 mt-8 lg:mt-0">
-            <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden lg:sticky lg:top-8">
-              <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-xl font-semibold text-neutral-900">
+            {/* Right Column - Order Summary */}
+            <div className="mt-8 lg:mt-0 flex-1 min-w-0">
+              <div className="bg-white border border-neutral-200/30 shadow-sm lg:sticky lg:top-8">
+                <div className="px-10 py-8 border-b border-neutral-200/30">
+                  <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
                     {t('orderSummary')}
                   </h2>
                 </div>
-              </div>
-              <div className="p-6">
+                <div className="p-10">
 
                 {/* Order Items */}
                 <div className="border-b border-neutral-200 pb-6 mb-6">
@@ -1034,9 +1420,9 @@ export default function CheckoutPage() {
                     const productImage = item.product?.images?.[0]?.url;
 
                     return (
-                      <div key={item.id} className="flex gap-4 mb-4 last:mb-0">
+                      <div key={item.id} className="flex gap-5 mb-6 last:mb-0 pb-6 last:pb-0 border-b border-neutral-200/30 last:border-0">
                         {productImage && (
-                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
+                          <div className="w-20 h-20 overflow-hidden bg-neutral-50 flex-shrink-0">
                             <img
                               src={productImage}
                               alt={name}
@@ -1045,12 +1431,12 @@ export default function CheckoutPage() {
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-neutral-900 text-sm">{name}</p>
+                          <p className="font-light text-neutral-900 text-sm tracking-wide">{name}</p>
                           {variantName && (
-                            <p className="text-neutral-500 text-xs mt-0.5">{variantName}</p>
+                            <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">{variantName}</p>
                           )}
-                          <p className="text-neutral-500 text-xs mt-1">Qty: {item.quantity}</p>
-                          <p className="text-neutral-900 font-semibold text-sm mt-2">
+                          <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">Qty: {item.quantity}</p>
+                          <p className="text-neutral-900 font-light text-sm mt-3 tracking-wide">
                             {formatPrice(price * item.quantity, 'SEK')}
                           </p>
                         </div>
@@ -1059,369 +1445,165 @@ export default function CheckoutPage() {
                   })}
                 </div>
 
-                {/* Discount Code */}
-                <div className="border-b border-neutral-200 pb-6 mb-6">
-                  {!appliedDiscount ? (
-                    <div className="space-y-3">
-                      <label htmlFor="discountCode" className="block text-sm font-medium text-neutral-700 tracking-wide">
-                        Discount Code
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          id="discountCode"
-                          value={discountCode}
-                          onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                          placeholder="Enter code"
-                          className="flex-1 px-4 py-2.5 border border-neutral-200 rounded-xl bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleApplyDiscount}
-                          disabled={validatingDiscount || !discountCode.trim()}
-                          className="px-6 py-2.5 bg-neutral-100 text-neutral-700 rounded-xl text-sm font-medium hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                        >
-                          {validatingDiscount ? (
-                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                          ) : 'Apply'}
-                        </button>
-                      </div>
-                      {discountError && (
-                        <p className="text-sm text-red-600 flex items-center gap-1">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {discountError}
-                        </p>
+                  {/* Discount Code */}
+                  {currentStep === 1 && (
+                    <div className="border-b border-neutral-200/30 pb-8 mb-8">
+                      {!appliedDiscount ? (
+                        <div className="space-y-4">
+                          <label htmlFor="discountCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600">
+                            Discount Code
+                          </label>
+                          <div className="flex gap-3">
+                            <input
+                              type="text"
+                              id="discountCode"
+                              value={discountCode}
+                              onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                              placeholder="Enter code"
+                              className="flex-1 px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleApplyDiscount}
+                              disabled={validatingDiscount || !discountCode.trim()}
+                              className="px-6 py-4 border border-neutral-200/40 text-sm font-light uppercase tracking-[0.15em] text-neutral-900 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                            >
+                              {validatingDiscount ? (
+                                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : 'Apply'}
+                            </button>
+                          </div>
+                          {discountError && (
+                            <p className="text-xs text-red-600 flex items-center gap-1 font-light tracking-wide">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {discountError}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between p-5 bg-green-50 border border-green-200/40">
+                          <div>
+                            <p className="text-sm font-light text-green-800 tracking-wide">
+                              Discount Applied: {appliedDiscount.code}
+                            </p>
+                            <p className="text-xs text-green-600 mt-1.5 font-light tracking-wide">
+                              -{formatPrice(appliedDiscount.amount, 'SEK')}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleRemoveDiscount}
+                            className="text-xs text-green-600 hover:text-green-800 font-light transition-colors tracking-wide"
+                          >
+                            Remove
+                          </button>
+                        </div>
                       )}
                     </div>
-                  ) : (
-                    <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl">
-                      <div>
-                        <p className="text-sm font-semibold text-green-800">
-                          Discount Applied: {appliedDiscount.code}
-                        </p>
-                        <p className="text-xs text-green-600 mt-1">
-                          -{formatPrice(appliedDiscount.amount, 'SEK')}
-                        </p>
+                  )}
+
+                  {/* Totals */}
+                  <dl className="space-y-5 text-sm">
+                    <div className="flex justify-between">
+                      <dt className="text-neutral-600 font-light tracking-wide">Subtotal (incl. VAT)</dt>
+                      <dd className="text-neutral-900 font-light tracking-wide">{formatPrice(subtotal, 'SEK')}</dd>
+                    </div>
+                    {appliedDiscount && (
+                      <div className="flex justify-between text-green-600">
+                        <dt className="font-light tracking-wide">Discount ({appliedDiscount.code})</dt>
+                        <dd className="font-light tracking-wide">-{formatPrice(appliedDiscount.amount, 'SEK')}</dd>
                       </div>
+                    )}
+                    {shippingCost !== null ? (
+                      <div className="flex justify-between">
+                        <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
+                        <dd className="text-neutral-900 font-light tracking-wide">
+                          {shippingCost === 0 ? (
+                            <span className="text-green-600">Free</span>
+                          ) : (
+                            formatPrice(shippingCost, 'SEK')
+                          )}
+                        </dd>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between">
+                        <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
+                        <dd className="text-neutral-500 text-xs italic font-light tracking-wide">
+                          {formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry
+                            ? 'Calculating...'
+                            : 'Enter address to calculate'
+                          }
+                        </dd>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-xs text-neutral-500 pt-3 border-t border-neutral-200/30 font-light tracking-wide">
+                      <dt>VAT included in subtotal</dt>
+                      <dd>{formatPrice(tax, 'SEK')}</dd>
+                    </div>
+                    <div className="flex justify-between text-base font-light border-t border-neutral-200/30 pt-5 mt-5">
+                      <dt className="text-neutral-900 tracking-wide">{tCart('total')}</dt>
+                      <dd className="text-neutral-900 tracking-wide">
+                        {shippingCost !== null ? (
+                          formatPrice(total, 'SEK')
+                        ) : (
+                          <span className="text-neutral-500 text-sm font-light italic">
+                            {formatPrice(subtotal - discountAmount, 'SEK')} + shipping
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {/* Trust Badges */}
+                  <div className="mt-10 pt-10 border-t border-neutral-200/30">
+                    <div className="grid grid-cols-2 gap-6 text-center">
+                      <div className="flex flex-col items-center">
+                        <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-3">
+                          <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                          </svg>
+                        </div>
+                        <p className="text-xs font-light text-neutral-700 tracking-wide">Secure Payment</p>
+                        <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">SSL Encrypted</p>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+                          <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                          </svg>
+                        </div>
+                        <p className="text-xs font-light text-neutral-700 tracking-wide">Money-Back</p>
+                        <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">30-Day Guarantee</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Continue to Payment Button - Bottom of Order Summary */}
+                  {currentStep === 1 && (
+                    <div className="mt-10 pt-10 border-t border-neutral-200/30">
                       <button
                         type="button"
-                        onClick={handleRemoveDiscount}
-                        className="text-sm text-green-600 hover:text-green-800 font-medium transition-colors"
+                        onClick={handleNextStep}
+                        disabled={!isShippingComplete()}
+                        className="w-full py-5 px-6 border border-transparent text-sm font-light uppercase tracking-[0.15em] text-white bg-neutral-900 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
                       >
-                        Remove
+                        Continue to Payment
+                        <svg className="w-4 h-4 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
                       </button>
                     </div>
                   )}
                 </div>
-
-                {/* Totals */}
-                <dl className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-neutral-600 font-medium">Subtotal (incl. VAT)</dt>
-                    <dd className="text-neutral-900 font-semibold">{formatPrice(subtotal, 'SEK')}</dd>
-                  </div>
-                  {appliedDiscount && (
-                    <div className="flex justify-between text-green-600">
-                      <dt className="font-medium">Discount ({appliedDiscount.code})</dt>
-                      <dd className="font-semibold">-{formatPrice(appliedDiscount.amount, 'SEK')}</dd>
-                    </div>
-                  )}
-                  {shippingCost !== null ? (
-                    <div className="flex justify-between">
-                      <dt className="text-neutral-600 font-medium">{tCart('shipping')}</dt>
-                      <dd className="text-neutral-900 font-semibold">
-                        {shippingCost === 0 ? (
-                          <span className="text-green-600">Free</span>
-                        ) : (
-                          formatPrice(shippingCost, 'SEK')
-                        )}
-                      </dd>
-                    </div>
-                  ) : (
-                    <div className="flex justify-between">
-                      <dt className="text-neutral-600 font-medium">{tCart('shipping')}</dt>
-                      <dd className="text-neutral-500 text-xs italic">
-                        {formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry
-                          ? 'Calculating...'
-                          : 'Enter address to calculate'
-                        }
-                      </dd>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-200">
-                    <dt>VAT included in subtotal</dt>
-                    <dd>{formatPrice(tax, 'SEK')}</dd>
-                  </div>
-                  <div className="flex justify-between text-lg font-semibold border-t border-neutral-200 pt-3 mt-3">
-                    <dt className="text-neutral-900">{tCart('total')}</dt>
-                    <dd className="text-neutral-900">
-                      {shippingCost !== null ? (
-                        formatPrice(total, 'SEK')
-                      ) : (
-                        <span className="text-neutral-500 text-sm font-normal italic">
-                          {formatPrice(subtotal - discountAmount, 'SEK')} + shipping
-                        </span>
-                      )}
-                    </dd>
-                  </div>
-                </dl>
-
-                {/* Review Order Button - Only show when address is complete */}
-                {!showReview && shippingCost !== null && formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry && (
-                  <div className="mt-8">
-                    <button
-                      type="button"
-                      onClick={() => setShowReview(true)}
-                      className="w-full py-3.5 px-6 bg-neutral-900 text-white rounded-full font-medium hover:bg-neutral-800 transition-all duration-300 hover:scale-105 shadow-lg"
-                    >
-                      Review Order
-                    </button>
-                  </div>
-                )}
-
-                {/* Trust Badges */}
-                <div className="mt-8 pt-8 border-t border-neutral-200">
-                  <div className="grid grid-cols-2 gap-4 text-center">
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-2">
-                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      </div>
-                      <p className="text-xs font-medium text-neutral-700">Secure Payment</p>
-                      <p className="text-xs text-neutral-500 mt-0.5">SSL Encrypted</p>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                      </div>
-                      <p className="text-xs font-medium text-neutral-700">Money-Back</p>
-                      <p className="text-xs text-neutral-500 mt-0.5">30-Day Guarantee</p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
-          </div>
         </div>
-
-        {/* Review Step */}
-        {showReview && (
-          <div className="mt-8 bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
-            <div className="px-6 py-5 border-b border-neutral-100 bg-gradient-to-r from-neutral-50 to-white">
-              <h2 className="text-xl font-semibold text-neutral-900">Review Your Order</h2>
-            </div>
-            <div className="p-6">
-              <div className="space-y-6">
-                {/* Shipping Review */}
-                <div>
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Shipping Address</h3>
-                  <div className="bg-neutral-50 rounded-xl p-4 text-sm text-neutral-700">
-                    <p className="font-medium">{formData.shippingName}</p>
-                    <p>{formData.shippingAddressLine1}</p>
-                    {formData.shippingAddressLine2 && <p>{formData.shippingAddressLine2}</p>}
-                    <p>{formData.shippingCity}, {formData.shippingPostalCode}</p>
-                    <p>{COUNTRIES.find(c => c.code === formData.shippingCountry)?.name || formData.shippingCountry}</p>
-                    {formData.shippingPhone && <p className="mt-2">Phone: {formData.shippingPhone}</p>}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowReview(false)}
-                    className="mt-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
-                  >
-                    Edit address
-                  </button>
-                </div>
-
-                {/* Payment Method Selection */}
-                <div>
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Payment Method</h3>
-                  <div className="space-y-3 mb-6">
-                    <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all ${
-                      formData.paymentMethod === 'stripe'
-                        ? 'border-neutral-900 bg-neutral-50'
-                        : 'border-neutral-200 hover:border-neutral-300 bg-white'
-                    }`}>
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="stripe"
-                        checked={formData.paymentMethod === 'stripe'}
-                        onChange={handleChange}
-                        className="h-5 w-5 text-neutral-900 focus:ring-neutral-900"
-                      />
-                      <div className="ml-4">
-                        <div className="font-semibold text-neutral-900">Credit/Debit Card</div>
-                        <div className="text-sm text-neutral-500 mt-1">Visa, Mastercard, Amex, Klarna</div>
-                      </div>
-                    </label>
-
-                    <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all ${
-                      formData.paymentMethod === 'paypal'
-                        ? 'border-neutral-900 bg-neutral-50'
-                        : 'border-neutral-200 hover:border-neutral-300 bg-white'
-                    }`}>
-                      <input
-                        type="radio"
-                        name="paymentMethod"
-                        value="paypal"
-                        checked={formData.paymentMethod === 'paypal'}
-                        onChange={handleChange}
-                        className="h-5 w-5 text-neutral-900 focus:ring-neutral-900"
-                      />
-                      <div className="ml-4">
-                        <div className="font-semibold text-neutral-900">PayPal</div>
-                        <div className="text-sm text-neutral-500 mt-1">Pay with your PayPal account</div>
-                      </div>
-                    </label>
-                  </div>
-
-                  {/* Payment Forms */}
-                  {formData.paymentMethod === 'stripe' && stripeClientSecret && (
-                    <div className="mt-6 pt-6 border-t border-neutral-200">
-                      <StripePaymentWrapper
-                        clientSecret={stripeClientSecret}
-                        onSuccess={handlePaymentSuccess}
-                        onError={handlePaymentError}
-                        disabled={paymentProcessing || shippingCost === null}
-                      />
-                    </div>
-                  )}
-
-                  {formData.paymentMethod === 'paypal' && paypalOrderId && (
-                    <div className="mt-6 pt-6 border-t border-neutral-200">
-                      <PayPalPaymentWrapper
-                        orderId={paypalOrderId}
-                        onSuccess={handlePaymentSuccess}
-                        onError={handlePaymentError}
-                        disabled={paymentProcessing || shippingCost === null}
-                        total={total}
-                      />
-                    </div>
-                  )}
-
-                  {formData.paymentMethod && shippingCost === null && (
-                    <div className="mt-6 pt-6 border-t border-neutral-200">
-                      <p className="text-sm text-neutral-500 text-center">
-                        Please complete your shipping address to proceed with payment
-                      </p>
-                    </div>
-                  )}
-
-                  {!formData.paymentMethod && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm text-yellow-800">
-                      <p>Please select a payment method above to complete your order.</p>
-                    </div>
-                  )}
-
-                  {formData.paymentMethod && (!stripeClientSecret && !paypalOrderId) && shippingCost !== null && (
-                    <div className="mt-6 pt-6 border-t border-neutral-200">
-                      <p className="text-sm text-neutral-500 text-center">
-                        Initializing payment...
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Order Summary Review */}
-                <div>
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Order Summary</h3>
-                  <div className="bg-neutral-50 rounded-xl p-4 space-y-3">
-                    {cartItems.map((item) => {
-                      const price = item.variant?.price ?? item.product?.price ?? 0;
-                      const name = locale === 'sv'
-                        ? item.product?.name_sv || item.product?.name_en || ''
-                        : item.product?.name_en || '';
-                      const variantName = locale === 'sv'
-                        ? item.variant?.name_sv || item.variant?.name_en
-                        : item.variant?.name_en;
-                      const productImage = item.product?.images?.[0]?.url;
-
-                      return (
-                        <div key={item.id} className="flex gap-3 pb-3 border-b border-neutral-200 last:border-0 last:pb-0">
-                          {productImage && (
-                            <div className="w-12 h-12 rounded-lg overflow-hidden bg-neutral-100 flex-shrink-0">
-                              <img
-                                src={productImage}
-                                alt={name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm text-neutral-900">{name}</p>
-                            {variantName && (
-                              <p className="text-neutral-500 text-xs mt-0.5">{variantName}</p>
-                            )}
-                            <p className="text-neutral-500 text-xs mt-1">Qty: {item.quantity}</p>
-                            <p className="text-neutral-900 font-semibold text-sm mt-1">
-                              {formatPrice(price * item.quantity, 'SEK')}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div className="pt-3 border-t border-neutral-200 space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-neutral-600">Subtotal:</span>
-                        <span className="font-semibold text-neutral-900">{formatPrice(subtotal, 'SEK')}</span>
-                      </div>
-                      {appliedDiscount && (
-                        <div className="flex justify-between text-green-600">
-                          <span>Discount ({appliedDiscount.code}):</span>
-                          <span className="font-semibold">-{formatPrice(appliedDiscount.amount, 'SEK')}</span>
-                        </div>
-                      )}
-                      {shippingCost !== null && (
-                        <div className="flex justify-between">
-                          <span className="text-neutral-600">Shipping:</span>
-                          <span className="font-semibold text-neutral-900">
-                            {shippingCost === 0 ? 'Free' : formatPrice(shippingCost, 'SEK')}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex justify-between text-lg font-bold pt-2 border-t border-neutral-200">
-                        <span className="text-neutral-900">Total:</span>
-                        <span className="text-neutral-900">{formatPrice(total, 'SEK')}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Order Notes & Gift Message Review */}
-                {(orderNotes || giftMessage) && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-neutral-900 mb-3">Additional Information</h3>
-                    <div className="bg-neutral-50 rounded-xl p-4 text-sm text-neutral-700 space-y-2">
-                      {orderNotes && (
-                        <div>
-                          <p className="font-medium mb-1">Order Notes:</p>
-                          <p className="text-neutral-600">{orderNotes}</p>
-                        </div>
-                      )}
-                      {giftMessage && (
-                        <div>
-                          <p className="font-medium mb-1">Gift Message:</p>
-                          <p className="text-neutral-600">{giftMessage}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-              </div>
-            </div>
-          </div>
-        )}
-
-      </div>
+      </section>
     </div>
   );
 }
