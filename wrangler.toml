@@ -1,13 +1,24 @@
 name = "georgiobandera"
 compatibility_date = "2025-12-09"
 compatibility_flags = ["nodejs_compat"]
+account_id = "d80b01bccedaadce9b706e280a7efbe7"  # Ricardoelalam8@gmail.com's Account (Customer's Account)
 
 # For Cloudflare Pages deployment with OpenNext
 pages_build_output_dir = ".open-next"
 
-# Root-level database binding for CLI migrations
+# Root-level database binding - uses local database for dev, production for migrations
+# For local dev: uses georgiobandera-db-local
+# For production: uses georgiobandera-db (set via --remote flag)
 [[d1_databases]]
 binding = "DB"
+database_name = "georgiobandera-db-local"
+database_id = "local"  # Local database for development
+
+# Production database for migrations (used with --remote flag)
+# Note: This is a duplicate entry needed for wrangler migrations command
+# The actual production binding is in [env.production]
+[[d1_databases]]
+binding = "DB_PROD"
 database_name = "georgiobandera-db"
 database_id = "75b60e35-e861-4d8a-9bc1-46aaf7eb9424"
 
@@ -48,6 +59,27 @@ bucket_name = "georgiobandera-images"
 [env.preview.vars]
 NEXT_PUBLIC_APP_URL = "https://georgiobandera1.pages.dev"
 NEXT_PUBLIC_SITE_URL = "https://georgiobandera1.pages.dev"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_test_51R6DhzGIjrwBNt3fhi0qru3dIGPwr4St89ugs6ckHX9BNimZBO30iJdhupHR624IpKe4L7ZP21acvQRaD79Kjzbg00hqoYqDLq"
+NEXT_PUBLIC_PAYPAL_CLIENT_ID = "AUakk-eShgnYninYF5nHTujK5lE_7MumxZBYXO2hzZxbgt7kh4C587n34F-VxiN1A2VhRYcJW_BCydNP"
+
+# Development environment - uses local database only
+# Usage: wrangler pages dev .open-next --env development
+[env.development]
+name = "georgiobandera-dev"
+
+# Local database (created with: wrangler d1 create georgiobandera-db-local)
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "georgiobandera-db-local"
+database_id = "local"  # Local database - will be created in .wrangler/state/v3/d1/
+
+[[env.development.r2_buckets]]
+binding = "IMAGES"
+bucket_name = "georgiobandera-images"
+
+[env.development.vars]
+NEXT_PUBLIC_APP_URL = "http://localhost:8788"
+NEXT_PUBLIC_SITE_URL = "http://localhost:8788"
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_test_51R6DhzGIjrwBNt3fhi0qru3dIGPwr4St89ugs6ckHX9BNimZBO30iJdhupHR624IpKe4L7ZP21acvQRaD79Kjzbg00hqoYqDLq"
 NEXT_PUBLIC_PAYPAL_CLIENT_ID = "AUakk-eShgnYninYF5nHTujK5lE_7MumxZBYXO2hzZxbgt7kh4C587n34F-VxiN1A2VhRYcJW_BCydNP"
 

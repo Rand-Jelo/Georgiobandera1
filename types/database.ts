@@ -73,6 +73,17 @@ export interface ProductImage {
   created_at: number;
 }
 
+export interface HeroImage {
+  id: string;
+  url: string;
+  alt_text_en: string | null;
+  alt_text_sv: string | null;
+  sort_order: number;
+  active: number; // 0 or 1
+  created_at: number;
+  updated_at: number;
+}
+
 export interface CartItem {
   id: string;
   user_id: string | null;
