@@ -12,12 +12,15 @@ interface CategoryWithChildren extends Category {
   children?: CategoryWithChildren[];
 }
 
+type TabType = 'basic' | 'pricing' | 'variants' | 'images';
+
 export default function NewProductPage() {
   const router = useRouter();
   const locale = useLocale();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [formData, setFormData] = useState({
     name_en: '',
     name_sv: '',
@@ -252,6 +255,7 @@ export default function NewProductPage() {
         setCreatedProductId(data.product.id);
         // Fetch images (will be empty initially)
         await fetchImages(data.product.id);
+        setActiveTab('images'); // Switch to images tab after creation
       } else {
         router.push('/admin/products');
       }
@@ -369,26 +373,96 @@ export default function NewProductPage() {
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="mb-8">
           <Link
             href="/admin/products"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Products
+            Back to Products
           </Link>
           <h1 className="text-4xl font-semibold text-white mb-2">New Product</h1>
           <p className="text-neutral-400">Create a new product</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg p-6 space-y-6">
-          {error && (
-            <div className="rounded-lg bg-red-900/20 border border-red-500/30 p-4">
-              <div className="text-sm text-red-300">{error}</div>
+        <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
+          {/* Tabs Navigation */}
+          <div className="border-b border-white/10 bg-black/30">
+            <div className="flex space-x-1 px-6">
+              <button
+                type="button"
+                onClick={() => setActiveTab('basic')}
+                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                  activeTab === 'basic'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-neutral-300'
+                }`}
+              >
+                <span>Basic Info</span>
+                {activeTab === 'basic' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('pricing')}
+                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                  activeTab === 'pricing'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-neutral-300'
+                }`}
+              >
+                <span>Pricing & Inventory</span>
+                {activeTab === 'pricing' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('variants')}
+                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                  activeTab === 'variants'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-neutral-300'
+                }`}
+              >
+                <span>Variants</span>
+                {activeTab === 'variants' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('images')}
+                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                  activeTab === 'images'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-neutral-300'
+                }`}
+              >
+                <span>Images</span>
+                {activeTab === 'images' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                )}
+              </button>
             </div>
-          )}
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Tab Content */}
+          <div className="p-8">
+            {error && (
+              <div className="rounded-lg bg-red-900/20 border border-red-500/30 p-4 mb-6">
+                <div className="text-sm text-red-300 whitespace-pre-line">{error}</div>
+              </div>
+            )}
+
+            {/* Basic Info Tab */}
+            {activeTab === 'basic' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-4">Product Information</h2>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
                 Product Name (English) *
@@ -503,390 +577,422 @@ export default function NewProductPage() {
                 className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
               />
             </div>
-          </div>
+                    </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium text-neutral-300 mb-2">
-                Price (SEK) *
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                required
-                step="0.01"
-                min="0"
-                value={formData.price}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
+                    <div>
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="featured"
+                          checked={formData.featured}
+                          onChange={handleChange}
+                          className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                        />
+                        <span className="text-sm text-neutral-300">Featured product</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
-            <div>
-              <label htmlFor="compare_at_price" className="block text-sm font-medium text-neutral-300 mb-2">
-                Compare at Price (SEK)
-              </label>
-              <input
-                type="number"
-                id="compare_at_price"
-                name="compare_at_price"
-                step="0.01"
-                min="0"
-                value={formData.compare_at_price}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-neutral-300 mb-2">
-                Status *
-              </label>
-              <select
-                id="status"
-                name="status"
-                required
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              >
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
-                <option value="archived">Archived</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="stock_quantity" className="block text-sm font-medium text-neutral-300 mb-2">
-                Stock Quantity
-              </label>
-              <input
-                type="number"
-                id="stock_quantity"
-                name="stock_quantity"
-                min="0"
-                value={formData.stock_quantity}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-
-            <div className="flex items-end">
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="track_inventory"
-                  checked={formData.track_inventory}
-                  onChange={handleChange}
-                  className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
-                />
-                <span className="text-sm text-neutral-300">Track inventory</span>
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                name="featured"
-                checked={formData.featured}
-                onChange={handleChange}
-                className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
-              />
-              <span className="text-sm text-neutral-300">Featured product</span>
-            </label>
-          </div>
-
-          {/* Product Images Section - Only shown after product is created */}
-          {createdProductId && (
-            <div className="pt-6 border-t border-white/10">
-              <div className="flex items-center justify-between mb-4">
+            {/* Pricing & Inventory Tab */}
+            {activeTab === 'pricing' && (
+              <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-white mb-1">Product Images</h3>
-                  <p className="text-sm text-neutral-400">Upload images for your product</p>
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
-                  Upload Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={uploadingImage}
-                  className="block w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-white file:text-black hover:file:bg-neutral-100 file:cursor-pointer disabled:opacity-50"
-                />
-                {uploadingImage && (
-                  <p className="mt-2 text-sm text-neutral-400">Uploading...</p>
-                )}
-              </div>
-
-              {images.length === 0 ? (
-                <p className="text-neutral-400 text-sm">No images uploaded yet.</p>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {images.map((image) => (
-                    <div key={image.id} className="relative group">
-                      <div className="aspect-square bg-black/30 rounded-lg overflow-hidden border border-white/10">
-                        <img
-                          src={image.url.startsWith('/api/images/') ? image.url : `/api${image.url}`}
-                          alt={image.alt_text_en || 'Product image'}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // Fallback if image fails to load
-                            (e.target as HTMLImageElement).src = '/placeholder-image.png';
-                          }}
-                        />
-                      </div>
-                      <button
-                        onClick={() => handleDeleteImage(image.id)}
-                        className="absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded bg-red-500/80 text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        Delete
-                      </button>
-                      <div className="mt-1 text-xs text-neutral-400">
-                        Sort: {image.sort_order}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Size Variants Section */}
-          <div className="pt-6 border-t border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Size Variants</h3>
-                <p className="text-sm text-neutral-400">Add independent size options (S, M, L, etc.)</p>
-              </div>
-              <button
-                type="button"
-                onClick={addSizeVariant}
-                className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
-              >
-                + Add Size
-              </button>
-            </div>
-
-            {sizeVariants.length === 0 ? (
-              <p className="text-neutral-400 text-sm mb-4">
-                No size variants added. Click "Add Size" to add size options.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {sizeVariants.map((variant, index) => (
-                  <div
-                    key={`size-${index}`}
-                    className="p-4 rounded-lg border border-white/10 bg-black/30"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-medium text-white">Size Variant {index + 1}</h4>
-                      <button
-                        type="button"
-                        onClick={() => removeSizeVariant(index)}
-                        className="text-red-400 hover:text-red-300 text-sm"
-                      >
-                        Remove
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <h2 className="text-xl font-semibold text-white mb-4">Pricing & Inventory</h2>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Size Value *
-                        </label>
-                        <input
-                          type="text"
-                          value={variant.value}
-                          onChange={(e) => updateSizeVariant(index, 'value', e.target.value)}
-                          placeholder="S, M, L, XL"
-                          required
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          SKU
-                        </label>
-                        <input
-                          type="text"
-                          value={variant.sku}
-                          onChange={(e) => updateSizeVariant(index, 'sku', e.target.value)}
-                          placeholder="Variant SKU"
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Price (SEK) - Optional
+                        <label htmlFor="price" className="block text-sm font-medium text-neutral-300 mb-2">
+                          Price (SEK) *
                         </label>
                         <input
                           type="number"
+                          id="price"
+                          name="price"
+                          required
                           step="0.01"
-                          value={variant.price}
-                          onChange={(e) => updateSizeVariant(index, 'price', e.target.value)}
-                          placeholder="Override base price"
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                          min="0"
+                          value={formData.price}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
+                        <label htmlFor="compare_at_price" className="block text-sm font-medium text-neutral-300 mb-2">
+                          Compare at Price (SEK)
+                        </label>
+                        <input
+                          type="number"
+                          id="compare_at_price"
+                          name="compare_at_price"
+                          step="0.01"
+                          min="0"
+                          value={formData.compare_at_price}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="status" className="block text-sm font-medium text-neutral-300 mb-2">
+                          Status *
+                        </label>
+                        <select
+                          id="status"
+                          name="status"
+                          required
+                          value={formData.status}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        >
+                          <option value="draft">Draft</option>
+                          <option value="active">Active</option>
+                          <option value="archived">Archived</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="stock_quantity" className="block text-sm font-medium text-neutral-300 mb-2">
                           Stock Quantity
                         </label>
                         <input
                           type="number"
+                          id="stock_quantity"
+                          name="stock_quantity"
                           min="0"
-                          value={variant.stock_quantity}
-                          onChange={(e) => updateSizeVariant(index, 'stock_quantity', e.target.value)}
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                          value={formData.stock_quantity}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
                       </div>
-                    </div>
 
-                    <div className="mt-3">
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={variant.track_inventory}
-                          onChange={(e) => updateSizeVariant(index, 'track_inventory', e.target.checked)}
-                          className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
-                        />
-                        <span className="text-xs text-neutral-300">Track inventory for this size</span>
-                      </label>
+                      <div className="flex items-end">
+                        <label className="flex items-center space-x-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="track_inventory"
+                            checked={formData.track_inventory}
+                            onChange={handleChange}
+                            className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                          />
+                          <span className="text-sm text-neutral-300">Track inventory</span>
+                        </label>
+                      </div>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
             )}
-          </div>
 
-          {/* Color Variants Section */}
-          <div className="pt-6 border-t border-white/10">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Color Variants</h3>
-                <p className="text-sm text-neutral-400">Add independent color options with color picker</p>
-              </div>
-              <button
-                type="button"
-                onClick={addColorVariant}
-                className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
-              >
-                + Add Color
-              </button>
-            </div>
-
-            {colorVariants.length === 0 ? (
-              <p className="text-neutral-400 text-sm mb-4">
-                No color variants added. Click "Add Color" to add color options.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {colorVariants.map((variant, index) => (
-                  <div
-                    key={`color-${index}`}
-                    className="p-4 rounded-lg border border-white/10 bg-black/30"
-                  >
+            {/* Variants Tab */}
+            {activeTab === 'variants' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-4">Product Variants</h2>
+                  
+                  {/* Size Variants */}
+                  <div className="mb-8">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-sm font-medium text-white">Color Variant {index + 1}</h4>
+                      <div>
+                        <h3 className="text-lg font-medium text-white mb-1">Size Variants</h3>
+                        <p className="text-sm text-neutral-400">Add independent size options (S, M, L, etc.)</p>
+                      </div>
                       <button
                         type="button"
-                        onClick={() => removeColorVariant(index)}
-                        className="text-red-400 hover:text-red-300 text-sm"
+                        onClick={addSizeVariant}
+                        className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
                       >
-                        Remove
+                        + Add Size
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Color Name *
-                        </label>
-                        <input
-                          type="text"
-                          value={variant.name}
-                          onChange={(e) => updateColorVariant(index, 'name', e.target.value)}
-                          placeholder="Red, Blue, Black"
-                          required
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
+                    {sizeVariants.length === 0 ? (
+                      <div className="p-6 border border-white/10 rounded-lg bg-black/30 text-center">
+                        <p className="text-neutral-400 text-sm">No size variants added. Click "Add Size" to add size options.</p>
                       </div>
-                      <div>
-                        <ColorPicker
-                          value={variant.hex}
-                          onChange={(color) => updateColorVariant(index, 'hex', color)}
-                          label="Color"
-                        />
-                      </div>
-                    </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {sizeVariants.map((variant, index) => (
+                          <div
+                            key={`size-${index}`}
+                            className="p-5 rounded-lg border border-white/10 bg-black/30"
+                          >
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="text-sm font-medium text-white">Size Variant {index + 1}</h4>
+                              <button
+                                type="button"
+                                onClick={() => removeSizeVariant(index)}
+                                className="text-red-400 hover:text-red-300 text-sm"
+                              >
+                                Remove
+                              </button>
+                            </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          SKU
-                        </label>
-                        <input
-                          type="text"
-                          value={variant.sku}
-                          onChange={(e) => updateColorVariant(index, 'sku', e.target.value)}
-                          placeholder="Variant SKU"
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Price (SEK) - Optional
-                        </label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={variant.price}
-                          onChange={(e) => updateColorVariant(index, 'price', e.target.value)}
-                          placeholder="Override base price"
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Stock Quantity
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={variant.stock_quantity}
-                          onChange={(e) => updateColorVariant(index, 'stock_quantity', e.target.value)}
-                          className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        />
-                      </div>
-                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  Size Value *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={variant.value}
+                                  onChange={(e) => updateSizeVariant(index, 'value', e.target.value)}
+                                  placeholder="S, M, L, XL"
+                                  required
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  SKU
+                                </label>
+                                <input
+                                  type="text"
+                                  value={variant.sku}
+                                  onChange={(e) => updateSizeVariant(index, 'sku', e.target.value)}
+                                  placeholder="Variant SKU"
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  Price (SEK) - Optional
+                                </label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={variant.price}
+                                  onChange={(e) => updateSizeVariant(index, 'price', e.target.value)}
+                                  placeholder="Override base price"
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  Stock Quantity
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={variant.stock_quantity}
+                                  onChange={(e) => updateSizeVariant(index, 'stock_quantity', e.target.value)}
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                            </div>
 
-                    <div className="mt-3">
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={variant.track_inventory}
-                          onChange={(e) => updateColorVariant(index, 'track_inventory', e.target.checked)}
-                          className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
-                        />
-                        <span className="text-xs text-neutral-300">Track inventory for this color</span>
-                      </label>
-                    </div>
+                            <div className="mt-3">
+                              <label className="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={variant.track_inventory}
+                                  onChange={(e) => updateSizeVariant(index, 'track_inventory', e.target.checked)}
+                                  className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                                />
+                                <span className="text-xs text-neutral-300">Track inventory for this size</span>
+                              </label>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ))}
+
+                  {/* Color Variants */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-medium text-white mb-1">Color Variants</h3>
+                        <p className="text-sm text-neutral-400">Add independent color options with color picker</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={addColorVariant}
+                        className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
+                      >
+                        + Add Color
+                      </button>
+                    </div>
+
+                    {colorVariants.length === 0 ? (
+                      <div className="p-6 border border-white/10 rounded-lg bg-black/30 text-center">
+                        <p className="text-neutral-400 text-sm">No color variants added. Click "Add Color" to add color options.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {colorVariants.map((variant, index) => (
+                          <div
+                            key={`color-${index}`}
+                            className="p-5 rounded-lg border border-white/10 bg-black/30"
+                          >
+                            <div className="flex items-center justify-between mb-4">
+                              <h4 className="text-sm font-medium text-white">Color Variant {index + 1}</h4>
+                              <button
+                                type="button"
+                                onClick={() => removeColorVariant(index)}
+                                className="text-red-400 hover:text-red-300 text-sm"
+                              >
+                                Remove
+                              </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  Color Name *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={variant.name}
+                                  onChange={(e) => updateColorVariant(index, 'name', e.target.value)}
+                                  placeholder="Red, Blue, Black"
+                                  required
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                              <div>
+                                <ColorPicker
+                                  value={variant.hex}
+                                  onChange={(color) => updateColorVariant(index, 'hex', color)}
+                                  label="Color"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  SKU
+                                </label>
+                                <input
+                                  type="text"
+                                  value={variant.sku}
+                                  onChange={(e) => updateColorVariant(index, 'sku', e.target.value)}
+                                  placeholder="Variant SKU"
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  Price (SEK) - Optional
+                                </label>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={variant.price}
+                                  onChange={(e) => updateColorVariant(index, 'price', e.target.value)}
+                                  placeholder="Override base price"
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  Stock Quantity
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={variant.stock_quantity}
+                                  onChange={(e) => updateColorVariant(index, 'stock_quantity', e.target.value)}
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="mt-3">
+                              <label className="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={variant.track_inventory}
+                                  onChange={(e) => updateColorVariant(index, 'track_inventory', e.target.checked)}
+                                  className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                                />
+                                <span className="text-xs text-neutral-300">Track inventory for this color</span>
+                              </label>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Images Tab */}
+            {activeTab === 'images' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-4">Product Images</h2>
+                  
+                  {!createdProductId ? (
+                    <div className="p-8 border border-white/10 rounded-lg bg-black/30 text-center">
+                      <p className="text-neutral-400 mb-4">Please create the product first to upload images.</p>
+                      <p className="text-sm text-neutral-500">Fill in the Basic Info and Pricing tabs, then click "Create Product" to enable image uploads.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-300 mb-2">
+                          Upload Image
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={uploadingImage}
+                          className="block w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-white file:text-black hover:file:bg-neutral-100 file:cursor-pointer disabled:opacity-50"
+                        />
+                        {uploadingImage && (
+                          <p className="mt-2 text-sm text-neutral-400">Uploading and optimizing image...</p>
+                        )}
+                      </div>
+
+                      {images.length === 0 ? (
+                        <div className="p-8 border border-white/10 rounded-lg bg-black/30 text-center">
+                          <p className="text-neutral-400 text-sm">No images uploaded yet.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {images.map((image) => (
+                            <div key={image.id} className="relative group">
+                              <div className="aspect-square bg-black/30 rounded-lg overflow-hidden border border-white/10">
+                                <img
+                                  src={image.url.startsWith('/api/images/') ? image.url : `/api${image.url}`}
+                                  alt={image.alt_text_en || 'Product image'}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = '/placeholder-image.png';
+                                  }}
+                                />
+                              </div>
+                              <button
+                                onClick={() => handleDeleteImage(image.id)}
+                                className="absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded bg-red-500/80 text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                Delete
+                              </button>
+                              <div className="mt-1 text-xs text-neutral-400 text-center">
+                                Sort: {image.sort_order}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
+          {/* Form Actions */}
+          <div className="flex items-center justify-between px-8 py-6 border-t border-white/10 bg-black/30">
             {createdProductId ? (
               <>
                 <Link
