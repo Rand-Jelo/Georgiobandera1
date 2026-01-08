@@ -7,12 +7,15 @@ import { Link } from '@/lib/i18n/routing';
 import type { Category } from '@/types/database';
 import { slugify } from '@/lib/utils';
 
+type TabType = 'basic';
+
 export default function NewCategoryPage() {
   const router = useRouter();
   const locale = useLocale();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [formData, setFormData] = useState({
     name_en: '',
     name_sv: '',
@@ -21,7 +24,6 @@ export default function NewCategoryPage() {
     description_sv: '',
     image_url: '',
     parent_id: '',
-    sort_order: '0',
   });
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -89,7 +91,7 @@ export default function NewCategoryPage() {
         body: JSON.stringify({
           ...formData,
           parent_id: formData.parent_id || null,
-          sort_order: parseInt(formData.sort_order) || 0,
+          sort_order: 0, // Will be set via drag and drop on the list page
         }),
       });
 
@@ -138,161 +140,176 @@ export default function NewCategoryPage() {
           <p className="text-neutral-400">Add a new product category</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg p-6 space-y-6">
-          {error && (
-            <div className="rounded-lg bg-red-900/20 border border-red-500/30 p-4">
-              <div className="text-sm text-red-300 whitespace-pre-line">{error}</div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                Category Name (English) *
-              </label>
-              <input
-                type="text"
-                id="name_en"
-                name="name_en"
-                required
-                value={formData.name_en}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                Category Name (Swedish) *
-              </label>
-              <input
-                type="text"
-                id="name_sv"
-                name="name_sv"
-                required
-                value={formData.name_sv}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
-              Slug *
-            </label>
-            <input
-              type="text"
-              id="slug"
-              name="slug"
-              required
-              value={formData.slug}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-            />
-            <p className="mt-1 text-xs text-neutral-400">URL-friendly identifier (auto-generated from English name)</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                Description (English)
-              </label>
-              <textarea
-                id="description_en"
-                name="description_en"
-                rows={4}
-                value={formData.description_en}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                Description (Swedish)
-              </label>
-              <textarea
-                id="description_sv"
-                name="description_sv"
-                rows={4}
-                value={formData.description_sv}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="parent_id" className="block text-sm font-medium text-neutral-300 mb-2">
-                Parent Category
-              </label>
-              <select
-                id="parent_id"
-                name="parent_id"
-                value={formData.parent_id}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+        <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
+          {/* Tabs Navigation */}
+          <div className="border-b border-white/10 bg-black/30">
+            <div className="flex space-x-1 px-6">
+              <button
+                type="button"
+                onClick={() => setActiveTab('basic')}
+                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                  activeTab === 'basic'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-neutral-300'
+                }`}
               >
-                <option value="">None (Top-level category)</option>
-                {categories.map((category) => {
-                  const name = locale === 'sv' ? category.name_sv : category.name_en;
-                  return (
-                    <option key={category.id} value={category.id}>
-                      {name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="sort_order" className="block text-sm font-medium text-neutral-300 mb-2">
-                Sort Order
-              </label>
-              <input
-                type="number"
-                id="sort_order"
-                name="sort_order"
-                min="0"
-                value={formData.sort_order}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-              <p className="mt-1 text-xs text-neutral-400">Lower numbers appear first</p>
+                <span>Basic Info</span>
+                {activeTab === 'basic' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                )}
+              </button>
             </div>
           </div>
 
-          <div>
-            <label htmlFor="image_url" className="block text-sm font-medium text-neutral-300 mb-2">
-              Image URL
-            </label>
-            <input
-              type="url"
-              id="image_url"
-              name="image_url"
-              value={formData.image_url}
-              onChange={handleChange}
-              placeholder="https://example.com/image.jpg"
-              className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-            />
-          </div>
+          {/* Tab Content */}
+          <div className="p-8">
+            {error && (
+              <div className="rounded-lg bg-red-900/20 border border-red-500/30 p-4 mb-6">
+                <div className="text-sm text-red-300 whitespace-pre-line">{error}</div>
+              </div>
+            )}
 
-          <div className="flex items-center justify-end gap-4 pt-4 border-t border-white/10">
-            <Link
-              href="/admin/categories"
-              className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
-            >
-              Cancel
-            </Link>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {saving ? 'Creating...' : 'Create Category'}
-            </button>
+            {/* Basic Info Tab */}
+            {activeTab === 'basic' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-4">Category Information</h2>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
+                          Category Name (English) *
+                        </label>
+                        <input
+                          type="text"
+                          id="name_en"
+                          name="name_en"
+                          required
+                          value={formData.name_en}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
+                          Category Name (Swedish) *
+                        </label>
+                        <input
+                          type="text"
+                          id="name_sv"
+                          name="name_sv"
+                          required
+                          value={formData.name_sv}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
+                        Slug *
+                      </label>
+                      <input
+                        type="text"
+                        id="slug"
+                        name="slug"
+                        required
+                        value={formData.slug}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                      />
+                      <p className="mt-1 text-xs text-neutral-400">URL-friendly identifier (auto-generated from English name)</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
+                          Description (English)
+                        </label>
+                        <textarea
+                          id="description_en"
+                          name="description_en"
+                          rows={4}
+                          value={formData.description_en}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
+                          Description (Swedish)
+                        </label>
+                        <textarea
+                          id="description_sv"
+                          name="description_sv"
+                          rows={4}
+                          value={formData.description_sv}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="parent_id" className="block text-sm font-medium text-neutral-300 mb-2">
+                        Parent Category
+                      </label>
+                      <select
+                        id="parent_id"
+                        name="parent_id"
+                        value={formData.parent_id}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                      >
+                        <option value="">None (Top-level category)</option>
+                        {categories.map((category) => {
+                          const name = locale === 'sv' ? category.name_sv : category.name_en;
+                          return (
+                            <option key={category.id} value={category.id}>
+                              {name}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label htmlFor="image_url" className="block text-sm font-medium text-neutral-300 mb-2">
+                        Image URL
+                      </label>
+                      <input
+                        type="url"
+                        id="image_url"
+                        name="image_url"
+                        value={formData.image_url}
+                        onChange={handleChange}
+                        placeholder="https://example.com/image.jpg"
+                        className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-4 pt-6 border-t border-white/10">
+              <Link
+                href="/admin/categories"
+                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+              >
+                Cancel
+              </Link>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {saving ? 'Creating...' : 'Create Category'}
+              </button>
+            </div>
           </div>
         </form>
       </div>

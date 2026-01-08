@@ -19,6 +19,9 @@ export default function AdminCategoriesPage() {
   const [error, setError] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState<{ top: number; right: number } | null>(null);
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [draggedOverId, setDraggedOverId] = useState<string | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -47,8 +50,8 @@ export default function AdminCategoriesPage() {
 
   const fetchCategories = async () => {
     try {
-      // Fetch nested categories structure
-      const response = await fetch('/api/categories');
+      // Fetch nested categories structure with no-cache to get fresh data
+      const response = await fetch('/api/categories', { cache: 'no-store' });
       const data = await response.json() as { categories?: CategoryWithChildren[]; error?: string };
       if (data.error) {
         setError(data.error);
@@ -61,6 +64,11 @@ export default function AdminCategoriesPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Flatten categories for drag and drop (only top-level categories)
+  const flattenCategories = (cats: CategoryWithChildren[]): Category[] => {
+    return cats.filter(cat => !cat.parent_id);
   };
 
   const handleDelete = async (categoryId: string, categoryName: string) => {
@@ -88,15 +96,137 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const handleDragStart = (e: React.DragEvent, categoryId: string) => {
+    setDraggedId(categoryId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', categoryId);
+  };
+
+  const handleDragOver = (e: React.DragEvent, categoryId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedId && draggedId !== categoryId) {
+      setDraggedOverId(categoryId);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDraggedOverId(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetCategoryId: string) => {
+    e.preventDefault();
+    setDraggedOverId(null);
+
+    if (!draggedId || draggedId === targetCategoryId) {
+      setDraggedId(null);
+      return;
+    }
+
+    // Get flattened list of top-level categories
+    const flatCategories = flattenCategories(categories);
+    const draggedIndex = flatCategories.findIndex(c => c.id === draggedId);
+    const targetIndex = flatCategories.findIndex(c => c.id === targetCategoryId);
+
+    if (draggedIndex === -1 || targetIndex === -1) {
+      setDraggedId(null);
+      return;
+    }
+
+    // Reorder categories
+    const reordered = [...flatCategories];
+    const [removed] = reordered.splice(draggedIndex, 1);
+    reordered.splice(targetIndex, 0, removed);
+
+    // Update sort_order based on new positions
+    const updates = reordered.map((cat, index) => ({
+      id: cat.id,
+      sort_order: index,
+    }));
+
+    // Optimistically update UI immediately
+    const updatedCategories = categories.map(cat => {
+      const update = reordered.find(r => r.id === cat.id);
+      if (update) {
+        return { ...cat, sort_order: reordered.indexOf(update) };
+      }
+      return cat;
+    });
+    // Sort by new sort_order
+    updatedCategories.sort((a, b) => {
+      const aIndex = reordered.findIndex(r => r.id === a.id);
+      const bIndex = reordered.findIndex(r => r.id === b.id);
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
+    setCategories(updatedCategories);
+
+    setIsReordering(true);
+    try {
+      const response = await fetch('/api/admin/categories/reorder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ updates }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json() as { error?: string };
+        alert(data.error || 'Failed to reorder categories');
+        // Revert on error
+        await fetchCategories();
+      }
+      // Don't refetch on success - we already updated optimistically
+    } catch (err) {
+      console.error('Error reordering categories:', err);
+      alert('An error occurred while reordering categories.');
+      // Revert on error
+      await fetchCategories();
+    } finally {
+      setIsReordering(false);
+      setDraggedId(null);
+    }
+  };
+
   const renderCategoryRow = (category: CategoryWithChildren, level: number = 0) => {
     const name = locale === 'sv' ? category.name_sv : category.name_en;
     const isSubcategory = level > 0;
+    const isDragging = draggedId === category.id;
+    const isDraggedOver = draggedOverId === category.id;
+    const isDraggable = !isSubcategory && !isReordering;
 
     return (
       <React.Fragment key={category.id}>
-        <tr className={`hover:bg-black/30 transition-colors ${isSubcategory ? 'bg-black/20' : ''}`}>
+        <tr
+          className={`hover:bg-black/30 transition-colors ${isSubcategory ? 'bg-black/20' : ''} ${
+            isDragging ? 'opacity-50' : ''
+          } ${isDraggedOver ? 'bg-white/10' : ''} ${isDraggable ? 'cursor-move' : ''}`}
+          draggable={isDraggable}
+          onDragStart={(e) => isDraggable && handleDragStart(e, category.id)}
+          onDragOver={(e) => isDraggable && handleDragOver(e, category.id)}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => isDraggable && handleDrop(e, category.id)}
+        >
           <td className="px-6 py-4 whitespace-nowrap">
             <div className="flex items-center gap-2" style={{ paddingLeft: `${level * 1.5}rem` }}>
+              {isDraggable && (
+                <svg
+                  className="w-4 h-4 text-neutral-500 cursor-move"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 8h16M4 16h16"
+                  />
+                </svg>
+              )}
               {isSubcategory && (
                 <span className="text-neutral-500 text-xs">└─</span>
               )}
@@ -136,11 +266,6 @@ export default function AdminCategoriesPage() {
               ) : (
                 '-'
               )}
-            </div>
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            <div className={`text-sm ${isSubcategory ? 'text-neutral-500' : 'text-neutral-400'}`}>
-              {category.sort_order}
             </div>
           </td>
           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -218,7 +343,7 @@ export default function AdminCategoriesPage() {
               ← Back to Dashboard
             </Link>
             <h1 className="text-4xl font-semibold text-white mb-2">Categories</h1>
-            <p className="text-neutral-400">Organize your product categories</p>
+            <p className="text-neutral-400">Organize your product categories. Drag and drop top-level categories to reorder them.</p>
           </div>
           <Link
             href="/admin/categories/new"
@@ -268,9 +393,6 @@ export default function AdminCategoriesPage() {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
                     Parent
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Sort Order
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
                     Actions

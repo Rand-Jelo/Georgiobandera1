@@ -256,6 +256,7 @@ export default function NewProductPage() {
         // Fetch images (will be empty initially)
         await fetchImages(data.product.id);
         setActiveTab('images'); // Switch to images tab after creation
+        setSaving(false); // Reset saving state after successful creation
       } else {
         router.push('/admin/products');
       }
