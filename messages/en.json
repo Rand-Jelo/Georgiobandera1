@@ -208,6 +208,285 @@
     "browseProducts": "Browse Products",
     "item": "item",
     "items": "items"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "subtitle": "We are committed to protecting your privacy and personal data.",
+    "lastUpdated": "Last Updated",
+    "lastUpdatedDate": "January 2025",
+    "section1": {
+      "title": "1. Introduction",
+      "content1": "Georgio Bandera (\"we\", \"us\", or \"our\") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services.",
+      "content2": "By using our website and services, you consent to the data practices described in this policy. If you do not agree with the practices described in this policy, please do not use our services."
+    },
+    "section2": {
+      "title": "2. Information We Collect",
+      "content1": "We collect information that you provide directly to us, including:",
+      "item1": "Personal information such as name, email address, phone number, and shipping address when you create an account or place an order",
+      "item2": "Payment information (processed securely through our payment providers)",
+      "item3": "Communication preferences and customer service interactions",
+      "item4": "Product reviews and feedback",
+      "content2": "We also automatically collect certain information when you visit our website, including:",
+      "item5": "Device information (IP address, browser type, operating system)",
+      "item6": "Usage data (pages visited, time spent, click patterns)",
+      "item7": "Cookies and similar tracking technologies"
+    },
+    "section3": {
+      "title": "3. How We Use Your Information",
+      "content1": "We use the information we collect to:",
+      "item1": "Process and fulfill your orders",
+      "item2": "Communicate with you about your orders, products, and services",
+      "item3": "Send you marketing communications (with your consent)",
+      "item4": "Improve our website, products, and services",
+      "item5": "Detect and prevent fraud and abuse",
+      "item6": "Comply with legal obligations"
+    },
+    "section4": {
+      "title": "4. Data Sharing and Disclosure",
+      "content1": "We do not sell your personal information. We may share your information with:",
+      "item1": "Service providers who assist us in operating our website and conducting our business (payment processors, shipping companies, email service providers)",
+      "item2": "Legal authorities when required by law or to protect our rights",
+      "item3": "Business partners with your explicit consent",
+      "content2": "All third parties are required to maintain the confidentiality of your information and are prohibited from using it for any purpose other than providing services to us."
+    },
+    "section5": {
+      "title": "5. Cookies and Tracking Technologies",
+      "content1": "We use cookies and similar tracking technologies to enhance your browsing experience, analyze website traffic, and personalize content. You can control cookies through your browser settings, but disabling cookies may limit your ability to use certain features of our website.",
+      "content2": "We use both session cookies (which expire when you close your browser) and persistent cookies (which remain on your device until deleted or expired)."
+    },
+    "section6": {
+      "title": "6. Your Rights",
+      "content1": "Under the General Data Protection Regulation (GDPR) and applicable data protection laws, you have the following rights:",
+      "item1": "Right to access: You can request a copy of the personal data we hold about you",
+      "item2": "Right to rectification: You can request correction of inaccurate or incomplete data",
+      "item3": "Right to erasure: You can request deletion of your personal data under certain circumstances",
+      "item4": "Right to restrict processing: You can request limitation of how we process your data",
+      "item5": "Right to data portability: You can request transfer of your data to another service",
+      "item6": "Right to object: You can object to processing of your data for marketing purposes",
+      "item7": "Right to withdraw consent: You can withdraw consent at any time where processing is based on consent",
+      "content2": "To exercise these rights, please contact us using the information provided in the \"Contact Us\" section below."
+    },
+    "section7": {
+      "title": "7. Data Security",
+      "content1": "We implement appropriate technical and organizational measures to protect your personal data against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the Internet or electronic storage is 100% secure.",
+      "content2": "We use industry-standard encryption for sensitive data transmission and secure payment processing through trusted third-party providers."
+    },
+    "section8": {
+      "title": "8. Data Retention",
+      "content1": "We retain your personal data only for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law.",
+      "content2": "When we no longer need your personal data, we will securely delete or anonymize it in accordance with our data retention policies and applicable laws."
+    },
+    "section9": {
+      "title": "9. Children's Privacy",
+      "content1": "Our services are not intended for individuals under the age of 18. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately."
+    },
+    "section10": {
+      "title": "10. Changes to This Policy",
+      "content1": "We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new policy on this page and updating the \"Last Updated\" date.",
+      "content2": "Your continued use of our services after any changes constitutes acceptance of the updated policy."
+    },
+    "section11": {
+      "title": "11. Contact Us",
+      "content1": "If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:",
+      "email": "Email: info@georgiobandera.se",
+      "website": "Website: www.georgiobandera.se",
+      "content2": "You also have the right to lodge a complaint with the Swedish Data Protection Authority (Integritetsskyddsmyndigheten) if you believe your data protection rights have been violated."
+    }
+  },
+  "shipping": {
+    "title": "Shipping Policy",
+    "subtitle": "Information about our shipping methods, delivery times, and shipping costs.",
+    "lastUpdated": "Last Updated",
+    "lastUpdatedDate": "January 2025",
+    "section1": {
+      "title": "1. Shipping Methods",
+      "content1": "We offer various shipping methods to accommodate your needs:",
+      "item1": "Standard Shipping: Regular delivery service with tracking",
+      "item2": "International Shipping: Available to select countries worldwide",
+      "content2": "Shipping options and costs are displayed during checkout. You can select your preferred shipping method before completing your order."
+    },
+    "section2": {
+      "title": "2. Delivery Times",
+      "content1": "Estimated delivery times vary based on your location and the shipping method selected:",
+      "item1": "Sweden: 2-5 business days",
+      "item2": "Nordic Countries: 3-7 business days",
+      "item3": "Europe: 5-10 business days",
+      "item4": "International: 7-21 business days depending on destination",
+      "content2": "Please note that delivery times are estimates and not guaranteed. Delays may occur due to customs processing, weather conditions, or other factors beyond our control.",
+      "content3": "Processing time: Orders are typically processed within 1-2 business days after payment confirmation, excluding weekends and holidays."
+    },
+    "section3": {
+      "title": "3. Shipping Costs",
+      "content1": "Shipping costs are calculated based on:",
+      "item1": "Destination country and region",
+      "item2": "Package weight and dimensions",
+      "item3": "Selected shipping method",
+      "content2": "Free shipping may be available for orders over a certain amount. Check our website for current promotions and free shipping thresholds.",
+      "content3": "All shipping costs are displayed clearly during checkout before you complete your purchase. You will not be charged any hidden fees."
+    },
+    "section4": {
+      "title": "4. Order Tracking",
+      "content1": "Once your order has been shipped, you will receive a shipping confirmation email containing:",
+      "item1": "Tracking number for your shipment",
+      "item2": "Link to track your package online",
+      "item3": "Estimated delivery date",
+      "content2": "You can track your order status in your account dashboard or by using the tracking number provided. Tracking information is typically available within 24-48 hours after shipment."
+    },
+    "section5": {
+      "title": "5. International Shipping",
+      "content1": "We ship to many countries worldwide. When ordering internationally, please be aware that:",
+      "item1": "Customs duties, taxes, and fees may apply and are the responsibility of the recipient",
+      "item2": "Delivery times may be longer due to customs processing",
+      "item3": "Some products may be restricted or prohibited in certain countries",
+      "item4": "You may need to provide additional documentation for customs clearance",
+      "content2": "We are not responsible for any customs fees, import duties, or taxes imposed by your country. These charges are separate from the shipping cost and must be paid by the recipient upon delivery."
+    },
+    "section6": {
+      "title": "6. Lost or Damaged Packages",
+      "content1": "If your package is lost or damaged during transit:",
+      "item1": "Contact us immediately within 7 days of the estimated delivery date",
+      "item2": "Provide your order number and tracking information",
+      "item3": "For damaged items, include photos of the damaged package and contents",
+      "content2": "We will investigate the issue and work with the shipping carrier to resolve it. If your package is confirmed lost or damaged, we will replace the items or provide a full refund at our discretion.",
+      "content3": "Please note that we are not responsible for packages that are lost or damaged after delivery confirmation, or if an incorrect shipping address was provided."
+    },
+    "section7": {
+      "title": "7. Shipping Address",
+      "content1": "It is your responsibility to provide a correct and complete shipping address. Please double-check your address before completing your order.",
+      "content2": "If you provide an incorrect address and the package is returned to us, you will be responsible for the return shipping costs and any additional shipping fees to resend the package to the correct address.",
+      "content3": "For security reasons, we cannot change the shipping address after an order has been placed. If you need to update your address, please contact us immediately, and we will do our best to accommodate your request if the order has not yet been shipped."
+    },
+    "section8": {
+      "title": "8. Contact Us",
+      "content1": "If you have any questions about our shipping policy or need assistance with your order, please contact us:",
+      "email": "Email: info@georgiobandera.se",
+      "website": "Website: www.georgiobandera.se"
+    }
+  },
+  "returns": {
+    "title": "Returns & Refunds",
+    "subtitle": "Our policy on returns, refunds, and exchanges.",
+    "lastUpdated": "Last Updated",
+    "lastUpdatedDate": "January 2025",
+    "section1": {
+      "title": "1. Return Policy Overview",
+      "content1": "Due to hygiene and safety regulations, most hair care products cannot be returned once opened or used. However, certain products may be eligible for return under specific conditions.",
+      "content2": "Please read this policy carefully to understand which products can be returned and under what circumstances."
+    },
+    "section2": {
+      "title": "2. Non-Returnable Products",
+      "content1": "For health and safety reasons, the following products cannot be returned once opened or used:",
+      "item1": "Shampoos and conditioners",
+      "item2": "Hair styling products (gels, mousses, sprays, waxes)",
+      "item3": "Hair treatments and masks",
+      "item4": "Hair oils and serums",
+      "item5": "Any other opened or used hair care products",
+      "content2": "These products are non-returnable for hygiene and safety reasons, in accordance with consumer protection regulations."
+    },
+    "section3": {
+      "title": "3. Returnable Products",
+      "content1": "The following products may be returned within 30 days of delivery if they are unused, unopened, and in their original packaging:",
+      "item1": "Hair dryers and other electrical devices",
+      "item2": "Hair styling tools (brushes, combs, accessories)",
+      "item3": "Unopened, sealed hair care products",
+      "item4": "Defective or damaged products (regardless of type)",
+      "item5": "Incorrectly shipped items",
+      "content2": "To be eligible for return, products must be in their original condition, unused, and with all original packaging, tags, and accessories included."
+    },
+    "section4": {
+      "title": "4. Return Process",
+      "content1": "To initiate a return, please follow these steps:",
+      "item1": "Contact us within 30 days of delivery at info@georgiobandera.se or through your account dashboard",
+      "item2": "Provide your order number and reason for return",
+      "item3": "We will review your request and provide return instructions if eligible",
+      "item4": "Package the item securely in its original packaging",
+      "item5": "Ship the item back to us using the provided return address",
+      "content2": "Please note that return shipping costs are the responsibility of the customer unless the product is defective, damaged, or incorrectly shipped."
+    },
+    "section5": {
+      "title": "5. Refund Process",
+      "content1": "Once we receive and inspect your returned item, we will process your refund:",
+      "item1": "Refunds will be processed to the original payment method",
+      "item2": "Processing time: 5-10 business days after we receive the returned item",
+      "item3": "You will receive an email confirmation once the refund has been processed",
+      "item4": "The refund amount will exclude original shipping costs (unless the return is due to our error)",
+      "content2": "Please note that it may take additional time for the refund to appear in your account, depending on your bank or payment provider."
+    },
+    "section6": {
+      "title": "6. Exchanges",
+      "content1": "We do not offer direct exchanges. If you wish to exchange a product, please return the original item following our return process and place a new order for the desired product.",
+      "content2": "This ensures you receive the correct product quickly while we process your return separately."
+    },
+    "section7": {
+      "title": "7. Defective or Damaged Products",
+      "content1": "If you receive a defective or damaged product, please contact us immediately:",
+      "item1": "Contact us within 7 days of delivery",
+      "item2": "Provide photos of the defect or damage",
+      "item3": "Include your order number",
+      "content2": "We will arrange for a replacement or full refund, including return shipping costs, at no cost to you."
+    },
+    "section8": {
+      "title": "8. Contact Us",
+      "content1": "If you have any questions about our returns and refunds policy, or need assistance with a return, please contact us:",
+      "email": "Email: info@georgiobandera.se",
+      "website": "Website: www.georgiobandera.se",
+      "content2": "Our customer service team is here to help and will respond to your inquiry as soon as possible."
+    }
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "subtitle": "Please read these terms carefully before using our services.",
+    "lastUpdated": "Last Updated",
+    "lastUpdatedDate": "January 2025",
+    "section1": {
+      "title": "1. Introduction",
+      "content1": "Welcome to Georgio Bandera. These Terms and Conditions (\"Terms\") govern your access to and use of our website, products, and services. By accessing or using our services, you agree to be bound by these Terms.",
+      "content2": "If you do not agree with any part of these Terms, you must not use our services. We reserve the right to update these Terms at any time, and your continued use of our services constitutes acceptance of any changes."
+    },
+    "section2": {
+      "title": "2. Products and Services",
+      "content1": "We strive to provide accurate descriptions and images of our products. However, we do not warrant that product descriptions, images, or other content on our website are accurate, complete, reliable, current, or error-free.",
+      "content2": "All prices are displayed in the currency indicated and are subject to change without notice. We reserve the right to modify or discontinue any product or service at any time without prior notice.",
+      "content3": "Product availability is subject to change. We cannot guarantee that products will be available at the time of your order."
+    },
+    "section3": {
+      "title": "3. Orders and Payment",
+      "content1": "By placing an order, you make an offer to purchase products at the prices stated, subject to these Terms. We reserve the right to accept or reject any order at our discretion.",
+      "content2": "Payment must be received in full before we process and ship your order. We accept various payment methods as displayed during checkout. All payments are processed securely through our payment providers.",
+      "content3": "You are responsible for providing accurate payment information. If payment cannot be processed, your order may be cancelled."
+    },
+    "section4": {
+      "title": "4. Shipping and Delivery",
+      "content1": "Shipping costs and estimated delivery times are displayed during checkout. Delivery times are estimates and not guaranteed. We are not responsible for delays caused by shipping carriers or customs.",
+      "content2": "Risk of loss and title for products pass to you upon delivery to the carrier. You are responsible for filing any claims with carriers for damaged or lost shipments."
+    },
+    "section5": {
+      "title": "5. Returns and Refunds",
+      "content1": "Due to hygiene and safety regulations, most hair care products (including shampoos, conditioners, styling products, and treatments) cannot be returned once opened or used. These products are non-returnable for health and safety reasons.",
+      "content2": "However, certain products such as hair dryers and other electrical devices may be returned within 30 days of delivery if they are unused, unopened, and in their original packaging. Return shipping costs are the responsibility of the customer unless the product is defective or incorrect.",
+      "content3": "Refunds will be processed to the original payment method within 5-10 business days after we receive and inspect the returned product. For detailed return instructions, please refer to our Returns & Refunds Policy or contact our customer service."
+    },
+    "section6": {
+      "title": "6. Intellectual Property",
+      "content1": "All content on this website, including text, graphics, logos, images, and software, is the property of Georgio Bandera or its content suppliers and is protected by copyright and other intellectual property laws.",
+      "content2": "You may not reproduce, distribute, modify, or create derivative works from any content on this website without our express written permission."
+    },
+    "section7": {
+      "title": "7. Limitation of Liability",
+      "content1": "To the fullest extent permitted by law, Georgio Bandera shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses.",
+      "content2": "Our total liability for any claims arising from or related to your use of our services shall not exceed the amount you paid to us in the 12 months preceding the claim."
+    },
+    "section8": {
+      "title": "8. Governing Law",
+      "content1": "These Terms shall be governed by and construed in accordance with the laws of Sweden, without regard to its conflict of law provisions.",
+      "content2": "Any disputes arising from these Terms or your use of our services shall be subject to the exclusive jurisdiction of the courts of Sweden."
+    },
+    "section9": {
+      "title": "9. Contact Us",
+      "content1": "If you have any questions about these Terms & Conditions, please contact us:",
+      "email": "Email: info@georgiobandera.se",
+      "website": "Website: www.georgiobandera.se"
+    }
   }
 }
 

@@ -208,6 +208,285 @@
     "browseProducts": "Bläddra produkter",
     "item": "produkt",
     "items": "produkter"
+  },
+  "privacy": {
+    "title": "Integritetspolicy",
+    "subtitle": "Vi är engagerade i att skydda din integritet och personuppgifter.",
+    "lastUpdated": "Senast uppdaterad",
+    "lastUpdatedDate": "Januari 2025",
+    "section1": {
+      "title": "1. Introduktion",
+      "content1": "Georgio Bandera (\"vi\", \"oss\" eller \"vår\") är engagerade i att skydda din integritet. Denna integritetspolicy förklarar hur vi samlar in, använder, avslöjar och skyddar din information när du besöker vår webbplats och använder våra tjänster.",
+      "content2": "Genom att använda vår webbplats och tjänster samtycker du till de datapraxis som beskrivs i denna policy. Om du inte håller med om de praxis som beskrivs i denna policy, vänligen använd inte våra tjänster."
+    },
+    "section2": {
+      "title": "2. Information vi samlar in",
+      "content1": "Vi samlar in information som du tillhandahåller direkt till oss, inklusive:",
+      "item1": "Personlig information såsom namn, e-postadress, telefonnummer och leveransadress när du skapar ett konto eller lägger en beställning",
+      "item2": "Betalningsinformation (behandlas säkert genom våra betalningsleverantörer)",
+      "item3": "Kommunikationspreferenser och kundtjänstinteraktioner",
+      "item4": "Produktrecensioner och feedback",
+      "content2": "Vi samlar också automatiskt in viss information när du besöker vår webbplats, inklusive:",
+      "item5": "Enhetsinformation (IP-adress, webbläsartyp, operativsystem)",
+      "item6": "Användningsdata (besökta sidor, tid spenderad, klickmönster)",
+      "item7": "Cookies och liknande spårningsteknologier"
+    },
+    "section3": {
+      "title": "3. Hur vi använder din information",
+      "content1": "Vi använder den information vi samlar in för att:",
+      "item1": "Bearbeta och uppfylla dina beställningar",
+      "item2": "Kommunisera med dig om dina beställningar, produkter och tjänster",
+      "item3": "Skicka dig marknadsföringskommunikation (med ditt samtycke)",
+      "item4": "Förbättra vår webbplats, produkter och tjänster",
+      "item5": "Upptäcka och förhindra bedrägerier och missbruk",
+      "item6": "Följa juridiska förpliktelser"
+    },
+    "section4": {
+      "title": "4. Datadelning och avslöjande",
+      "content1": "Vi säljer inte din personliga information. Vi kan dela din information med:",
+      "item1": "Tjänsteleverantörer som hjälper oss att driva vår webbplats och bedriva vår verksamhet (betalningsprocessorer, fraktbolag, e-posttjänsteleverantörer)",
+      "item2": "Juridiska myndigheter när det krävs enligt lag eller för att skydda våra rättigheter",
+      "item3": "Affärspartners med ditt uttryckliga samtycke",
+      "content2": "Alla tredje parter krävs för att upprätthålla konfidentialiteten för din information och är förbjudna att använda den för något annat syfte än att tillhandahålla tjänster till oss."
+    },
+    "section5": {
+      "title": "5. Cookies och spårningsteknologier",
+      "content1": "Vi använder cookies och liknande spårningsteknologier för att förbättra din surfupplevelse, analysera webbplatstrafik och personalisera innehåll. Du kan kontrollera cookies genom dina webbläsarinställningar, men att inaktivera cookies kan begränsa din förmåga att använda vissa funktioner på vår webbplats.",
+      "content2": "Vi använder både sessionscookies (som upphör när du stänger din webbläsare) och beständiga cookies (som finns kvar på din enhet tills de tas bort eller upphör)."
+    },
+    "section6": {
+      "title": "6. Dina rättigheter",
+      "content1": "Enligt allmänna dataskyddsförordningen (GDPR) och tillämpliga dataskyddslagar har du följande rättigheter:",
+      "item1": "Rätt till tillgång: Du kan begära en kopia av de personuppgifter vi har om dig",
+      "item2": "Rätt till rättelse: Du kan begära korrigering av felaktiga eller ofullständiga data",
+      "item3": "Rätt till radering: Du kan begära radering av dina personuppgifter under vissa omständigheter",
+      "item4": "Rätt att begränsa behandling: Du kan begära begränsning av hur vi behandlar dina data",
+      "item5": "Rätt till dataportabilitet: Du kan begära överföring av dina data till en annan tjänst",
+      "item6": "Rätt att invända: Du kan invända mot behandling av dina data för marknadsföringssyften",
+      "item7": "Rätt att återkalla samtycke: Du kan återkalla samtycke när som helst där behandling är baserad på samtycke",
+      "content2": "För att utöva dessa rättigheter, vänligen kontakta oss med hjälp av informationen som tillhandahålls i avsnittet \"Kontakta oss\" nedan."
+    },
+    "section7": {
+      "title": "7. Datasäkerhet",
+      "content1": "Vi implementerar lämpliga tekniska och organisatoriska åtgärder för att skydda dina personuppgifter mot obehörig åtkomst, ändring, avslöjande eller förstörelse. Ingen överföringsmetod över Internet eller elektronisk lagring är dock 100% säker.",
+      "content2": "Vi använder branschstandardkryptering för känslig dataöverföring och säker betalningsbehandling genom betrodda tredjepartsleverantörer."
+    },
+    "section8": {
+      "title": "8. Datalagring",
+      "content1": "Vi behåller dina personuppgifter endast så länge som nödvändigt för att uppfylla de ändamål som beskrivs i denna integritetspolicy, om inte en längre lagringsperiod krävs eller tillåts enligt lag.",
+      "content2": "När vi inte längre behöver dina personuppgifter kommer vi att säkert radera eller anonymisera dem i enlighet med våra datalagringspolicyer och tillämpliga lagar."
+    },
+    "section9": {
+      "title": "9. Barns integritet",
+      "content1": "Våra tjänster är inte avsedda för personer under 18 år. Vi samlar inte medvetet in personlig information från barn. Om du tror att vi har samlat in information från ett barn, vänligen kontakta oss omedelbart."
+    },
+    "section10": {
+      "title": "10. Ändringar av denna policy",
+      "content1": "Vi kan uppdatera denna integritetspolicy från tid till annan. Vi kommer att meddela dig om eventuella väsentliga ändringar genom att publicera den nya policyn på denna sida och uppdatera datumet för \"Senast uppdaterad\".",
+      "content2": "Din fortsatta användning av våra tjänster efter eventuella ändringar innebär acceptans av den uppdaterade policyn."
+    },
+    "section11": {
+      "title": "11. Kontakta oss",
+      "content1": "Om du har några frågor, problem eller förfrågningar angående denna integritetspolicy eller våra datapraxis, vänligen kontakta oss:",
+      "email": "E-post: info@georgiobandera.se",
+      "website": "Webbplats: www.georgiobandera.se",
+      "content2": "Du har också rätt att lämna in ett klagomål till Integritetsskyddsmyndigheten (IMY) om du anser att dina dataskyddsrättigheter har kränkts."
+    }
+  },
+  "shipping": {
+    "title": "Fraktpolicy",
+    "subtitle": "Information om våra fraktmetoder, leveranstider och fraktkostnader.",
+    "lastUpdated": "Senast uppdaterad",
+    "lastUpdatedDate": "Januari 2025",
+    "section1": {
+      "title": "1. Fraktmetoder",
+      "content1": "Vi erbjuder olika fraktmetoder för att möta dina behov:",
+      "item1": "Standardfrakt: Regelbunden leveranstjänst med spårning",
+      "item2": "Internationell frakt: Tillgänglig till utvalda länder världen över",
+      "content2": "Fraktalternativ och kostnader visas under kassan. Du kan välja din föredragna fraktmetod innan du slutför din beställning."
+    },
+    "section2": {
+      "title": "2. Leveranstider",
+      "content1": "Beräknade leveranstider varierar beroende på din plats och vald fraktmetod:",
+      "item1": "Sverige: 2-5 arbetsdagar",
+      "item2": "Nordiska länder: 3-7 arbetsdagar",
+      "item3": "Europa: 5-10 arbetsdagar",
+      "item4": "Internationellt: 7-21 arbetsdagar beroende på destination",
+      "content2": "Observera att leveranstider är uppskattningar och inte garanterade. Förseningar kan uppstå på grund av tullbehandling, väderförhållanden eller andra faktorer utanför vår kontroll.",
+      "content3": "Bearbetningstid: Beställningar behandlas vanligtvis inom 1-2 arbetsdagar efter betalningsbekräftelse, exklusive helger och helgdagar."
+    },
+    "section3": {
+      "title": "3. Fraktkostnader",
+      "content1": "Fraktkostnader beräknas baserat på:",
+      "item1": "Destinationsland och region",
+      "item2": "Paketets vikt och dimensioner",
+      "item3": "Vald fraktmetod",
+      "content2": "Gratis frakt kan vara tillgänglig för beställningar över ett visst belopp. Kontrollera vår webbplats för aktuella kampanjer och gränser för gratis frakt.",
+      "content3": "Alla fraktkostnader visas tydligt under kassan innan du slutför ditt köp. Du kommer inte att debiteras några dolda avgifter."
+    },
+    "section4": {
+      "title": "4. Orderspårning",
+      "content1": "När din beställning har skickats kommer du att få ett leveransbekräftelsemejl innehållande:",
+      "item1": "Spårningsnummer för din sändning",
+      "item2": "Länk för att spåra ditt paket online",
+      "item3": "Beräknat leveransdatum",
+      "content2": "Du kan spåra din beställningsstatus i ditt kontodashboard eller genom att använda det angivna spårningsnumret. Spårningsinformation är vanligtvis tillgänglig inom 24-48 timmar efter sändning."
+    },
+    "section5": {
+      "title": "5. Internationell frakt",
+      "content1": "Vi skickar till många länder världen över. När du beställer internationellt, var medveten om att:",
+      "item1": "Tullavgifter, skatter och avgifter kan gälla och är mottagarens ansvar",
+      "item2": "Leveranstider kan vara längre på grund av tullbehandling",
+      "item3": "Vissa produkter kan vara begränsade eller förbjudna i vissa länder",
+      "item4": "Du kan behöva tillhandahålla ytterligare dokumentation för tullklarering",
+      "content2": "Vi är inte ansvariga för eventuella tullavgifter, importskatter eller skatter som påförs av ditt land. Dessa avgifter är separata från fraktkostnaden och måste betalas av mottagaren vid leverans."
+    },
+    "section6": {
+      "title": "6. Förlorade eller skadade paket",
+      "content1": "Om ditt paket är förlorat eller skadat under transporten:",
+      "item1": "Kontakta oss omedelbart inom 7 dagar från det beräknade leveransdatumet",
+      "item2": "Tillhandahåll ditt ordernummer och spårningsinformation",
+      "item3": "För skadade artiklar, inkludera foton av det skadade paketet och innehållet",
+      "content2": "Vi kommer att undersöka problemet och arbeta med fraktbolaget för att lösa det. Om ditt paket bekräftas vara förlorat eller skadat kommer vi att ersätta artiklarna eller ge en full återbetalning efter vårt gottfinnande.",
+      "content3": "Observera att vi inte är ansvariga för paket som är förlorade eller skadade efter leveransbekräftelse, eller om en felaktig leveransadress angavs."
+    },
+    "section7": {
+      "title": "7. Leveransadress",
+      "content1": "Det är ditt ansvar att tillhandahålla en korrekt och fullständig leveransadress. Vänligen dubbelkolla din adress innan du slutför din beställning.",
+      "content2": "Om du anger en felaktig adress och paketet returneras till oss kommer du att vara ansvarig för returfrakterna och eventuella ytterligare fraktavgifter för att skicka om paketet till rätt adress.",
+      "content3": "Av säkerhetsskäl kan vi inte ändra leveransadressen efter att en beställning har lagts. Om du behöver uppdatera din adress, vänligen kontakta oss omedelbart, så gör vi vårt bästa för att tillgodose din begäran om beställningen ännu inte har skickats."
+    },
+    "section8": {
+      "title": "8. Kontakta oss",
+      "content1": "Om du har några frågor om vår fraktpolicy eller behöver hjälp med din beställning, vänligen kontakta oss:",
+      "email": "E-post: info@georgiobandera.se",
+      "website": "Webbplats: www.georgiobandera.se"
+    }
+  },
+  "returns": {
+    "title": "Returer och återbetalningar",
+    "subtitle": "Vår policy för returer, återbetalningar och byten.",
+    "lastUpdated": "Senast uppdaterad",
+    "lastUpdatedDate": "Januari 2025",
+    "section1": {
+      "title": "1. Returpolicy översikt",
+      "content1": "På grund av hygien- och säkerhetsbestämmelser kan de flesta hårvårdsprodukter inte returneras när de väl har öppnats eller använts. Vissa produkter kan dock vara berättigade till retur under specifika förhållanden.",
+      "content2": "Vänligen läs denna policy noggrant för att förstå vilka produkter som kan returneras och under vilka omständigheter."
+    },
+    "section2": {
+      "title": "2. Produkter som inte kan returneras",
+      "content1": "Av hälsoskäl kan följande produkter inte returneras när de väl har öppnats eller använts:",
+      "item1": "Schampo och balsam",
+      "item2": "Hårstylingprodukter (gel, mousse, spray, vax)",
+      "item3": "Hårbehandlingar och masker",
+      "item4": "Håroljor och serum",
+      "item5": "Alla andra öppnade eller använda hårvårdsprodukter",
+      "content2": "Dessa produkter är ej återförsäljbara av hygien- och säkerhetsskäl, i enlighet med konsumentskyddsbestämmelser."
+    },
+    "section3": {
+      "title": "3. Produkter som kan returneras",
+      "content1": "Följande produkter kan returneras inom 30 dagar från leverans om de är oanvända, oöppnade och i originalförpackning:",
+      "item1": "Hårtorkar och andra elektriska apparater",
+      "item2": "Hårstylingverktyg (borstar, kammar, tillbehör)",
+      "item3": "Oöppnade, förseglade hårvårdsprodukter",
+      "item4": "Defekta eller skadade produkter (oavsett typ)",
+      "item5": "Felaktigt levererade artiklar",
+      "content2": "För att vara berättigad till retur måste produkterna vara i originaltillstånd, oanvända och med all originalförpackning, etiketter och tillbehör inkluderade."
+    },
+    "section4": {
+      "title": "4. Returprocess",
+      "content1": "För att initiera en retur, vänligen följ dessa steg:",
+      "item1": "Kontakta oss inom 30 dagar från leverans på info@georgiobandera.se eller via ditt kontodashboard",
+      "item2": "Tillhandahåll ditt ordernummer och anledning till retur",
+      "item3": "Vi kommer att granska din begäran och ge returinstruktioner om berättigad",
+      "item4": "Förpacka artikeln säkert i sin originalförpackning",
+      "item5": "Skicka artikeln tillbaka till oss med den angivna returadressen",
+      "content2": "Observera att returfrakter är kundens ansvar om inte produkten är defekt, skadad eller felaktigt levererad."
+    },
+    "section5": {
+      "title": "5. Återbetalningsprocess",
+      "content1": "När vi har mottagit och inspekterat din returnerade artikel kommer vi att behandla din återbetalning:",
+      "item1": "Återbetalningar behandlas till den ursprungliga betalningsmetoden",
+      "item2": "Bearbetningstid: 5-10 arbetsdagar efter att vi har mottagit den returnerade artikeln",
+      "item3": "Du kommer att få ett e-postbekräftelse när återbetalningen har behandlats",
+      "item4": "Återbetalningsbeloppet kommer att exkludera ursprungliga fraktkostnader (om inte returen beror på vårt fel)",
+      "content2": "Observera att det kan ta ytterligare tid för återbetalningen att visas på ditt konto, beroende på din bank eller betalningsleverantör."
+    },
+    "section6": {
+      "title": "6. Byten",
+      "content1": "Vi erbjuder inte direkta byten. Om du vill byta en produkt, vänligen returnera den ursprungliga artikeln enligt vår returprocess och lägg en ny beställning för önskad produkt.",
+      "content2": "Detta säkerställer att du får rätt produkt snabbt medan vi behandlar din retur separat."
+    },
+    "section7": {
+      "title": "7. Defekta eller skadade produkter",
+      "content1": "Om du får en defekt eller skadad produkt, vänligen kontakta oss omedelbart:",
+      "item1": "Kontakta oss inom 7 dagar från leverans",
+      "item2": "Tillhandahåll foton av defekten eller skadan",
+      "item3": "Inkludera ditt ordernummer",
+      "content2": "Vi kommer att ordna en ersättning eller full återbetalning, inklusive returfrakter, utan kostnad för dig."
+    },
+    "section8": {
+      "title": "8. Kontakta oss",
+      "content1": "Om du har några frågor om vår retur- och återbetalningspolicy, eller behöver hjälp med en retur, vänligen kontakta oss:",
+      "email": "E-post: info@georgiobandera.se",
+      "website": "Webbplats: www.georgiobandera.se",
+      "content2": "Vårt kundtjänstteam är här för att hjälpa och kommer att svara på din förfrågan så snart som möjligt."
+    }
+  },
+  "terms": {
+    "title": "Villkor",
+    "subtitle": "Vänligen läs dessa villkor noggrant innan du använder våra tjänster.",
+    "lastUpdated": "Senast uppdaterad",
+    "lastUpdatedDate": "Januari 2025",
+    "section1": {
+      "title": "1. Introduktion",
+      "content1": "Välkommen till Georgio Bandera. Dessa villkor (\"Villkor\") styr din åtkomst till och användning av vår webbplats, produkter och tjänster. Genom att komma åt eller använda våra tjänster godkänner du att vara bunden av dessa villkor.",
+      "content2": "Om du inte håller med om någon del av dessa villkor får du inte använda våra tjänster. Vi förbehåller oss rätten att uppdatera dessa villkor när som helst, och din fortsatta användning av våra tjänster innebär acceptans av eventuella ändringar."
+    },
+    "section2": {
+      "title": "2. Produkter och tjänster",
+      "content1": "Vi strävar efter att tillhandahålla korrekta beskrivningar och bilder av våra produkter. Vi garanterar dock inte att produktbeskrivningar, bilder eller annat innehåll på vår webbplats är korrekta, fullständiga, tillförlitliga, aktuella eller felfria.",
+      "content2": "Alla priser visas i den angivna valutan och kan ändras utan förvarning. Vi förbehåller oss rätten att ändra eller avsluta vilken produkt eller tjänst som helst när som helst utan föregående meddelande.",
+      "content3": "Produktens tillgänglighet kan ändras. Vi kan inte garantera att produkter kommer att vara tillgängliga vid tidpunkten för din beställning."
+    },
+    "section3": {
+      "title": "3. Beställningar och betalning",
+      "content1": "Genom att lägga en beställning gör du ett erbjudande om att köpa produkter till de angivna priserna, enligt dessa villkor. Vi förbehåller oss rätten att acceptera eller avvisa vilken beställning som helst efter eget gottfinnande.",
+      "content2": "Betalning måste tas emot i sin helhet innan vi behandlar och skickar din beställning. Vi accepterar olika betalningsmetoder som visas under kassan. Alla betalningar behandlas säkert genom våra betalningsleverantörer.",
+      "content3": "Du är ansvarig för att tillhandahålla korrekt betalningsinformation. Om betalningen inte kan behandlas kan din beställning avbrytas."
+    },
+    "section4": {
+      "title": "4. Frakt och leverans",
+      "content1": "Fraktkostnader och beräknade leveranstider visas under kassan. Leveranstider är uppskattningar och inte garanterade. Vi är inte ansvariga för förseningar orsakade av fraktbolag eller tull.",
+      "content2": "Risk för förlust och äganderätt för produkter övergår till dig vid leverans till transportören. Du är ansvarig för att lämna eventuella anspråk till transportörer för skadade eller förlorade sändningar."
+    },
+    "section5": {
+      "title": "5. Returer och återbetalningar",
+      "content1": "På grund av hygien- och säkerhetsbestämmelser kan de flesta hårvårdsprodukter (inklusive schampo, balsam, stylingprodukter och behandlingar) inte returneras när de väl har öppnats eller använts. Dessa produkter är ej återförsäljbara av hälsoskäl.",
+      "content2": "Vissa produkter som hårtorkar och andra elektriska apparater kan dock returneras inom 30 dagar från leverans om de är oanvända, oöppnade och i originalförpackning. Returfrakter är kundens ansvar om inte produkten är defekt eller felaktig.",
+      "content3": "Återbetalningar behandlas till den ursprungliga betalningsmetoden inom 5-10 arbetsdagar efter att vi har mottagit och inspekterat den returnerade produkten. För detaljerade returinstruktioner, se vår Retur- och återbetalningspolicy eller kontakta vår kundservice."
+    },
+    "section6": {
+      "title": "6. Immateriella rättigheter",
+      "content1": "Allt innehåll på denna webbplats, inklusive text, grafik, logotyper, bilder och programvara, är Georgio Bandera eller dess innehållsleverantörers egendom och skyddas av upphovsrätt och andra immateriella rättighetslagar.",
+      "content2": "Du får inte reproducera, distribuera, modifiera eller skapa härledda verk från något innehåll på denna webbplats utan vårt uttryckliga skriftliga tillstånd."
+    },
+    "section7": {
+      "title": "7. Begränsning av ansvar",
+      "content1": "I den utsträckning som lagen tillåter ska Georgio Bandera inte vara ansvarigt för några indirekta, tillfälliga, särskilda, följd- eller straffskadestånd, eller någon förlust av vinster eller intäkter, oavsett om de uppstått direkt eller indirekt, eller någon förlust av data, användning, goodwill eller andra immateriella förluster.",
+      "content2": "Vårt totala ansvar för eventuella anspråk som uppstår från eller är relaterade till din användning av våra tjänster får inte överstiga det belopp du betalade till oss under de 12 månader som föregick anspråket."
+    },
+    "section8": {
+      "title": "8. Tillämplig lag",
+      "content1": "Dessa villkor ska styras av och tolkas i enlighet med svensk lag, utan hänsyn till dess konfliktbestämmelser.",
+      "content2": "Eventuella tvister som uppstår från dessa villkor eller din användning av våra tjänster ska vara föremål för svenska domstolars exklusiva jurisdiktion."
+    },
+    "section9": {
+      "title": "9. Kontakta oss",
+      "content1": "Om du har några frågor om dessa villkor, vänligen kontakta oss:",
+      "email": "E-post: info@georgiobandera.se",
+      "website": "Webbplats: www.georgiobandera.se"
+    }
   }
 }
 
