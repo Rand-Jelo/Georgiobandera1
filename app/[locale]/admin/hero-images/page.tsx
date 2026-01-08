@@ -144,6 +144,11 @@ export default function AdminHeroImagesPage() {
       uploadFormData.append('alt_text_sv', formData.alt_text_sv || '');
       uploadFormData.append('active', formData.active.toString());
 
+      // If editing, include the image ID to update instead of create
+      if (editingImage) {
+        uploadFormData.append('image_id', editingImage.id);
+      }
+
       const response = await fetch('/api/admin/hero-images/upload', {
         method: 'POST',
         body: uploadFormData,
@@ -179,9 +184,9 @@ export default function AdminHeroImagesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Only allow editing URL for existing images
+    // If editing, allow updating metadata without changing the image
     if (!editingImage) {
-      setError('Please upload an image file instead of entering a URL');
+      setError('Please upload an image file first');
       return;
     }
 
@@ -195,7 +200,7 @@ export default function AdminHeroImagesPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url: formData.url,
+          // Don't update URL if it hasn't changed (file upload handles URL updates)
           alt_text_en: formData.alt_text_en || null,
           alt_text_sv: formData.alt_text_sv || null,
           active: formData.active,
@@ -297,37 +302,45 @@ export default function AdminHeroImagesPage() {
               {editingImage ? 'Edit Image' : 'Add New Image'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {editingImage ? (
-                // Edit mode: Show URL input for existing images
+              {/* File upload - available for both add and edit */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  {editingImage ? 'Replace Image (optional)' : 'Upload Image *'}
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  disabled={uploadingImage}
+                  className="w-full px-4 py-2 bg-neutral-900 border border-white/10 rounded-sm text-white focus:outline-none focus:border-white/30 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-medium file:bg-white file:text-black hover:file:bg-neutral-100 disabled:opacity-50"
+                />
+                {uploadingImage && (
+                  <p className="mt-2 text-sm text-neutral-400">Uploading and optimizing image...</p>
+                )}
+                {editingImage && (
+                  <p className="mt-2 text-xs text-neutral-500">
+                    Leave empty to keep current image, or upload a new file to replace it
+                  </p>
+                )}
+              </div>
+
+              {/* URL input - only shown when editing and no file is being uploaded */}
+              {editingImage && !uploadingImage && (
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">
-                    Image URL *
+                    Current Image URL
                   </label>
                   <input
                     type="url"
-                    required
                     value={formData.url}
                     onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                     className="w-full px-4 py-2 bg-neutral-900 border border-white/10 rounded-sm text-white focus:outline-none focus:border-white/30"
                     placeholder="/api/images/hero/image.jpg"
+                    readOnly
                   />
-                </div>
-              ) : (
-                // Add mode: Show file upload
-                <div>
-                  <label className="block text-sm font-medium text-white mb-2">
-                    Upload Image *
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    disabled={uploadingImage}
-                    className="w-full px-4 py-2 bg-neutral-900 border border-white/10 rounded-sm text-white focus:outline-none focus:border-white/30 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-medium file:bg-white file:text-black hover:file:bg-neutral-100 disabled:opacity-50"
-                  />
-                  {uploadingImage && (
-                    <p className="mt-2 text-sm text-neutral-400">Uploading and optimizing image...</p>
-                  )}
+                  <p className="mt-1 text-xs text-neutral-500">
+                    To change the image, upload a new file above
+                  </p>
                 </div>
               )}
 

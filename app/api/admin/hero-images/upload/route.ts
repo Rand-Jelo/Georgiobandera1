@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth/session';
 import { getDB, getR2Bucket } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
-import { createHeroImage, getHeroImages } from '@/lib/db/queries/hero-images';
+import { createHeroImage, getHeroImages, updateHeroImage } from '@/lib/db/queries/hero-images';
 import { randomUUID } from 'crypto';
 
 /**
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
     const altTextEn = (formData.get('alt_text_en') as string) || null;
     const altTextSv = (formData.get('alt_text_sv') as string) || null;
     const active = formData.get('active') === 'true';
+    const imageId = formData.get('image_id') as string | null; // For updating existing image
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -92,23 +93,35 @@ export async function POST(request: NextRequest) {
     // Generate public URL - use API route to serve images
     const imageUrl = `/api/images/${fileName}`;
 
-    // Get current max sort_order to append new image at the end
-    const existingImages = await getHeroImages(db, false);
-    const maxSortOrder = existingImages.length > 0
-      ? Math.max(...existingImages.map(img => img.sort_order))
-      : -1;
+    let image;
+    
+    if (imageId) {
+      // Update existing image with new file
+      image = await updateHeroImage(db, imageId, {
+        url: imageUrl,
+        alt_text_en: altTextEn,
+        alt_text_sv: altTextSv,
+        active: active,
+      });
+    } else {
+      // Create new image
+      // Get current max sort_order to append new image at the end
+      const existingImages = await getHeroImages(db, false);
+      const maxSortOrder = existingImages.length > 0
+        ? Math.max(...existingImages.map(img => img.sort_order))
+        : -1;
 
-    // Create image record in database
-    const image = await createHeroImage(db, {
-      id: randomUUID(),
-      url: imageUrl,
-      alt_text_en: altTextEn,
-      alt_text_sv: altTextSv,
-      sort_order: maxSortOrder + 1,
-      active: active,
-    });
+      image = await createHeroImage(db, {
+        id: randomUUID(),
+        url: imageUrl,
+        alt_text_en: altTextEn,
+        alt_text_sv: altTextSv,
+        sort_order: maxSortOrder + 1,
+        active: active,
+      });
+    }
 
-    return NextResponse.json({ image }, { status: 201 });
+    return NextResponse.json({ image }, { status: imageId ? 200 : 201 });
   } catch (error) {
     console.error('Upload hero image error:', error);
     return NextResponse.json(
