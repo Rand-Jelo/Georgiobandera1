@@ -5,12 +5,15 @@ import { useRouter, useParams } from 'next/navigation';
 import { Link } from '@/lib/i18n/routing';
 import type { DiscountCode } from '@/types/database';
 
+type TabType = 'basic' | 'limits' | 'schedule';
+
 export default function EditDiscountCodePage() {
   const router = useRouter();
   const params = useParams();
   const codeId = params.id as string;
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>('basic');
   const [discountCode, setDiscountCode] = useState<DiscountCode | null>(null);
   const [formData, setFormData] = useState({
     code: '',
@@ -177,195 +180,283 @@ export default function EditDiscountCodePage() {
           <p className="text-neutral-400">Update discount code settings</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg p-6 space-y-6">
-          {error && (
-            <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Code <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.code}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-              className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Description
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-              rows={3}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Discount Type <span className="text-red-400">*</span>
-              </label>
-              <select
-                required
-                value={formData.discount_type}
-                onChange={(e) => setFormData({ ...formData, discount_type: e.target.value as 'percentage' | 'fixed' })}
-                className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+        <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
+          {/* Tabs Navigation */}
+          <div className="border-b border-white/10 bg-black/30">
+            <div className="flex space-x-1 px-6">
+              <button
+                type="button"
+                onClick={() => setActiveTab('basic')}
+                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                  activeTab === 'basic'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-neutral-300'
+                }`}
               >
-                <option value="percentage">Percentage</option>
-                <option value="fixed">Fixed Amount</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Discount Value <span className="text-red-400">*</span>
-              </label>
-              <input
-                type="number"
-                required
-                min="0"
-                max={formData.discount_type === 'percentage' ? '100' : undefined}
-                step="0.01"
-                value={formData.discount_value}
-                onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
-                className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-              />
-            </div>
-          </div>
-
-          {formData.discount_type === 'percentage' && (
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Maximum Discount (SEK)
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.maximum_discount}
-                onChange={(e) => setFormData({ ...formData, maximum_discount: e.target.value })}
-                className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-              />
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Minimum Purchase (SEK)
-            </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={formData.minimum_purchase}
-              onChange={(e) => setFormData({ ...formData, minimum_purchase: e.target.value })}
-              className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Usage Limit
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.usage_limit}
-                onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value })}
-                className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                placeholder="Unlimited"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                User Usage Limit
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.user_usage_limit}
-                onChange={(e) => setFormData({ ...formData, user_usage_limit: e.target.value })}
-                className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-              />
+                <span>Basic Info</span>
+                {activeTab === 'basic' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('limits')}
+                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                  activeTab === 'limits'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-neutral-300'
+                }`}
+              >
+                <span>Limits</span>
+                {activeTab === 'limits' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('schedule')}
+                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                  activeTab === 'schedule'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-neutral-300'
+                }`}
+              >
+                <span>Schedule</span>
+                {activeTab === 'schedule' && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
+                )}
+              </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Valid From
-              </label>
-              <input
-                type="datetime-local"
-                value={formData.valid_from}
-                onChange={(e) => setFormData({ ...formData, valid_from: e.target.value })}
-                className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-              />
+          {/* Tab Content */}
+          <div className="p-8">
+            {error && (
+              <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 mb-6">
+                {error}
+              </div>
+            )}
+
+            {/* Usage Stats */}
+            {discountCode && (
+              <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg mb-6">
+                <p className="text-sm text-blue-300">
+                  <strong>Usage:</strong> {discountCode.usage_count}
+                  {discountCode.usage_limit !== null ? ` / ${discountCode.usage_limit}` : ' / ∞'}
+                </p>
+              </div>
+            )}
+
+            {/* Basic Info Tab */}
+            {activeTab === 'basic' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-4">Discount Information</h2>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-300 mb-2">
+                        Code <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.code}
+                        onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                        className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-300 mb-2">
+                        Description
+                      </label>
+                      <textarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-300 mb-2">
+                          Discount Type <span className="text-red-400">*</span>
+                        </label>
+                        <select
+                          required
+                          value={formData.discount_type}
+                          onChange={(e) => setFormData({ ...formData, discount_type: e.target.value as 'percentage' | 'fixed' })}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        >
+                          <option value="percentage">Percentage</option>
+                          <option value="fixed">Fixed Amount</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-300 mb-2">
+                          Discount Value <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="number"
+                          required
+                          min="0"
+                          max={formData.discount_type === 'percentage' ? '100' : undefined}
+                          step="0.01"
+                          value={formData.discount_value}
+                          onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.active}
+                          onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
+                          className="w-5 h-5 text-white bg-black/50 border-white/20 rounded focus:ring-white/30"
+                        />
+                        <span className="text-sm font-medium text-white">Active</span>
+                      </label>
+                      <p className="mt-1 text-xs text-neutral-400 ml-8">Inactive codes cannot be used</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Limits Tab */}
+            {activeTab === 'limits' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-4">Usage Limits</h2>
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-300 mb-2">
+                        Minimum Purchase (SEK)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={formData.minimum_purchase}
+                        onChange={(e) => setFormData({ ...formData, minimum_purchase: e.target.value })}
+                        className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                      />
+                      <p className="mt-1 text-xs text-neutral-400">Minimum cart value required to use this code</p>
+                    </div>
+
+                    {formData.discount_type === 'percentage' && (
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-300 mb-2">
+                          Maximum Discount (SEK)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={formData.maximum_discount}
+                          onChange={(e) => setFormData({ ...formData, maximum_discount: e.target.value })}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                        <p className="mt-1 text-xs text-neutral-400">Maximum discount amount for percentage codes</p>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-300 mb-2">
+                          Total Usage Limit
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.usage_limit}
+                          onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value })}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                          placeholder="Unlimited"
+                        />
+                        <p className="mt-1 text-xs text-neutral-400">Total number of times code can be used</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-300 mb-2">
+                          Per User Limit
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.user_usage_limit}
+                          onChange={(e) => setFormData({ ...formData, user_usage_limit: e.target.value })}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                        <p className="mt-1 text-xs text-neutral-400">Times a single user can use this code</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Schedule Tab */}
+            {activeTab === 'schedule' && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-semibold text-white mb-4">Validity Period</h2>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-300 mb-2">
+                          Valid From
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={formData.valid_from}
+                          onChange={(e) => setFormData({ ...formData, valid_from: e.target.value })}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                        <p className="mt-1 text-xs text-neutral-400">Leave empty for no start date</p>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-300 mb-2">
+                          Valid Until
+                        </label>
+                        <input
+                          type="datetime-local"
+                          value={formData.valid_until}
+                          onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                        <p className="mt-1 text-xs text-neutral-400">Leave empty for no expiry</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-4 pt-6 border-t border-white/10 mt-6">
+              <Link
+                href="/admin/discount-codes"
+                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+              >
+                Cancel
+              </Link>
+              <button
+                type="submit"
+                disabled={saving}
+                className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {saving ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-white mb-2">
-                Valid Until
-              </label>
-              <input
-                type="datetime-local"
-                value={formData.valid_until}
-                onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
-                className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={formData.active}
-                onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-black/50 border-white/20 rounded focus:ring-blue-500"
-              />
-              <span className="text-sm font-medium text-white">Active</span>
-            </label>
-          </div>
-
-          {discountCode && (
-            <div className="p-4 bg-blue-500/20 border border-blue-500/30 rounded-lg">
-              <p className="text-sm text-blue-300">
-                <strong>Usage:</strong> {discountCode.usage_count}
-                {discountCode.usage_limit !== null ? ` / ${discountCode.usage_limit}` : ' / ∞'}
-              </p>
-            </div>
-          )}
-
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-neutral-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
-            <Link
-              href="/admin/discount-codes"
-              className="px-6 py-3 border border-white/20 text-white rounded-lg font-medium hover:bg-black/70 transition-colors"
-            >
-              Cancel
-            </Link>
           </div>
         </form>
       </div>
     </div>
   );
 }
-
