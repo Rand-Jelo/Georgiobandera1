@@ -1,6 +1,39 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
+
+interface SiteImage {
+  id: string;
+  section: string;
+  url: string;
+  alt_text_en: string | null;
+  alt_text_sv: string | null;
+  active: number;
+}
+
 export default function BrandStory() {
+  const locale = useLocale();
+  const [image, setImage] = useState<SiteImage | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    const fetchImage = async () => {
+      try {
+        const response = await fetch('/api/site-images/philosophy');
+        const data = await response.json() as { image?: SiteImage };
+        if (data.image) {
+          setImage(data.image);
+        }
+      } catch (error) {
+        console.error('Error fetching philosophy image:', error);
+      }
+    };
+
+    fetchImage();
+  }, []);
+
+  const altText = locale === 'sv' ? image?.alt_text_sv : image?.alt_text_en;
 
   return (
     <section className="relative bg-neutral-950 text-white py-32 overflow-hidden">
@@ -87,17 +120,35 @@ export default function BrandStory() {
                 <div className="absolute bottom-0 right-0 h-16 w-16 border-b-2 border-r-2 border-amber-500/30" />
               </div>
               
-              {/* Content placeholder */}
-              <div className="absolute inset-0 flex items-center justify-center p-12">
-                <div className="text-center space-y-4">
-                  <div className="inline-block h-1 w-24 bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
-                  <p className="text-sm font-light tracking-wider text-neutral-400">
-                    Brand Image Placeholder
-                  </p>
-                  <p className="text-xs text-neutral-500">
-                    High-end product photography or brand imagery
-                  </p>
-                </div>
+              {/* Image or placeholder */}
+              <div className="absolute inset-0 flex items-center justify-center p-4">
+                {image ? (
+                  <div className="relative w-full h-full">
+                    {/* Loading skeleton */}
+                    {!imageLoaded && (
+                      <div className="absolute inset-0 bg-neutral-900 animate-pulse" />
+                    )}
+                    {/* Actual image */}
+                    <img
+                      src={image.url}
+                      alt={altText || 'Georgio Bandera Philosophy'}
+                      className={`w-full h-full object-cover transition-opacity duration-500 ${
+                        imageLoaded ? 'opacity-100' : 'opacity-0'
+                      }`}
+                      onLoad={() => setImageLoaded(true)}
+                    />
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4 p-8">
+                    <div className="inline-block h-1 w-24 bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
+                    <p className="text-sm font-light tracking-wider text-neutral-400">
+                      Brand Image Placeholder
+                    </p>
+                    <p className="text-xs text-neutral-500">
+                      High-end product photography or brand imagery
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -106,4 +157,3 @@ export default function BrandStory() {
     </section>
   );
 }
-

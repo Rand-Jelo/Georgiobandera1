@@ -376,6 +376,23 @@ CREATE TABLE IF NOT EXISTS order_status_history (
 CREATE INDEX IF NOT EXISTS idx_order_status_history_order_id ON order_status_history(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_status_history_created_at ON order_status_history(created_at);`,
     },
+    {
+      name: '014_add_site_images.sql',
+      sql: `-- Site images table for homepage sections (philosophy, about, etc.)
+CREATE TABLE IF NOT EXISTS site_images (
+  id TEXT PRIMARY KEY,
+  section TEXT NOT NULL UNIQUE,
+  url TEXT NOT NULL,
+  alt_text_en TEXT,
+  alt_text_sv TEXT,
+  active INTEGER DEFAULT 1,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Index for faster lookups by section
+CREATE INDEX IF NOT EXISTS idx_site_images_section ON site_images(section);`,
+    },
   ];
 
   return migrations;
