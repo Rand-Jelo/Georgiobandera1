@@ -429,7 +429,7 @@ export default function EditProductPage() {
             href="/admin/products"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            Back to Products
+            ← Back to Products
           </Link>
           <h1 className="text-4xl font-semibold text-white mb-2">Edit Product</h1>
           <p className="text-neutral-400">Update product information</p>

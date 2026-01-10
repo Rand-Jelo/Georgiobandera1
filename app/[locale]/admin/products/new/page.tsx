@@ -380,7 +380,7 @@ export default function NewProductPage() {
             href="/admin/products"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            Back to Products
+            ← Back to Products
           </Link>
           <h1 className="text-4xl font-semibold text-white mb-2">New Product</h1>
           <p className="text-neutral-400">Create a new product</p>
@@ -1000,7 +1000,7 @@ export default function NewProductPage() {
                   href="/admin/products"
                   className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
                 >
-                  Back to Products
+                  ← Back to Products
                 </Link>
                 <button
                   type="button"
