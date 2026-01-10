@@ -24,6 +24,9 @@ export default function AdminHeroImagesPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState('');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -225,13 +228,43 @@ export default function AdminHeroImagesPage() {
     }
   };
 
-  const handleReorder = async (dragIndex: number, dropIndex: number) => {
-    const newImages = [...images];
-    const [removed] = newImages.splice(dragIndex, 1);
-    newImages.splice(dropIndex, 0, removed);
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
 
-    // Update sort_order optimistically
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+
+    setIsReordering(true);
+
+    // Optimistic update
+    const newImages = [...images];
+    const [removed] = newImages.splice(draggedIndex, 1);
+    newImages.splice(dropIndex, 0, removed);
     setImages(newImages);
+
+    setDraggedIndex(null);
+    setDragOverIndex(null);
 
     try {
       const imageIds = newImages.map(img => img.id);
@@ -252,7 +285,14 @@ export default function AdminHeroImagesPage() {
       console.error('Error reordering images:', error);
       await fetchImages();
       alert('Failed to reorder images');
+    } finally {
+      setIsReordering(false);
     }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   if (loading) {
@@ -459,63 +499,83 @@ export default function AdminHeroImagesPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {images.map((image, index) => (
-              <div
-                key={image.id}
-                className="border border-white/10 bg-black/50 rounded-lg overflow-hidden"
-              >
-                <div className="relative aspect-[3/4] bg-neutral-900">
-                  <div
-                    className="absolute inset-0 bg-cover bg-center"
-                    style={{ backgroundImage: `url(${image.url})` }}
-                  />
-                  {image.active === 0 && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="text-white text-sm font-medium">Inactive</span>
+          <>
+            {images.length > 1 && (
+              <p className="text-sm text-neutral-400 mb-4">
+                Drag and drop images to reorder them
+              </p>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {images.map((image, index) => (
+                <div
+                  key={image.id}
+                  draggable={images.length > 1 && !isReordering}
+                  onDragStart={(e) => handleDragStart(e, index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragEnd={handleDragEnd}
+                  className={`border rounded-lg overflow-hidden transition-all ${
+                    draggedIndex === index
+                      ? 'opacity-50 scale-95 border-white/30'
+                      : dragOverIndex === index
+                      ? 'border-white/50 bg-white/5 scale-[1.02]'
+                      : 'border-white/10 bg-black/50'
+                  } ${images.length > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                >
+                  <div className="relative aspect-[3/4] bg-neutral-900">
+                    <div
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${image.url})` }}
+                    />
+                    {image.active === 0 && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <span className="text-white text-sm font-medium">Inactive</span>
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2">
+                      {images.length > 1 && (
+                        <div className="p-1.5 bg-black/70 rounded cursor-grab">
+                          <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <div className="absolute top-2 right-2">
-                    <span className="px-2 py-1 bg-black/70 text-white text-xs rounded">
-                      #{index + 1}
-                    </span>
+                    <div className="absolute top-2 right-2">
+                      <span className="px-2 py-1 bg-black/70 text-white text-xs rounded">
+                        #{index + 1}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="mb-3">
+                      <p className="text-sm text-neutral-400 mb-1">Alt Text (EN)</p>
+                      <p className="text-white text-sm">
+                        {image.alt_text_en || <span className="text-neutral-500">Not set</span>}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(image)}
+                        className="flex-1 px-3 py-2 border border-white/20 text-white rounded-sm hover:bg-white/10 transition-colors text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(image.id)}
+                        className="px-3 py-2 border border-red-500/50 text-red-400 rounded-sm hover:bg-red-500/10 transition-colors text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="p-4">
-                  <div className="mb-3">
-                    <p className="text-sm text-neutral-400 mb-1">Alt Text (EN)</p>
-                    <p className="text-white text-sm">
-                      {image.alt_text_en || <span className="text-neutral-500">Not set</span>}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(image)}
-                      className="flex-1 px-3 py-2 border border-white/20 text-white rounded-sm hover:bg-white/10 transition-colors text-sm"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(image.id)}
-                      className="px-3 py-2 border border-red-500/50 text-red-400 rounded-sm hover:bg-red-500/10 transition-colors text-sm"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
 
-        {/* Reorder Instructions */}
-        {images.length > 1 && (
-          <div className="mt-8 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-            <p className="text-sm text-amber-200">
-              <strong>Note:</strong> Images are displayed in the order shown above. Drag and drop functionality will be added in a future update.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
