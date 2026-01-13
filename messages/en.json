@@ -117,7 +117,8 @@
     "passwordMismatch": "Passwords do not match",
     "passwordTooShort": "Password must be at least 8 characters",
     "welcome": "Welcome Back",
-    "joinUs": "Join Us"
+    "joinUs": "Join Us",
+    "forgotPassword": "Forgot password?"
   },
   "profile": {
     "title": "My Profile",

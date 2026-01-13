@@ -5,6 +5,11 @@ export interface User {
   name: string | null;
   phone: string | null;
   is_admin: boolean;
+  email_verified: boolean;
+  verification_token: string | null;
+  verification_token_expires: number | null;
+  password_reset_token: string | null;
+  password_reset_expires: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -159,6 +164,15 @@ export interface Message {
   status: 'unread' | 'read' | 'replied' | 'archived';
   created_at: number;
   updated_at: number;
+}
+
+export interface MessageReply {
+  id: string;
+  message_id: string;
+  reply_text: string;
+  replied_by: string;
+  from_admin: boolean;
+  created_at: number;
 }
 
 export interface DiscountCode {

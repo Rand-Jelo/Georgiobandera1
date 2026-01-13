@@ -1,5 +1,5 @@
 import { D1Database } from '@cloudflare/workers-types';
-import { Message } from '@/types/database';
+import { Message, MessageReply } from '@/types/database';
 import { queryDB, queryOne, executeDB } from '../client';
 
 export async function getMessages(
@@ -97,5 +97,67 @@ export async function createMessage(
   }
 
   return message;
+}
+
+// Message Replies
+
+export async function getMessageReplies(
+  db: D1Database,
+  messageId: string
+): Promise<MessageReply[]> {
+  const result = await queryDB<MessageReply>(
+    db,
+    'SELECT * FROM message_replies WHERE message_id = ? ORDER BY created_at ASC',
+    [messageId]
+  );
+  return result.results || [];
+}
+
+export async function createMessageReply(
+  db: D1Database,
+  replyData: {
+    messageId: string;
+    replyText: string;
+    repliedBy: string;
+    fromAdmin?: boolean;
+  }
+): Promise<MessageReply> {
+  const id = crypto.randomUUID();
+  const now = Math.floor(Date.now() / 1000);
+
+  await executeDB(
+    db,
+    `INSERT INTO message_replies (id, message_id, reply_text, replied_by, from_admin, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      replyData.messageId,
+      replyData.replyText,
+      replyData.repliedBy,
+      replyData.fromAdmin !== false ? 1 : 0,
+      now,
+    ]
+  );
+
+  const reply = await queryOne<MessageReply>(
+    db,
+    'SELECT * FROM message_replies WHERE id = ?',
+    [id]
+  );
+
+  if (!reply) {
+    throw new Error('Failed to create message reply');
+  }
+
+  return reply;
+}
+
+export async function getUnreadMessageCount(db: D1Database): Promise<number> {
+  const result = await queryOne<{ count: number }>(
+    db,
+    'SELECT COUNT(*) as count FROM messages WHERE status = ?',
+    ['unread']
+  );
+  return result?.count || 0;
 }
 

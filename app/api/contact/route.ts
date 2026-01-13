@@ -2,12 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getDB } from '@/lib/db/client';
 import { createMessage } from '@/lib/db/queries/messages';
+import { sendContactConfirmationEmail, sendAdminNotificationEmail } from '@/lib/email';
 
 const contactSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),
   subject: z.string().optional(),
   message: z.string().min(10, 'Message must be at least 10 characters'),
+  locale: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -20,6 +22,25 @@ export async function POST(request: NextRequest) {
       name: validated.name,
       email: validated.email,
       subject: validated.subject || null,
+      message: validated.message,
+    });
+
+    const locale = (validated.locale as 'sv' | 'en') || 'sv';
+
+    // Send confirmation email to customer
+    await sendContactConfirmationEmail({
+      to: validated.email,
+      name: validated.name,
+      subject: validated.subject,
+      message: validated.message,
+      locale,
+    });
+
+    // Send notification to admin
+    await sendAdminNotificationEmail({
+      customerName: validated.name,
+      customerEmail: validated.email,
+      subject: validated.subject,
       message: validated.message,
     });
 
@@ -45,4 +66,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
