@@ -64,15 +64,15 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
       />
 
       {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
+      <div className="flex min-h-full items-center justify-center p-0 sm:p-4 md:p-6">
         <div
-          className="relative bg-white max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col"
+          className="relative bg-white max-w-6xl w-full h-full sm:h-auto sm:max-h-[95vh] overflow-y-auto flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close button */}
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 z-10 p-2 text-neutral-400 hover:text-neutral-900 transition-colors duration-300"
+            className="fixed sm:absolute top-4 right-4 sm:top-6 sm:right-6 z-10 p-2 bg-white/90 sm:bg-transparent rounded-full sm:rounded-none text-neutral-400 hover:text-neutral-900 transition-colors duration-300"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,21 +80,21 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
             </svg>
           </button>
 
-          <div className="grid md:grid-cols-2 gap-0 overflow-y-auto">
+          <div className="grid md:grid-cols-2 gap-0">
             {/* Product Image */}
-            <div className="bg-neutral-50 p-12 md:p-16 flex items-center justify-center">
+            <div className="bg-neutral-50 p-6 sm:p-8 md:p-12 lg:p-16 flex items-center justify-center">
               {product.images && product.images.length > 0 ? (
-                <div className="relative aspect-square w-full max-w-lg bg-white">
+                <div className="relative aspect-square w-full max-w-md sm:max-w-lg bg-white">
                   <Image
                     src={product.images[selectedImageIndex]?.url || product.images[0].url}
                     alt={product.images[selectedImageIndex]?.alt_text_en || productName}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, 50vw"
                   />
                 </div>
               ) : (
-                <div className="aspect-square w-full max-w-lg bg-neutral-100 flex items-center justify-center">
+                <div className="aspect-square w-full max-w-md sm:max-w-lg bg-neutral-100 flex items-center justify-center">
                   <div className="text-center space-y-3">
                     <div className="inline-block h-px w-16 bg-gradient-to-r from-transparent via-neutral-300 to-transparent" />
                     <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-300">No image</p>
@@ -104,24 +104,24 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
             </div>
 
             {/* Product Info */}
-            <div className="flex flex-col p-12 md:p-16 bg-white">
+            <div className="flex flex-col p-6 sm:p-8 md:p-12 lg:p-16 bg-white">
               {/* Product Name */}
-              <h2 className="text-3xl font-extralight tracking-wide text-neutral-900 mb-8 leading-tight">{productName}</h2>
+              <h2 className="text-2xl sm:text-3xl font-extralight tracking-wide text-neutral-900 mb-6 sm:mb-8 leading-tight">{productName}</h2>
 
               {/* Price */}
-              <div className="flex items-baseline gap-4 mb-8 pb-8 border-b border-neutral-200/50">
-                <span className="text-2xl font-light text-neutral-900">
+              <div className="flex items-baseline gap-3 sm:gap-4 mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-neutral-200/50">
+                <span className="text-xl sm:text-2xl font-light text-neutral-900">
                   {formatPrice(product.price, 'SEK')}
                 </span>
                 {hasDiscount && (
-                  <span className="text-lg text-neutral-400 line-through font-extralight">
+                  <span className="text-base sm:text-lg text-neutral-400 line-through font-extralight">
                     {formatPrice(product.compare_at_price!, 'SEK')}
                   </span>
                 )}
               </div>
 
               {/* Stock Status */}
-              <div className="mb-10">
+              <div className="mb-6 sm:mb-10">
                 {inStock ? (
                   <div className="inline-flex items-center gap-2 px-4 py-2 border border-neutral-200/50">
                     <div className="w-2 h-2 bg-green-500 rounded-full" />
@@ -137,8 +137,8 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
 
               {/* Quantity Selector */}
               {inStock && (
-                <div className="mb-10">
-                  <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
+                <div className="mb-6 sm:mb-10">
+                  <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-3 sm:mb-4">
                     {t('quantity') || 'Quantity'}
                   </label>
                   <QuantitySelector
@@ -153,16 +153,17 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
               )}
 
               {/* Add to Cart and Wishlist */}
-              <div className="mb-10 flex items-center gap-4">
+              <div className="mb-6 sm:mb-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                 <AddToCartButton
                   productId={product.id}
                   quantity={quantity}
                   disabled={!inStock}
-                  className="flex-1"
+                  className="flex-1 w-full sm:w-auto"
                 />
                 <WishlistButton
                   productId={product.id}
                   size="md"
+                  className="self-center sm:self-auto"
                 />
               </div>
 

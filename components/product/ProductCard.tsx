@@ -70,9 +70,9 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
   if (viewMode === 'list') {
     return (
       <article className="group relative bg-white border-b border-neutral-200/50 transition-all duration-300 hover:bg-neutral-50/30">
-        <div onClick={handleCardClick} className="flex gap-8 cursor-pointer py-6">
+        <div onClick={handleCardClick} className="flex flex-col sm:flex-row gap-4 sm:gap-6 md:gap-8 cursor-pointer py-4 sm:py-5 md:py-6">
           {/* Image */}
-          <div className="relative w-32 h-32 flex-shrink-0 bg-neutral-50">
+          <div className="relative w-full sm:w-24 md:w-32 h-48 sm:h-24 md:h-32 flex-shrink-0 bg-neutral-50">
             {product.images && product.images.length > 0 ? (
               <Image
                 src={imageUrl}
@@ -97,22 +97,22 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
           </div>
           
           {/* Content */}
-          <div className="flex-1 flex items-center justify-between min-w-0">
-            <div className="flex-1 min-w-0 pr-8">
+          <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between min-w-0 gap-4 sm:gap-6">
+            <div className="flex-1 min-w-0 sm:pr-4 md:pr-8">
               {categoryName && (
-                <p className="text-[9px] uppercase tracking-[0.4em] text-neutral-400 font-light mb-2">
+                <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.4em] text-neutral-400 font-light mb-1.5 sm:mb-2">
                   {categoryName}
                 </p>
               )}
-              <h3 className="text-lg font-extralight tracking-wide text-neutral-900 group-hover:text-amber-600 transition-colors duration-300 mb-2 leading-tight">
+              <h3 className="text-base sm:text-lg font-extralight tracking-wide text-neutral-900 group-hover:text-amber-600 transition-colors duration-300 mb-2 leading-tight">
                 {name}
               </h3>
-              <div className="flex items-baseline gap-3">
-                <span className="text-base font-light text-neutral-900">
+              <div className="flex items-baseline gap-2 sm:gap-3">
+                <span className="text-sm sm:text-base font-light text-neutral-900">
                   {formatPrice(product.price, 'SEK')}
                 </span>
                 {hasDiscount && (
-                  <span className="text-sm text-neutral-400 line-through font-extralight">
+                  <span className="text-xs sm:text-sm text-neutral-400 line-through font-extralight">
                     {formatPrice(product.compare_at_price!, 'SEK')}
                   </span>
                 )}
@@ -124,7 +124,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               <button
                 onClick={handleQuickAdd}
                 disabled={adding || quickAddSuccess}
-                className="px-6 py-2.5 bg-neutral-900 text-white text-xs font-light uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                className="w-full sm:w-auto px-5 sm:px-6 py-2 sm:py-2.5 bg-neutral-900 text-white text-[10px] sm:text-xs font-light uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               >
                 {quickAddSuccess ? (
                   'Added'
@@ -145,7 +145,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
     <article className="group relative" onClick={handleCardClick}>
       <div className="block cursor-pointer">
         {/* Image Container - Refined */}
-        <div className="relative w-full overflow-hidden bg-neutral-50 aspect-[3/4] mb-6">
+        <div className="relative w-full overflow-hidden bg-neutral-50 aspect-[3/4] mb-4 sm:mb-5 md:mb-6">
           {product.images && product.images.length > 0 ? (
             <>
               <Image
@@ -180,44 +180,44 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
         </div>
 
         {/* Content - Refined Typography */}
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {categoryName && (
-            <p className="text-[9px] uppercase tracking-[0.4em] text-neutral-400 font-light">
+            <p className="text-[8px] sm:text-[9px] uppercase tracking-[0.4em] text-neutral-400 font-light">
               {categoryName}
             </p>
           )}
           
-          <h3 className="text-lg font-extralight tracking-wide text-neutral-900 leading-tight group-hover:text-amber-600 transition-colors duration-300">
+          <h3 className="text-base sm:text-lg font-extralight tracking-wide text-neutral-900 leading-tight group-hover:text-amber-600 transition-colors duration-300">
             {name}
           </h3>
           
           {/* Price - Refined */}
-          <div className="flex items-baseline gap-3 pt-1">
+          <div className="flex items-baseline gap-2 sm:gap-3 pt-1">
             {hasDiscount ? (
               <>
-                <span className="text-base font-light text-neutral-900">
+                <span className="text-sm sm:text-base font-light text-neutral-900">
                   {formatPrice(product.price, 'SEK')}
                 </span>
-                <span className="text-sm text-neutral-400 line-through font-extralight">
+                <span className="text-xs sm:text-sm text-neutral-400 line-through font-extralight">
                   {formatPrice(product.compare_at_price!, 'SEK')}
                 </span>
               </>
             ) : (
-              <span className="text-base font-light text-neutral-900">
+              <span className="text-sm sm:text-base font-light text-neutral-900">
                 {formatPrice(product.price, 'SEK')}
               </span>
             )}
           </div>
           
           {/* Subtle divider */}
-          <div className="h-px w-0 bg-gradient-to-r from-amber-500/50 to-transparent transition-all duration-500 group-hover:w-full mt-4" />
+          <div className="h-px w-0 bg-gradient-to-r from-amber-500/50 to-transparent transition-all duration-500 group-hover:w-full mt-3 sm:mt-4" />
           
           {/* Add to Cart Button - Refined */}
           {showQuickAdd && (
             <button
               onClick={handleQuickAdd}
               disabled={adding || quickAddSuccess}
-              className="mt-6 w-full px-5 py-3 bg-neutral-900 text-white text-xs font-light uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mt-4 sm:mt-6 w-full px-4 sm:px-5 py-2.5 sm:py-3 bg-neutral-900 text-white text-[10px] sm:text-xs font-light uppercase tracking-[0.2em] hover:bg-neutral-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {quickAddSuccess ? (
                 'Added'
