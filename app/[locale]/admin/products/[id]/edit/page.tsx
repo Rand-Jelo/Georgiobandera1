@@ -59,6 +59,8 @@ export default function EditProductPage() {
   }>>([]);
   const [images, setImages] = useState<ProductImage[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [collections, setCollections] = useState<Array<{ id: string; name_en: string; name_sv: string }>>([]);
+  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -79,7 +81,7 @@ export default function EditProductPage() {
       }
 
       setIsAdmin(true);
-      await Promise.all([fetchCategories(), fetchProduct(), fetchImages()]);
+      await Promise.all([fetchCategories(), fetchCollections(), fetchProduct(), fetchImages()]);
     } catch (error) {
       router.push('/login');
     } finally {
@@ -107,6 +109,16 @@ export default function EditProductPage() {
     }
   };
 
+  const fetchCollections = async () => {
+    try {
+      const response = await fetch('/api/admin/collections');
+      const data = await response.json() as { collections?: Array<{ id: string; name_en: string; name_sv: string }> };
+      setCollections(data.collections || []);
+    } catch (error) {
+      console.error('Error fetching collections:', error);
+    }
+  };
+
   const fetchProduct = async () => {
     try {
       const response = await fetch(`/api/admin/products/${productId}`);
@@ -115,7 +127,7 @@ export default function EditProductPage() {
         return;
       }
 
-      const data = await response.json() as { product?: Product; variants?: any[] };
+      const data = await response.json() as { product?: Product; variants?: any[]; collections?: string[] };
       if (data.product) {
         // Convert database boolean values (0/1) to actual booleans
         const featured = typeof data.product.featured === 'number' 
@@ -140,6 +152,11 @@ export default function EditProductPage() {
           stock_quantity: data.product.stock_quantity.toString(),
           track_inventory: trackInventory,
         });
+
+        // Load collections
+        if (data.collections) {
+          setSelectedCollections(data.collections);
+        }
 
         // Load variants - separate sizes and colors
         if (data.variants) {
@@ -387,6 +404,7 @@ export default function EditProductPage() {
               track_inventory: Boolean(v.track_inventory),
             })),
           ],
+          collection_ids: selectedCollections,
         }),
       });
 
@@ -626,10 +644,43 @@ export default function EditProductPage() {
                 className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
               />
             </div>
-                    </div>
+          </div>
 
-                    <div>
-                      <label className="flex items-center space-x-3 cursor-pointer">
+          <div>
+            <label className="block text-sm font-medium text-neutral-300 mb-2">
+              Collections
+            </label>
+            <div className="space-y-2 max-h-48 overflow-y-auto border border-white/20 bg-black/50 rounded-lg p-4">
+              {collections.length === 0 ? (
+                <p className="text-sm text-neutral-500">No collections available</p>
+              ) : (
+                collections.map((collection) => {
+                  const name = locale === 'sv' ? collection.name_sv : collection.name_en;
+                  return (
+                    <label key={collection.id} className="flex items-center space-x-3 cursor-pointer hover:bg-white/5 p-2 rounded">
+                      <input
+                        type="checkbox"
+                        checked={selectedCollections.includes(collection.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedCollections([...selectedCollections, collection.id]);
+                          } else {
+                            setSelectedCollections(selectedCollections.filter(id => id !== collection.id));
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                      />
+                      <span className="text-sm text-neutral-300">{name}</span>
+                    </label>
+                  );
+                })
+              )}
+            </div>
+            <p className="mt-2 text-xs text-neutral-500">Select which collections this product should appear in</p>
+          </div>
+
+          <div>
+            <label className="flex items-center space-x-3 cursor-pointer">
                         <input
                           type="checkbox"
                           name="featured"

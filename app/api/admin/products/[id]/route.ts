@@ -5,6 +5,7 @@ import { getDB } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
 import { queryOne, executeDB } from '@/lib/db/client';
 import { getProductVariants, createProductVariant, updateProductVariant, deleteProductVariant, getProductImages } from '@/lib/db/queries/products';
+import { getProductCollections, setProductCollections } from '@/lib/db/queries/product-collections';
 import { getR2Bucket } from '@/lib/db/client';
 import type { Product } from '@/types/database';
 
@@ -41,6 +42,7 @@ const updateProductSchema = z.object({
   stock_quantity: z.number().int().min(0).optional(),
   track_inventory: z.boolean().optional(),
   variants: z.array(variantSchema).optional(),
+  collection_ids: z.array(z.string()).optional(),
 });
 
 export async function GET(
@@ -82,8 +84,11 @@ export async function GET(
 
     // Get variants
     const variants = await getProductVariants(db, id);
+    
+    // Get collections
+    const collectionIds = await getProductCollections(db, id);
 
-    return NextResponse.json({ product, variants });
+    return NextResponse.json({ product, variants, collections: collectionIds });
   } catch (error) {
     console.error('Get product error:', error);
     return NextResponse.json(
@@ -253,6 +258,11 @@ export async function PATCH(
       }
     }
 
+    // Handle collections if provided
+    if (validated.collection_ids !== undefined) {
+      await setProductCollections(db, id, validated.collection_ids);
+    }
+
     const updatedProduct = await queryOne<Product>(
       db,
       'SELECT * FROM products WHERE id = ?',
@@ -260,8 +270,9 @@ export async function PATCH(
     );
 
     const variants = await getProductVariants(db, id);
+    const collectionIds = await getProductCollections(db, id);
 
-    return NextResponse.json({ product: updatedProduct, variants });
+    return NextResponse.json({ product: updatedProduct, variants, collections: collectionIds });
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error('Validation error:', error.issues);

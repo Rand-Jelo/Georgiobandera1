@@ -5,6 +5,7 @@ import { getDB } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
 import { executeDB, queryOne } from '@/lib/db/client';
 import { createProductVariant } from '@/lib/db/queries/products';
+import { setProductCollections } from '@/lib/db/queries/product-collections';
 import type { Product } from '@/types/database';
 
 const variantSchema = z.object({
@@ -38,6 +39,7 @@ const createProductSchema = z.object({
   stock_quantity: z.number().int().min(0).default(0),
   track_inventory: z.boolean().default(true),
   variants: z.array(variantSchema).optional().default([]),
+  collection_ids: z.array(z.string()).optional().default([]),
 });
 
 export async function POST(request: NextRequest) {
@@ -181,6 +183,11 @@ export async function POST(request: NextRequest) {
           option3Value: variantData.option3_value,
         });
       }
+    }
+
+    // Set collections if provided
+    if (validated.collection_ids && validated.collection_ids.length > 0) {
+      await setProductCollections(db, id, validated.collection_ids);
     }
 
     return NextResponse.json({ product }, { status: 201 });

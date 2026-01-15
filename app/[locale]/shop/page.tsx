@@ -73,17 +73,18 @@ export default function ShopPage() {
   });
 
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [collectionId, setCollectionId] = useState<string | null>(null);
 
   // Load categories
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Fetch products when filters, sort, or page changes
+  // Fetch products when filters, sort, page, or collection changes
   useEffect(() => {
     fetchProducts();
     fetchProductCount();
-  }, [filters, sortBy, currentPage]);
+  }, [filters, sortBy, currentPage, collectionId]);
 
   // Sync URL params with state
   useEffect(() => {
@@ -94,10 +95,12 @@ export default function ShopPage() {
     const inStock = inStockParam === 'true' ? true : inStockParam === 'false' ? false : undefined;
     const sort = (searchParams.get('sort') as SortOption) || 'newest';
     const page = parseInt(searchParams.get('page') || '1');
+    const collection = searchParams.get('collection') || null;
 
     setFilters({ categoryIds, minPrice, maxPrice, inStock });
     setSortBy(sort);
     setCurrentPage(page);
+    setCollectionId(collection);
   }, [searchParams]);
 
   const fetchCategories = async () => {
@@ -116,25 +119,38 @@ export default function ShopPage() {
     minPrice?: number;
     maxPrice?: number;
     inStock?: boolean;
-  }, newSort: SortOption, newPage: number) => {
+  }, newSort: SortOption, newPage: number, newCollectionId?: string | null) => {
     const params = new URLSearchParams();
-    if (newFilters.categoryIds.length > 0) {
-      params.set('categories', newFilters.categoryIds.join(','));
-    }
-    if (newFilters.minPrice !== undefined) {
-      params.set('minPrice', newFilters.minPrice.toString());
-    }
-    if (newFilters.maxPrice !== undefined) {
-      params.set('maxPrice', newFilters.maxPrice.toString());
-    }
-    if (newFilters.inStock !== undefined) {
-      params.set('inStock', newFilters.inStock.toString());
-    }
-    if (newSort !== 'newest') {
-      params.set('sort', newSort);
-    }
-    if (newPage > 1) {
-      params.set('page', newPage.toString());
+    
+    // If collection is specified, use it instead of other filters
+    if (newCollectionId) {
+      params.set('collection', newCollectionId);
+      if (newSort !== 'newest') {
+        params.set('sort', newSort);
+      }
+      if (newPage > 1) {
+        params.set('page', newPage.toString());
+      }
+    } else {
+      // Regular filters
+      if (newFilters.categoryIds.length > 0) {
+        params.set('categories', newFilters.categoryIds.join(','));
+      }
+      if (newFilters.minPrice !== undefined) {
+        params.set('minPrice', newFilters.minPrice.toString());
+      }
+      if (newFilters.maxPrice !== undefined) {
+        params.set('maxPrice', newFilters.maxPrice.toString());
+      }
+      if (newFilters.inStock !== undefined) {
+        params.set('inStock', newFilters.inStock.toString());
+      }
+      if (newSort !== 'newest') {
+        params.set('sort', newSort);
+      }
+      if (newPage > 1) {
+        params.set('page', newPage.toString());
+      }
     }
     router.push(`/shop?${params.toString()}`);
   }, [router]);
@@ -191,6 +207,25 @@ export default function ShopPage() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
+      // If collection is specified, fetch products from collection endpoint
+      if (collectionId) {
+        const response = await fetch(`/api/collections/${collectionId}/products?${new URLSearchParams({
+          sortBy,
+          limit: ITEMS_PER_PAGE.toString(),
+          offset: ((currentPage - 1) * ITEMS_PER_PAGE).toString(),
+        }).toString()}`);
+        const data = await response.json() as { products?: Product[]; error?: string };
+        
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setProducts(data.products || []);
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Otherwise, use regular product endpoint
       const params = new URLSearchParams();
       params.set('status', 'active');
       if (filters.categoryIds.length > 0) {
@@ -262,18 +297,18 @@ export default function ShopPage() {
   }) => {
     setFilters(newFilters);
     setCurrentPage(1);
-    updateURL(newFilters, sortBy, 1);
+    updateURL(newFilters, sortBy, 1, collectionId);
   };
 
   const handleSortChange = (newSort: SortOption) => {
     setSortBy(newSort);
     setCurrentPage(1);
-    updateURL(filters, newSort, 1);
+    updateURL(filters, newSort, 1, collectionId);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    updateURL(filters, sortBy, page);
+    updateURL(filters, sortBy, page, collectionId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

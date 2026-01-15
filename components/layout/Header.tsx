@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link, usePathname } from '@/lib/i18n/routing';
 import UserMenu from '@/components/auth/UserMenu';
 import CartIcon from '@/components/cart/CartIcon';
@@ -58,15 +58,13 @@ function HamburgerIcon({ isOpen }: { isOpen: boolean }) {
 export default function Header() {
   const t = useTranslations('common');
   const pathname = usePathname();
+  const currentLocale = useLocale() as 'en' | 'sv';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openParentId, setOpenParentId] = useState<string | null>(null);
   const [isProductsOpen, setIsProductsOpen] = useState(false);
   const [mobileOpenParentId, setMobileOpenParentId] = useState<string | null>(null);
   const [categories, setCategories] = useState<CategoryWithChildren[]>([]);
   const productsRef = useRef<HTMLDivElement>(null);
-
-  // Get current locale from pathname
-  const currentLocale = pathname.startsWith('/sv') ? 'sv' : 'en';
 
   // Fetch categories from API
   useEffect(() => {
@@ -255,8 +253,10 @@ export default function Header() {
           <Link
             href={pathname}
             locale="en"
-              className={`uppercase tracking-wide hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
-              currentLocale === 'en' ? 'text-white font-semibold' : ''
+              className={`uppercase tracking-wide transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
+              currentLocale === 'en' 
+                ? 'text-white font-semibold' 
+                : 'text-neutral-400 hover:text-amber-400'
             }`}
           >
             EN
@@ -264,8 +264,10 @@ export default function Header() {
           <Link
             href={pathname}
             locale="sv"
-              className={`uppercase tracking-wide hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
-              currentLocale === 'sv' ? 'text-white font-semibold' : ''
+              className={`uppercase tracking-wide transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
+              currentLocale === 'sv' 
+                ? 'text-white font-semibold' 
+                : 'text-neutral-400 hover:text-amber-400'
             }`}
           >
             SV

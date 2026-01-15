@@ -393,6 +393,107 @@ CREATE TABLE IF NOT EXISTS site_images (
 -- Index for faster lookups by section
 CREATE INDEX IF NOT EXISTS idx_site_images_section ON site_images(section);`,
     },
+    {
+      name: '015_add_email_verification.sql',
+      sql: `-- Add email verification fields to users table
+ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0;
+ALTER TABLE users ADD COLUMN verification_token TEXT;
+ALTER TABLE users ADD COLUMN verification_token_expires INTEGER;
+ALTER TABLE users ADD COLUMN password_reset_token TEXT;
+ALTER TABLE users ADD COLUMN password_reset_expires INTEGER;
+
+-- Create index for verification token lookups
+CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
+CREATE INDEX IF NOT EXISTS idx_users_password_reset_token ON users(password_reset_token);
+
+-- Message replies table for admin conversation feature
+CREATE TABLE IF NOT EXISTS message_replies (
+  id TEXT PRIMARY KEY,
+  message_id TEXT NOT NULL,
+  reply_text TEXT NOT NULL,
+  replied_by TEXT NOT NULL,
+  from_admin INTEGER DEFAULT 1,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
+  FOREIGN KEY (replied_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_message_replies_message ON message_replies(message_id);`,
+    },
+    {
+      name: '016_add_homepage_content.sql',
+      sql: `-- Homepage content table for managing editable homepage text content
+CREATE TABLE IF NOT EXISTS homepage_content (
+  id TEXT PRIMARY KEY,
+  section TEXT NOT NULL UNIQUE,
+  title_en TEXT,
+  title_sv TEXT,
+  subtitle_en TEXT,
+  subtitle_sv TEXT,
+  description_en TEXT,
+  description_sv TEXT,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Insert default content for "Discover Our Range" section
+INSERT INTO homepage_content (id, section, title_en, title_sv, subtitle_en, subtitle_sv)
+VALUES (
+  'collections-section',
+  'collections',
+  'Discover Our Range',
+  'Upptäck Vårt Sortiment',
+  'Explore Collections',
+  'Utforska Kollektioner'
+);`,
+    },
+    {
+      name: '017_add_collections.sql',
+      sql: `-- Collections table for managing homepage collection cards
+CREATE TABLE IF NOT EXISTS collections (
+  id TEXT PRIMARY KEY,
+  name_en TEXT NOT NULL,
+  name_sv TEXT NOT NULL,
+  description_en TEXT,
+  description_sv TEXT,
+  href TEXT NOT NULL,
+  image_url TEXT,
+  sort_order INTEGER DEFAULT 0,
+  active INTEGER DEFAULT 1,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+);
+
+-- Insert default collections
+INSERT INTO collections (id, name_en, name_sv, description_en, description_sv, href, sort_order)
+VALUES 
+  ('collection-1', 'Signature Line', 'Signatur Linje', 'Our most beloved formulations', 'Våra mest älskade formler', '/shop?category=shampoo', 1),
+  ('collection-2', 'Treatment Collection', 'Behandlingskollektion', 'Deep repair and restoration', 'Djup reparation och återställning', '/shop?category=treatments', 2),
+  ('collection-3', 'Styling Essentials', 'Styling Essentials', 'Professional styling products', 'Professionella stylingprodukter', '/shop?category=styling', 3);
+
+-- Index for sorting
+CREATE INDEX IF NOT EXISTS idx_collections_sort_order ON collections(sort_order);
+CREATE INDEX IF NOT EXISTS idx_collections_active ON collections(active);`,
+    },
+    {
+      name: '018_add_product_collections.sql',
+      sql: `-- Product collections junction table (many-to-many relationship)
+CREATE TABLE IF NOT EXISTS product_collections (
+  id TEXT PRIMARY KEY,
+  product_id TEXT NOT NULL,
+  collection_id TEXT NOT NULL,
+  sort_order INTEGER DEFAULT 0,
+  created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
+  UNIQUE(product_id, collection_id)
+);
+
+-- Indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_product_collections_product ON product_collections(product_id);
+CREATE INDEX IF NOT EXISTS idx_product_collections_collection ON product_collections(collection_id);
+CREATE INDEX IF NOT EXISTS idx_product_collections_sort ON product_collections(collection_id, sort_order);`,
+    },
   ];
 
   return migrations;

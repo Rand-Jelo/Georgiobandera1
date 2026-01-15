@@ -41,6 +41,8 @@ export default function NewProductPage() {
   const [createdProductId, setCreatedProductId] = useState<string | null>(null);
   const [images, setImages] = useState<ProductImage[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [collections, setCollections] = useState<Array<{ id: string; name_en: string; name_sv: string }>>([]);
+  const [selectedCollections, setSelectedCollections] = useState<string[]>([]);
   const [sizeVariants, setSizeVariants] = useState<Array<{
     id?: string;
     value: string;
@@ -78,7 +80,7 @@ export default function NewProductPage() {
       }
 
       setIsAdmin(true);
-      fetchCategories();
+      await Promise.all([fetchCategories(), fetchCollections()]);
     } catch (error) {
       router.push('/login');
     } finally {
@@ -104,6 +106,16 @@ export default function NewProductPage() {
       setCategories(flattenCategories(data.categories || []));
     } catch (error) {
       console.error('Error fetching categories:', error);
+    }
+  };
+
+  const fetchCollections = async () => {
+    try {
+      const response = await fetch('/api/admin/collections');
+      const data = await response.json() as { collections?: Array<{ id: string; name_en: string; name_sv: string }> };
+      setCollections(data.collections || []);
+    } catch (error) {
+      console.error('Error fetching collections:', error);
     }
   };
 
@@ -235,6 +247,7 @@ export default function NewProductPage() {
               track_inventory: v.track_inventory,
             })),
           ],
+          collection_ids: selectedCollections,
         }),
       });
 
@@ -592,6 +605,39 @@ export default function NewProductPage() {
                         <span className="text-sm text-neutral-300">Featured product</span>
                       </label>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-300 mb-2">
+                      Collections
+                    </label>
+                    <div className="space-y-2 max-h-48 overflow-y-auto border border-white/20 bg-black/50 rounded-lg p-4">
+                      {collections.length === 0 ? (
+                        <p className="text-sm text-neutral-500">No collections available</p>
+                      ) : (
+                        collections.map((collection) => {
+                          const name = locale === 'sv' ? collection.name_sv : collection.name_en;
+                          return (
+                            <label key={collection.id} className="flex items-center space-x-3 cursor-pointer hover:bg-white/5 p-2 rounded">
+                              <input
+                                type="checkbox"
+                                checked={selectedCollections.includes(collection.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedCollections([...selectedCollections, collection.id]);
+                                  } else {
+                                    setSelectedCollections(selectedCollections.filter(id => id !== collection.id));
+                                  }
+                                }}
+                                className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                              />
+                              <span className="text-sm text-neutral-300">{name}</span>
+                            </label>
+                          );
+                        })
+                      )}
+                    </div>
+                    <p className="mt-2 text-xs text-neutral-500">Select which collections this product should appear in</p>
                   </div>
                 </div>
               </div>

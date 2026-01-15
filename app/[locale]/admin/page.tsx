@@ -370,6 +370,19 @@ export default function AdminDashboard() {
             </Link>
 
             <Link
+              href="/admin/homepage-content"
+              className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
+            >
+              <svg className="w-5 h-5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <div>
+                <h3 className="text-base font-medium text-white">Homepage Content</h3>
+                <p className="text-neutral-400 text-xs">Edit homepage text content</p>
+              </div>
+            </Link>
+
+            <Link
               href="/admin/settings"
               className="flex items-center gap-3 p-3 rounded-lg border border-white/10 bg-black/50 hover:bg-black/70 hover:border-white/20 transition-all"
             >
