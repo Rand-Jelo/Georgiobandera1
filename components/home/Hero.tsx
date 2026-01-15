@@ -61,7 +61,7 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative min-h-[90vh] overflow-hidden bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white">
+    <section className="relative min-h-[70vh] sm:min-h-[80vh] md:min-h-[90vh] overflow-hidden bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white">
       {/* Elegant background pattern */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
@@ -114,7 +114,7 @@ export default function Hero() {
 
         {/* Right: Hero image carousel with premium styling */}
         <div 
-          className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl"
+          className="relative z-10 w-full max-w-[280px] sm:max-w-md md:max-w-lg lg:max-w-xl"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >

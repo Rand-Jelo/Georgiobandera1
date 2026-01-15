@@ -94,7 +94,7 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
         </div>
 
         {/* Premium product grid */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3 md:gap-8">
           {displayedProducts.map((product) => {
               const name = locale === 'sv' ? product.name_sv : product.name_en;
               const categoryName = product.category
@@ -139,7 +139,7 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
                   </div>
 
                   {/* Product info with refined typography */}
-                  <div className="flex flex-1 flex-col p-4 sm:p-5">
+                  <div className="flex flex-1 flex-col p-3 sm:p-4 md:p-5">
                     <p className="text-[9px] font-light uppercase tracking-[0.3em] text-neutral-400 mb-2 sm:text-[10px]">
                       {categoryName}
                     </p>

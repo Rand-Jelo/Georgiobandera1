@@ -110,7 +110,7 @@ export default function BrandStory() {
           </div>
 
           {/* Right: Visual element */}
-          <div className="relative order-first lg:order-last">
+          <div className="relative order-first lg:order-last max-w-md mx-auto lg:max-w-none">
             <div className="aspect-square relative">
               {/* Decorative frame */}
               <div className="absolute inset-0 border border-white/10">
@@ -121,25 +121,25 @@ export default function BrandStory() {
               </div>
               
               {/* Image or placeholder */}
-              <div className="absolute inset-0 flex items-center justify-center p-4">
-                {image ? (
-                  <div className="relative w-full h-full">
-                    {/* Loading skeleton */}
-                    {!imageLoaded && (
-                      <div className="absolute inset-0 bg-neutral-900 animate-pulse" />
-                    )}
-                    {/* Actual image */}
-                    <img
-                      src={image.url}
-                      alt={altText || 'Georgio Bandera Philosophy'}
-                      className={`w-full h-full object-cover transition-opacity duration-500 ${
-                        imageLoaded ? 'opacity-100' : 'opacity-0'
-                      }`}
-                      onLoad={() => setImageLoaded(true)}
-                    />
-                  </div>
-                ) : (
-                  <div className="text-center space-y-3 p-6 sm:space-y-4 sm:p-8">
+              {image ? (
+                <>
+                  {/* Loading skeleton */}
+                  {!imageLoaded && (
+                    <div className="absolute inset-0 bg-neutral-900 animate-pulse z-0" />
+                  )}
+                  {/* Actual image */}
+                  <img
+                    src={image.url}
+                    alt={altText || 'Georgio Bandera Philosophy'}
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-0 ${
+                      imageLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    onLoad={() => setImageLoaded(true)}
+                  />
+                </>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center p-6 sm:p-8 z-0">
+                  <div className="text-center space-y-3 sm:space-y-4">
                     <div className="inline-block h-1 w-20 bg-gradient-to-r from-transparent via-amber-400/40 to-transparent sm:w-24" />
                     <p className="text-xs font-light tracking-wider text-neutral-400 sm:text-sm">
                       Brand Image Placeholder
@@ -148,8 +148,8 @@ export default function BrandStory() {
                       High-end product photography or brand imagery
                     </p>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

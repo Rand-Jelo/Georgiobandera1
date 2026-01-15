@@ -79,8 +79,8 @@ export default function Footer() {
 
   return (
     <footer className="relative border-t border-white/10 bg-black text-neutral-300 before:absolute before:-top-px before:left-0 before:h-[1px] before:w-full before:bg-gradient-to-r before:from-black/0 before:via-black/40 before:to-black/0">
-      <div className="mx-auto max-w-6xl px-4 py-12 md:py-14">
-        <div className="grid gap-10 text-[13px] md:text-sm md:grid-cols-4">
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10 md:py-14">
+        <div className="grid gap-8 sm:gap-10 text-[13px] md:text-sm md:grid-cols-4">
           {/* Brand / short tagline */}
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
@@ -187,12 +187,12 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-7 text-[11px] text-neutral-500 md:flex-row">
+        <div className="mt-8 sm:mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:pt-7 text-[11px] text-neutral-500 md:flex-row">
           <p>© {year} Georgiobandera.se. All rights reserved.</p>
 
-          <div className="flex flex-col items-center gap-3 md:flex-row md:gap-6">
+          <div className="flex flex-col items-center gap-4 sm:gap-3 md:flex-row md:gap-6">
             {/* Social links */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 sm:gap-4">
               <span className="text-[11px] uppercase tracking-wide text-neutral-500">
                 Follow
               </span>
