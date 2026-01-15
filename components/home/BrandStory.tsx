@@ -23,7 +23,10 @@ export default function BrandStory() {
         const response = await fetch('/api/site-images/philosophy');
         const data = await response.json() as { image?: SiteImage };
         if (data.image) {
+          console.log('BrandStory: Image loaded:', data.image.url);
           setImage(data.image);
+        } else {
+          console.log('BrandStory: No image found in API response');
         }
       } catch (error) {
         console.error('Error fetching philosophy image:', error);
@@ -111,34 +114,32 @@ export default function BrandStory() {
 
           {/* Right: Visual element */}
           <div className="relative order-first lg:order-last max-w-md mx-auto lg:max-w-none">
-            <div className="aspect-square relative">
-              {/* Decorative frame */}
-              <div className="absolute inset-0 border border-white/10">
-                <div className="absolute top-0 left-0 h-8 w-8 border-t-2 border-l-2 border-amber-500/30 sm:h-12 sm:w-12 md:h-16 md:w-16" />
-                <div className="absolute top-0 right-0 h-8 w-8 border-t-2 border-r-2 border-amber-500/30 sm:h-12 sm:w-12 md:h-16 md:w-16" />
-                <div className="absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-amber-500/30 sm:h-12 sm:w-12 md:h-16 md:w-16" />
-                <div className="absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-amber-500/30 sm:h-12 sm:w-12 md:h-16 md:w-16" />
-              </div>
-              
+            <div className="aspect-square relative overflow-hidden bg-neutral-900">
               {/* Image or placeholder */}
               {image ? (
                 <>
                   {/* Loading skeleton */}
                   {!imageLoaded && (
-                    <div className="absolute inset-0 bg-neutral-900 animate-pulse z-0" />
+                    <div className="absolute inset-0 bg-neutral-900 animate-pulse z-[1]" />
                   )}
                   {/* Actual image */}
                   <img
                     src={image.url}
                     alt={altText || 'Georgio Bandera Philosophy'}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 z-0 ${
-                      imageLoaded ? 'opacity-100' : 'opacity-0'
-                    }`}
-                    onLoad={() => setImageLoaded(true)}
+                    className="absolute inset-0 w-full h-full object-cover z-[1]"
+                    onLoad={() => {
+                      console.log('BrandStory: Image onLoad fired');
+                      setImageLoaded(true);
+                    }}
+                    onError={(e) => {
+                      console.error('BrandStory: Image failed to load:', image.url);
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                    }}
                   />
                 </>
               ) : (
-                <div className="absolute inset-0 flex items-center justify-center p-6 sm:p-8 z-0">
+                <div className="absolute inset-0 flex items-center justify-center p-6 sm:p-8 z-[1]">
                   <div className="text-center space-y-3 sm:space-y-4">
                     <div className="inline-block h-1 w-20 bg-gradient-to-r from-transparent via-amber-400/40 to-transparent sm:w-24" />
                     <p className="text-xs font-light tracking-wider text-neutral-400 sm:text-sm">
@@ -150,6 +151,14 @@ export default function BrandStory() {
                   </div>
                 </div>
               )}
+              
+              {/* Decorative frame - on top */}
+              <div className="absolute inset-0 border border-white/10 z-10 pointer-events-none">
+                <div className="absolute top-0 left-0 h-8 w-8 border-t-2 border-l-2 border-amber-500/30 sm:h-12 sm:w-12 md:h-16 md:w-16" />
+                <div className="absolute top-0 right-0 h-8 w-8 border-t-2 border-r-2 border-amber-500/30 sm:h-12 sm:w-12 md:h-16 md:w-16" />
+                <div className="absolute bottom-0 left-0 h-8 w-8 border-b-2 border-l-2 border-amber-500/30 sm:h-12 sm:w-12 md:h-16 md:w-16" />
+                <div className="absolute bottom-0 right-0 h-8 w-8 border-b-2 border-r-2 border-amber-500/30 sm:h-12 sm:w-12 md:h-16 md:w-16" />
+              </div>
             </div>
           </div>
         </div>
