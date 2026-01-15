@@ -71,30 +71,30 @@ export default function Hero() {
       {/* Subtle gold accent */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
 
-      <div className="relative mx-auto flex min-h-[90vh] max-w-7xl flex-col items-center justify-center gap-16 px-6 py-24 lg:flex-row lg:items-center lg:gap-20">
+      <div className="relative mx-auto flex min-h-[90vh] max-w-7xl flex-col items-center justify-center gap-8 px-4 py-12 sm:gap-12 sm:px-6 sm:py-16 md:gap-16 md:py-20 lg:flex-row lg:items-center lg:gap-20 lg:px-6 lg:py-24">
         {/* Left: Premium text content */}
-        <div className="z-10 max-w-2xl space-y-8 text-center lg:text-left">
+        <div className="z-10 w-full max-w-2xl space-y-6 text-center sm:space-y-7 md:space-y-8 lg:text-left">
           {/* Subtitle with elegant spacing */}
           <div className="inline-block">
-            <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
+            <p className="text-[9px] font-light uppercase tracking-[0.4em] text-amber-400/80 sm:text-[10px]">
               {t('subtitle')}
             </p>
-            <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent" />
+            <div className="mt-2 h-px w-12 bg-gradient-to-r from-amber-500/50 to-transparent sm:w-16 lg:mx-0" />
           </div>
 
           {/* Main heading with refined typography */}
-          <h1 className="text-5xl font-light tracking-[0.02em] leading-[1.1] sm:text-6xl lg:text-7xl">
+          <h1 className="text-4xl font-light tracking-[0.02em] leading-[1.1] sm:text-5xl md:text-6xl lg:text-7xl">
             <span className="block font-extralight">Georgio</span>
             <span className="block mt-1 font-light tracking-wider">Bandera</span>
           </h1>
 
           {/* Description with elegant spacing */}
-          <p className="max-w-xl text-base leading-relaxed text-neutral-300 sm:text-lg lg:text-xl">
+          <p className="max-w-xl text-sm leading-relaxed text-neutral-300 sm:text-base md:text-lg lg:text-xl">
             {t('description')}
           </p>
 
-          {/* Premium CTA buttons */}
-          <div className="flex flex-col items-center gap-4 pt-4 sm:flex-row sm:items-center lg:justify-start">
+          {/* Premium CTA buttons - hidden on mobile/tablet, shown on desktop */}
+          <div className="hidden lg:flex flex-col items-center gap-3 pt-2 sm:flex-row sm:items-center sm:gap-4 sm:pt-4 lg:justify-start">
             <Link
               href="/shop"
               className="group relative overflow-hidden rounded-sm bg-white px-8 py-3.5 text-sm font-medium tracking-wider text-black transition-all duration-300 hover:bg-neutral-100 hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]"
@@ -114,16 +114,16 @@ export default function Hero() {
 
         {/* Right: Hero image carousel with premium styling */}
         <div 
-          className="relative z-10 w-full max-w-lg lg:max-w-xl"
+          className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <div className="relative">
+          <div className="relative h-full">
             {/* Outer glow effect */}
             <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-amber-500/20 via-transparent to-amber-500/20 opacity-50 blur-xl" />
             
             {/* Main image container */}
-            <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-neutral-900/90 via-neutral-800/80 to-neutral-950/90 backdrop-blur-sm shadow-2xl">
+            <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-neutral-900/90 via-neutral-800/80 to-neutral-950/90 backdrop-blur-sm shadow-2xl max-h-full">
               {/* Elegant overlay pattern */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,_rgba(255,255,255,0.05)_0%,_transparent_50%)] z-10" />
               
@@ -212,12 +212,22 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] font-light uppercase tracking-wider text-neutral-500">Scroll</span>
-          <div className="h-8 w-px bg-gradient-to-b from-neutral-600 to-transparent" />
-        </div>
+      {/* CTA buttons for mobile/tablet - shown below hero image */}
+      <div className="lg:hidden relative z-10 mt-12 mb-8 flex flex-col items-center gap-4 sm:mt-16 sm:mb-12 sm:flex-row sm:items-center sm:justify-center sm:gap-4 md:mt-20 md:mb-16">
+        <Link
+          href="/shop"
+          className="group relative overflow-hidden rounded-sm bg-white px-8 py-3.5 text-sm font-medium tracking-wider text-black transition-all duration-300 hover:bg-neutral-100 hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]"
+        >
+          <span className="relative z-10">{t('shopNow')}</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-50 to-white opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        </Link>
+        <Link
+          href="/shop?featured=true"
+          className="group relative text-sm font-light tracking-wider text-neutral-300 transition-colors duration-300 hover:text-amber-400"
+        >
+          {t('viewBestsellers')}
+          <span className="absolute -bottom-1 left-0 h-px w-0 bg-amber-400 transition-all duration-300 group-hover:w-full" />
+        </Link>
       </div>
     </section>
   );
