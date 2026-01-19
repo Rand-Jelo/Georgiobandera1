@@ -22,7 +22,8 @@ export function DeliveryNotificationEmail({
   locale = 'sv',
 }: DeliveryNotificationEmailProps) {
   const isSv = locale === 'sv';
-  const orderUrl = `https://georgiobandera.se/account/orders/${orderNumber}`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
+  const orderUrl = `${baseUrl}/account/orders/${orderNumber}`;
 
   const content = {
     sv: {

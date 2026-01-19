@@ -20,6 +20,7 @@ interface BaseEmailProps {
 
 export function BaseEmail({ preview, children, locale = 'sv' }: BaseEmailProps) {
   const isSv = locale === 'sv';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
   
   return (
     <Html>
@@ -30,7 +31,7 @@ export function BaseEmail({ preview, children, locale = 'sv' }: BaseEmailProps) 
           {/* Header with logo */}
           <Section style={header}>
             <Img
-              src="https://georgiobandera.se/api/images/email/logo-white.png"
+              src={`${baseUrl}/api/images/email/logo-white.png`}
               width="180"
               height="40"
               alt="Georgio Bandera"
@@ -50,11 +51,11 @@ export function BaseEmail({ preview, children, locale = 'sv' }: BaseEmailProps) 
               © {new Date().getFullYear()} Georgio Bandera. {isSv ? 'Alla rättigheter förbehållna.' : 'All rights reserved.'}
             </Text>
             <Text style={footerLinks}>
-              <Link href="https://georgiobandera.se" style={footerLink}>
+              <Link href={baseUrl} style={footerLink}>
                 {isSv ? 'Besök vår hemsida' : 'Visit our website'}
               </Link>
               {' • '}
-              <Link href="https://georgiobandera.se/contact" style={footerLink}>
+              <Link href={`${baseUrl}/contact`} style={footerLink}>
                 {isSv ? 'Kontakta oss' : 'Contact us'}
               </Link>
             </Text>

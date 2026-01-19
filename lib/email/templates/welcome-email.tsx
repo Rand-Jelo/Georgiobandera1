@@ -9,7 +9,8 @@ interface WelcomeEmailProps {
 
 export function WelcomeEmail({ name, locale = 'sv' }: WelcomeEmailProps) {
   const isSv = locale === 'sv';
-  const shopUrl = 'https://georgiobandera.se/products';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
+  const shopUrl = `${baseUrl}/shop`;
 
   const content = {
     sv: {

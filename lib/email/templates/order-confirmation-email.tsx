@@ -38,7 +38,8 @@ export function OrderConfirmationEmail({
   locale = 'sv',
 }: OrderConfirmationEmailProps) {
   const isSv = locale === 'sv';
-  const orderUrl = `https://georgiobandera.se/account/orders/${orderNumber}`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
+  const orderUrl = `${baseUrl}/account/orders/${orderNumber}`;
 
   const formatPrice = (price: number) => {
     return `${price.toLocaleString(isSv ? 'sv-SE' : 'en-SE')} SEK`;
