@@ -33,4 +33,5 @@ export {
   sendContactConfirmationEmail,
   sendAdminReplyEmail,
   sendAdminNotificationEmail,
+  sendOrderNotificationEmail,
 } from './send';

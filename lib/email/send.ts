@@ -427,6 +427,7 @@ export async function sendAdminNotificationEmail({
   }
 
   const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@georgiobandera.se';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
 
   try {
     const { data, error } = await resend.emails.send({
@@ -439,7 +440,7 @@ export async function sendAdminNotificationEmail({
         ${subject ? `<p><strong>Ämne:</strong> ${subject}</p>` : ''}
         <p><strong>Meddelande:</strong></p>
         <p style="white-space: pre-wrap; background: #f5f5f5; padding: 15px; border-radius: 5px;">${message}</p>
-        <p><a href="https://georgiobandera.se/admin/messages">Visa i admin-panelen</a></p>
+        <p><a href="${baseUrl}/admin/messages">Visa i admin-panelen</a></p>
       `,
     });
 
@@ -452,6 +453,120 @@ export async function sendAdminNotificationEmail({
     return { success: true, data };
   } catch (error) {
     console.error('Error sending admin notification email:', error);
+    return { success: false, error };
+  }
+}
+
+// ============================================
+// ORDER NOTIFICATION EMAIL (to admin)
+// ============================================
+export async function sendOrderNotificationEmail({
+  orderNumber,
+  customerName,
+  customerEmail,
+  orderDate,
+  items,
+  subtotal,
+  shipping,
+  total,
+  shippingAddress,
+}: {
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  orderDate: string;
+  items: Array<{ name: string; variant?: string; quantity: number; price: number }>;
+  subtotal: number;
+  shipping: number;
+  total: number;
+  shippingAddress: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+}) {
+  if (!isEmailConfigured() || !resend) {
+    console.log('Email not configured, skipping order notification email');
+    return { success: false, error: 'Email not configured' };
+  }
+
+  const orderEmail = process.env.ORDER_NOTIFICATION_EMAIL || 'order@georgiobandera.se';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
+
+  const formatPrice = (price: number) => {
+    return `${price.toLocaleString('sv-SE')} SEK`;
+  };
+
+  try {
+    const itemsHtml = items.map(item => `
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}${item.variant ? ` (${item.variant})` : ''}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">${formatPrice(item.price)}</td>
+      </tr>
+    `).join('');
+
+    const { data, error } = await resend.emails.send({
+      from: emailConfig.from.order,
+      to: orderEmail,
+      subject: `Ny beställning - Order ${orderNumber}`,
+      html: `
+        <h2>Ny beställning mottagen</h2>
+        <p><strong>Ordernummer:</strong> ${orderNumber}</p>
+        <p><strong>Datum:</strong> ${orderDate}</p>
+        
+        <h3>Kundinformation</h3>
+        <p><strong>Namn:</strong> ${customerName}</p>
+        <p><strong>Email:</strong> ${customerEmail}</p>
+        
+        <h3>Leveransadress</h3>
+        <p>${shippingAddress.street}<br />
+        ${shippingAddress.postalCode} ${shippingAddress.city}<br />
+        ${shippingAddress.country}</p>
+        
+        <h3>Orderdetaljer</h3>
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+          <thead>
+            <tr style="background: #f5f5f5;">
+              <th style="padding: 8px; text-align: left; border-bottom: 2px solid #ddd;">Produkt</th>
+              <th style="padding: 8px; text-align: center; border-bottom: 2px solid #ddd;">Antal</th>
+              <th style="padding: 8px; text-align: right; border-bottom: 2px solid #ddd;">Pris</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+        
+        <table style="width: 100%; margin: 20px 0;">
+          <tr>
+            <td style="padding: 8px; text-align: right;"><strong>Delsumma:</strong></td>
+            <td style="padding: 8px; text-align: right;">${formatPrice(subtotal)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; text-align: right;"><strong>Frakt:</strong></td>
+            <td style="padding: 8px; text-align: right;">${formatPrice(shipping)}</td>
+          </tr>
+          <tr style="font-size: 18px; font-weight: bold;">
+            <td style="padding: 8px; text-align: right;"><strong>Totalt:</strong></td>
+            <td style="padding: 8px; text-align: right;">${formatPrice(total)}</td>
+          </tr>
+        </table>
+        
+        <p style="margin-top: 30px;"><a href="${baseUrl}/admin/orders/${orderNumber}" style="background: #000; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Visa order i admin-panelen</a></p>
+      `,
+    });
+
+    if (error) {
+      console.error('Failed to send order notification email:', error);
+      return { success: false, error };
+    }
+
+    console.log('Order notification email sent to:', orderEmail);
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error sending order notification email:', error);
     return { success: false, error };
   }
 }

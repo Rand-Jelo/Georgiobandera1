@@ -16,7 +16,7 @@ import {
   calculateDiscountAmount,
   recordDiscountCodeUsage,
 } from '@/lib/db/queries/discount-codes';
-import { sendOrderConfirmationEmail } from '@/lib/email';
+import { sendOrderConfirmationEmail, sendOrderNotificationEmail } from '@/lib/email';
 import { getOrderItems } from '@/lib/db/queries/orders';
 import { getUserByEmail, createUser } from '@/lib/db/queries/users';
 import { hashPassword } from '@/lib/auth/password';
@@ -233,29 +233,49 @@ export async function POST(request: NextRequest) {
     // Send order confirmation email (async, don't wait)
     const orderItemsForEmail = await getOrderItems(db, order.id);
     const locale = request.headers.get('accept-language')?.includes('sv') ? 'sv' : 'en';
+    const orderDate = new Date(order.created_at * 1000).toLocaleDateString(locale === 'sv' ? 'sv-SE' : 'en-SE');
+    const orderItemsForEmailFormatted = orderItemsForEmail.map(item => ({
+      name: item.product_name,
+      variant: item.variant_name || undefined,
+      quantity: item.quantity,
+      price: item.price,
+    }));
+    const shippingAddress = {
+      street: order.shipping_address_line1 + (order.shipping_address_line2 ? `, ${order.shipping_address_line2}` : ''),
+      city: order.shipping_city,
+      postalCode: order.shipping_postal_code,
+      country: order.shipping_country,
+    };
+
+    // Send confirmation email to customer
     sendOrderConfirmationEmail({
       to: order.email,
       name: order.shipping_name,
       orderNumber: order.order_number,
-      orderDate: new Date(order.created_at * 1000).toLocaleDateString(locale === 'sv' ? 'sv-SE' : 'en-SE'),
-      items: orderItemsForEmail.map(item => ({
-        name: item.product_name,
-        variant: item.variant_name || undefined,
-        quantity: item.quantity,
-        price: item.price,
-      })),
+      orderDate,
+      items: orderItemsForEmailFormatted,
       subtotal: order.subtotal,
       shipping: order.shipping_cost,
       total: order.total,
-      shippingAddress: {
-        street: order.shipping_address_line1 + (order.shipping_address_line2 ? `, ${order.shipping_address_line2}` : ''),
-        city: order.shipping_city,
-        postalCode: order.shipping_postal_code,
-        country: order.shipping_country,
-      },
+      shippingAddress,
       locale: locale as 'sv' | 'en',
     }).catch(err => {
       console.error('Failed to send order confirmation email:', err);
+    });
+
+    // Send notification email to admin (order@georgiobandera.se)
+    sendOrderNotificationEmail({
+      orderNumber: order.order_number,
+      customerName: order.shipping_name,
+      customerEmail: order.email,
+      orderDate,
+      items: orderItemsForEmailFormatted,
+      subtotal: order.subtotal,
+      shipping: order.shipping_cost,
+      total: order.total,
+      shippingAddress,
+    }).catch(err => {
+      console.error('Failed to send order notification email:', err);
     });
 
     return NextResponse.json({
