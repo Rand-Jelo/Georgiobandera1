@@ -115,7 +115,7 @@ export default function AdminMessageDetailsPage() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json() as { error?: string };
         alert(error.error || 'Failed to send reply');
         return;
       }
