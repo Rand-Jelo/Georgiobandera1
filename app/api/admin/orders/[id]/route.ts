@@ -99,29 +99,46 @@ export async function PATCH(
     if (body.status) {
       await updateOrderStatus(db, id, body.status);
       
+      const updatedOrder = await getOrderById(db, id);
+      if (!updatedOrder) {
+        return NextResponse.json(
+          { error: 'Order not found after update' },
+          { status: 404 }
+        );
+      }
+
+      const locale = request.headers.get('accept-language')?.includes('sv') ? 'sv' : 'en';
+      
       // Send delivery notification when order is shipped
-      if (body.status === 'shipped' && body.tracking_number) {
-        const updatedOrder = await getOrderById(db, id);
-        if (updatedOrder) {
-          const locale = request.headers.get('accept-language')?.includes('sv') ? 'sv' : 'en';
-          sendDeliveryNotificationEmail({
-            to: updatedOrder.email,
-            name: updatedOrder.shipping_name,
-            orderNumber: updatedOrder.order_number,
-            trackingNumber: body.tracking_number,
-            locale: locale as 'sv' | 'en',
-          }).catch(err => {
-            console.error('Failed to send delivery notification:', err);
-          });
-        }
+      if (body.status === 'shipped') {
+        // Use tracking_number from body if provided, otherwise from order
+        const trackingNumber = body.tracking_number || updatedOrder.tracking_number || undefined;
+        
+        sendDeliveryNotificationEmail({
+          to: updatedOrder.email,
+          name: updatedOrder.shipping_name,
+          orderNumber: updatedOrder.order_number,
+          trackingNumber,
+          locale: locale as 'sv' | 'en',
+        }).catch(err => {
+          console.error('Failed to send delivery notification:', err);
+        });
       }
       
       // Send delivery notification when order is marked as delivered
       if (body.status === 'delivered') {
         await markOrderAsDelivered(db, id);
-        const updatedOrder = await getOrderById(db, id);
-        if (updatedOrder) {
-          // Could send a "delivered" notification here if needed
+        const finalOrder = await getOrderById(db, id);
+        if (finalOrder) {
+          sendDeliveryNotificationEmail({
+            to: finalOrder.email,
+            name: finalOrder.shipping_name,
+            orderNumber: finalOrder.order_number,
+            trackingNumber: finalOrder.tracking_number || undefined,
+            locale: locale as 'sv' | 'en',
+          }).catch(err => {
+            console.error('Failed to send delivery notification:', err);
+          });
         }
       }
     }
@@ -129,7 +146,7 @@ export async function PATCH(
     if (body.tracking_number) {
       await updateTrackingNumber(db, id, body.tracking_number);
       
-      // Send delivery notification when tracking number is added
+      // Send delivery notification when tracking number is added (if order is shipped)
       const updatedOrder = await getOrderById(db, id);
       if (updatedOrder && updatedOrder.status === 'shipped') {
         const locale = request.headers.get('accept-language')?.includes('sv') ? 'sv' : 'en';

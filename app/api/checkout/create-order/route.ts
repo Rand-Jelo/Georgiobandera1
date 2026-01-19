@@ -274,9 +274,17 @@ export async function POST(request: NextRequest) {
       shipping: order.shipping_cost,
       total: order.total,
       shippingAddress,
-    }).catch(err => {
-      console.error('Failed to send order notification email:', err);
-    });
+    })
+      .then(result => {
+        if (result.success) {
+          console.log('Order notification email sent successfully to order@georgiobandera.se');
+        } else {
+          console.error('Failed to send order notification email:', result.error);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to send order notification email:', err);
+      });
 
     return NextResponse.json({
       order: {
