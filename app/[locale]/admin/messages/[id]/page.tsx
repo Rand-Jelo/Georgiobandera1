@@ -98,19 +98,41 @@ export default function AdminMessageDetailsPage() {
     setUpdating(false);
   };
 
-  const handleReply = () => {
-    if (!message) return;
+  const handleReply = async () => {
+    if (!message || !replyMessage.trim()) return;
 
-    const subject = encodeURIComponent(replySubject || `Re: ${message.subject || 'Your inquiry'}`);
-    const body = encodeURIComponent(
-      `\n\n--- Original Message ---\nFrom: ${message.name} <${message.email}>\nDate: ${new Date(message.created_at * 1000).toLocaleString()}\n\n${message.message}\n\n--- Your Reply ---\n${replyMessage}`
-    );
-    const mailtoLink = `mailto:${message.email}?subject=${subject}&body=${body}`;
-    window.location.href = mailtoLink;
+    try {
+      setUpdating(true);
+      const response = await fetch(`/api/admin/messages/${messageId}/reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          replyText: replyMessage,
+          locale: 'sv', // You can make this dynamic based on user preference
+        }),
+      });
 
-    // Mark as replied after opening email client
-    if (message.status !== 'replied') {
-      updateStatus('replied');
+      if (!response.ok) {
+        const error = await response.json();
+        alert(error.error || 'Failed to send reply');
+        return;
+      }
+
+      // Clear reply fields
+      setReplyMessage('');
+      setReplySubject(message.subject ? `Re: ${message.subject}` : 'Re: Your inquiry');
+      
+      // Refresh message to get updated status
+      await fetchMessage();
+      
+      alert('Reply sent successfully!');
+    } catch (error) {
+      console.error('Error sending reply:', error);
+      alert('Failed to send reply. Please try again.');
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -248,13 +270,13 @@ export default function AdminMessageDetailsPage() {
                 </div>
                 <button
                   onClick={handleReply}
-                  disabled={!replyMessage.trim()}
+                  disabled={!replyMessage.trim() || updating}
                   className="w-full px-4 py-3 bg-white text-black rounded-lg hover:bg-neutral-100 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Open Email Client to Reply
+                  {updating ? 'Sending...' : 'Send Reply'}
                 </button>
                 <p className="text-xs text-neutral-500">
-                  This will open your default email client with the reply pre-filled.
+                  Your reply will be sent using our email template.
                 </p>
               </div>
             </div>
