@@ -52,13 +52,23 @@ export async function POST(request: NextRequest) {
     const locale = validated.locale || 'sv';
     const verificationUrl = `${baseUrl}/${locale}/verify-email?token=${verificationToken}`;
 
-    // Send verification email
-    await sendVerificationEmail({
-      to: user.email,
-      name: user.name || user.email.split('@')[0],
-      verificationUrl,
-      locale: (locale as 'sv' | 'en') || 'sv',
-    });
+    // Send verification email (non-blocking - don't fail registration if email fails)
+    try {
+      const emailResult = await sendVerificationEmail({
+        to: user.email,
+        name: user.name || user.email.split('@')[0],
+        verificationUrl,
+        locale: (locale as 'sv' | 'en') || 'sv',
+      });
+      
+      if (!emailResult.success) {
+        console.error('Failed to send verification email:', emailResult.error);
+        // Continue anyway - user is created, they can request a new verification email
+      }
+    } catch (emailError) {
+      console.error('Error sending verification email:', emailError);
+      // Continue anyway - user is created, they can request a new verification email
+    }
 
     // Set session (user can use the site but with limited features until verified)
     await setSession({

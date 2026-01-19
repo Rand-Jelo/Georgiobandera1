@@ -116,6 +116,7 @@
     "registering": "Creating account...",
     "passwordMismatch": "Passwords do not match",
     "passwordTooShort": "Password must be at least 8 characters",
+    "passwordMinLength": "Password must be at least 8 characters",
     "welcome": "Welcome Back",
     "joinUs": "Join Us",
     "forgotPassword": "Forgot password?",

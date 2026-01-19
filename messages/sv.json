@@ -116,6 +116,7 @@
     "registering": "Skapar konto...",
     "passwordMismatch": "Lösenorden matchar inte",
     "passwordTooShort": "Lösenordet måste vara minst 8 tecken",
+    "passwordMinLength": "Lösenordet måste vara minst 8 tecken",
     "welcome": "Välkommen tillbaka",
     "joinUs": "Gå med oss",
     "forgotPassword": "Glömt lösenord?",
