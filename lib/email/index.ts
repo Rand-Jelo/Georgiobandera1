@@ -9,11 +9,11 @@ export const resend = process.env.RESEND_API_KEY
 export const emailConfig = {
   from: {
     noreply: 'Georgio Bandera <noreply@georgiobandera.se>',
-    info: 'Georgio Bandera <info@georgiobandera.se>',
+    info: 'Georgio Bandera <contact@georgiobandera.se>',
     order: 'Georgio Bandera <order@georgiobandera.se>',
   },
   replyTo: {
-    info: 'info@georgiobandera.se',
+    info: 'contact@georgiobandera.se',
     order: 'order@georgiobandera.se',
   },
 };

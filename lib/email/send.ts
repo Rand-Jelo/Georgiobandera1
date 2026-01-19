@@ -426,7 +426,7 @@ export async function sendAdminNotificationEmail({
     return { success: false, error: 'Email not configured' };
   }
 
-  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'info@georgiobandera.se';
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL || 'contact@georgiobandera.se';
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
 
   try {
