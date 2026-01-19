@@ -259,9 +259,19 @@ export async function POST(request: NextRequest) {
       total: order.total,
       shippingAddress,
       locale: locale as 'sv' | 'en',
-    }).catch(err => {
-      console.error('Failed to send order confirmation email:', err);
-    });
+    })
+      .then(result => {
+        if (result.success) {
+          console.log('Order confirmation email sent successfully to:', order.email);
+        } else {
+          console.error('Failed to send order confirmation email:', result.error);
+          console.error('Email details:', { to: order.email, orderNumber: order.order_number });
+        }
+      })
+      .catch(err => {
+        console.error('Error sending order confirmation email:', err);
+        console.error('Email details:', { to: order.email, orderNumber: order.order_number });
+      });
 
     // Send notification email to admin (order@georgiobandera.se)
     sendOrderNotificationEmail({
@@ -280,10 +290,12 @@ export async function POST(request: NextRequest) {
           console.log('Order notification email sent successfully to order@georgiobandera.se');
         } else {
           console.error('Failed to send order notification email:', result.error);
+          console.error('Order details:', { orderNumber: order.order_number, customerEmail: order.email });
         }
       })
       .catch(err => {
-        console.error('Failed to send order notification email:', err);
+        console.error('Error sending order notification email:', err);
+        console.error('Order details:', { orderNumber: order.order_number, customerEmail: order.email });
       });
 
     return NextResponse.json({

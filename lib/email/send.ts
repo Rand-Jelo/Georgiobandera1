@@ -193,8 +193,14 @@ export async function sendOrderConfirmationEmail({
   locale?: Locale;
 }) {
   if (!isEmailConfigured() || !resend) {
+    console.error('Email not configured - RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'SET' : 'NOT SET');
     console.log('Email not configured, skipping order confirmation email to:', to);
     return { success: false, error: 'Email not configured' };
+  }
+
+  if (!resend) {
+    console.error('Resend client is null, cannot send email');
+    return { success: false, error: 'Resend client not initialized' };
   }
 
   try {
@@ -212,6 +218,7 @@ export async function sendOrderConfirmationEmail({
       })
     );
 
+    console.log('Attempting to send order confirmation email to:', to);
     const { data, error } = await resend.emails.send({
       from: emailConfig.from.order,
       replyTo: emailConfig.replyTo.order,
@@ -224,13 +231,15 @@ export async function sendOrderConfirmationEmail({
 
     if (error) {
       console.error('Failed to send order confirmation email:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       return { success: false, error };
     }
 
-    console.log('Order confirmation email sent to:', to);
+    console.log('Order confirmation email sent successfully to:', to);
     return { success: true, data };
   } catch (error) {
     console.error('Error sending order confirmation email:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return { success: false, error };
   }
 }
@@ -487,8 +496,14 @@ export async function sendOrderNotificationEmail({
   };
 }) {
   if (!isEmailConfigured() || !resend) {
+    console.error('Email not configured - RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'SET' : 'NOT SET');
     console.log('Email not configured, skipping order notification email');
     return { success: false, error: 'Email not configured' };
+  }
+
+  if (!resend) {
+    console.error('Resend client is null, cannot send email');
+    return { success: false, error: 'Resend client not initialized' };
   }
 
   const orderEmail = process.env.ORDER_NOTIFICATION_EMAIL || 'order@georgiobandera.se';
@@ -499,6 +514,7 @@ export async function sendOrderNotificationEmail({
   };
 
   try {
+    console.log('Attempting to send order notification email to:', orderEmail);
     const itemsHtml = items.map(item => `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.name}${item.variant ? ` (${item.variant})` : ''}</td>
@@ -560,13 +576,15 @@ export async function sendOrderNotificationEmail({
 
     if (error) {
       console.error('Failed to send order notification email:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       return { success: false, error };
     }
 
-    console.log('Order notification email sent to:', orderEmail);
+    console.log('Order notification email sent successfully to:', orderEmail);
     return { success: true, data };
   } catch (error) {
     console.error('Error sending order notification email:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     return { success: false, error };
   }
 }
