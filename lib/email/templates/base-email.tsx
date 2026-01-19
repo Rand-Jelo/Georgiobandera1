@@ -30,7 +30,7 @@ export function BaseEmail({ preview, children, locale = 'sv' }: BaseEmailProps) 
           {/* Header with logo */}
           <Section style={header}>
             <Img
-              src="https://georgiobandera.se/logo.png"
+              src="https://georgiobandera.se/api/images/email/logo-white.png"
               width="180"
               height="40"
               alt="Georgio Bandera"
