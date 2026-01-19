@@ -19,10 +19,29 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = registerSchema.parse(body);
 
-    const db = getDB();
+    let db;
+    try {
+      db = getDB();
+    } catch (dbError: any) {
+      console.error('Failed to get database:', dbError);
+      return NextResponse.json(
+        { error: 'Database connection failed', details: dbError?.message },
+        { status: 500 }
+      );
+    }
 
     // Check if user already exists
-    const existingUser = await getUserByEmail(db, validated.email);
+    let existingUser;
+    try {
+      existingUser = await getUserByEmail(db, validated.email);
+    } catch (error: any) {
+      console.error('Error checking existing user:', error);
+      return NextResponse.json(
+        { error: 'Failed to check existing user', details: error?.message },
+        { status: 500 }
+      );
+    }
+
     if (existingUser) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
@@ -31,21 +50,39 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const passwordHash = await hashPassword(validated.password);
+    let passwordHash;
+    try {
+      passwordHash = await hashPassword(validated.password);
+    } catch (error: any) {
+      console.error('Error hashing password:', error);
+      return NextResponse.json(
+        { error: 'Failed to hash password', details: error?.message },
+        { status: 500 }
+      );
+    }
 
     // Generate verification token
     const verificationToken = crypto.randomUUID();
     const verificationTokenExpires = Math.floor(Date.now() / 1000) + (24 * 60 * 60); // 24 hours
 
     // Create user with verification token
-    const user = await createUser(db, {
-      email: validated.email,
-      passwordHash,
-      name: validated.name,
-      phone: validated.phone,
-      verificationToken,
-      verificationTokenExpires,
-    });
+    let user;
+    try {
+      user = await createUser(db, {
+        email: validated.email,
+        passwordHash,
+        name: validated.name,
+        phone: validated.phone,
+        verificationToken,
+        verificationTokenExpires,
+      });
+    } catch (error: any) {
+      console.error('Error creating user:', error);
+      return NextResponse.json(
+        { error: 'Failed to create user', details: error?.message },
+        { status: 500 }
+      );
+    }
 
     // Build verification URL
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera.se';
@@ -65,16 +102,21 @@ export async function POST(request: NextRequest) {
         console.error('Failed to send verification email:', emailResult.error);
         // Continue anyway - user is created, they can request a new verification email
       }
-    } catch (emailError) {
+    } catch (emailError: any) {
       console.error('Error sending verification email:', emailError);
       // Continue anyway - user is created, they can request a new verification email
     }
 
     // Set session (user can use the site but with limited features until verified)
-    await setSession({
-      userId: user.id,
-      email: user.email,
-    });
+    try {
+      await setSession({
+        userId: user.id,
+        email: user.email,
+      });
+    } catch (sessionError: any) {
+      console.error('Error setting session:', sessionError);
+      // Continue anyway - user is created, session can be set on next login
+    }
 
     return NextResponse.json(
       {
@@ -97,8 +139,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Registration error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Registration failed' },
+      { error: 'Registration failed', details: errorMessage },
       { status: 500 }
     );
   }
