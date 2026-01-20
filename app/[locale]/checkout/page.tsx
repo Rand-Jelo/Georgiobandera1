@@ -1646,62 +1646,6 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-
-
-            {/* Notification Banner */}
-            {notification && (
-              <div 
-                data-error-section
-                className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 rounded-lg shadow-lg p-4 backdrop-blur-sm transition-all duration-300 ${
-                  notification.type === 'error' 
-                    ? 'bg-red-50/95 border border-red-200/50' 
-                    : 'bg-green-50/95 border border-green-200/50'
-                }`}
-                role="alert"
-                aria-live="assertive"
-              >
-                <div className={`flex items-center gap-3 text-sm ${
-                  notification.type === 'error' ? 'text-red-800' : 'text-green-800'
-                }`}>
-                  {notification.type === 'error' ? (
-                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                  <p className="font-light">{notification.message}</p>
-                  <button
-                    onClick={() => setNotification(null)}
-                    className="ml-auto text-current opacity-60 hover:opacity-100 transition-opacity"
-                    aria-label="Close notification"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {error && !notification && (
-              <div 
-                data-error-section
-                className="rounded-xl bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm"
-                role="alert"
-                aria-live="assertive"
-              >
-                <div className="flex items-center gap-2 text-sm text-red-800">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {error}
-                </div>
-              </div>
-            )}
-
             {/* Right Column - Order Summary */}
             <div className="mt-8 lg:mt-0 flex-1 min-w-0">
               <div className="bg-white border border-neutral-200/30 shadow-sm lg:sticky lg:top-8">
@@ -1922,6 +1866,60 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
+
+          {/* Notification Banner */}
+          {notification && (
+            <div 
+              data-error-section
+              className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 rounded-lg shadow-lg p-4 backdrop-blur-sm transition-all duration-300 ${
+                notification.type === 'error' 
+                  ? 'bg-red-50/95 border border-red-200/50' 
+                  : 'bg-green-50/95 border border-green-200/50'
+              }`}
+              role="alert"
+              aria-live="assertive"
+            >
+              <div className={`flex items-center gap-3 text-sm ${
+                notification.type === 'error' ? 'text-red-800' : 'text-green-800'
+              }`}>
+                {notification.type === 'error' ? (
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+                <p className="font-light">{notification.message}</p>
+                <button
+                  onClick={() => setNotification(null)}
+                  className="ml-auto text-current opacity-60 hover:opacity-100 transition-opacity"
+                  aria-label="Close notification"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {error && !notification && (
+            <div 
+              data-error-section
+              className="rounded-xl bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm"
+              role="alert"
+              aria-live="assertive"
+            >
+              <div className="flex items-center gap-2 text-sm text-red-800">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {error}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </div>
