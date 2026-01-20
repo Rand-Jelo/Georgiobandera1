@@ -118,8 +118,12 @@ export default function CheckoutPage() {
   const [orderNotes, setOrderNotes] = useState('');
   const [giftMessage, setGiftMessage] = useState('');
 
-  // Multi-step checkout state
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1); // 1: Shipping, 2: Payment, 3: Review
+  // Single-page checkout with collapsible sections
+  const [expandedSections, setExpandedSections] = useState({
+    shipping: true,
+    payment: false,
+    review: false,
+  });
 
   // Address validation
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
@@ -333,8 +337,8 @@ export default function CheckoutPage() {
   // Use 0 for shipping if not calculated yet
   const total = subtotal - discountAmount + (shippingCost ?? 0);
 
-  // Initialize payment when method is selected, address is complete, and review is shown
-  // Payment only initializes when review step is active (where payment forms are displayed)
+  // Initialize payment when method is selected and shipping is complete
+  // Payment initializes as soon as both conditions are met (no need to wait for review step)
   useEffect(() => {
     if (!formData.paymentMethod || shippingCost === null || total <= 0) {
       setStripeClientSecret(null);
@@ -342,8 +346,8 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Only initialize payment when review step is shown (where payment forms are displayed)
-    if (currentStep !== 3) {
+    // Initialize payment as soon as shipping is complete and payment method is selected
+    if (!isShippingComplete()) {
       setStripeClientSecret(null);
       setPaypalOrderId(null);
       return;
@@ -406,7 +410,7 @@ export default function CheckoutPage() {
     };
 
     initializePayment();
-  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount, currentStep]);
+  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount]);
 
   const handlePaymentSuccess = async (paymentId: string) => {
     setPaymentProcessing(true);
@@ -489,12 +493,19 @@ export default function CheckoutPage() {
   const handlePlaceOrder = async () => {
     if (!formData.paymentMethod) {
       setError(t('pleaseSelectPaymentMethod'));
+      setExpandedSections(prev => ({ ...prev, payment: true }));
+      setTimeout(() => {
+        document.querySelector('[data-section="payment"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       return;
     }
 
     if (!isShippingComplete()) {
       setError(t('pleaseCompleteShippingInfo'));
-      setCurrentStep(1);
+      setExpandedSections(prev => ({ ...prev, shipping: true }));
+      setTimeout(() => {
+        document.querySelector('[data-section="shipping"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       return;
     }
 
@@ -519,17 +530,41 @@ export default function CheckoutPage() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
+    // Real-time validation for all fields
+    const newErrors: Record<string, string> = { ...addressErrors };
+
+    // Validate required fields
+    if (name === 'shippingName') {
+      if (value.trim().length < 2) {
+        newErrors.shippingName = 'Name must be at least 2 characters';
+      } else {
+        delete newErrors.shippingName;
+      }
+    }
+
+    if (name === 'shippingAddressLine1') {
+      if (value.trim().length < 5) {
+        newErrors.shippingAddressLine1 = 'Address must be at least 5 characters';
+      } else {
+        delete newErrors.shippingAddressLine1;
+      }
+    }
+
+    if (name === 'shippingCity') {
+      if (value.trim().length < 2) {
+        newErrors.shippingCity = 'City must be at least 2 characters';
+      } else {
+        delete newErrors.shippingCity;
+      }
+    }
+
     // Validate postal code when it changes
     if (name === 'shippingPostalCode' && formData.shippingCountry) {
       const validation = validatePostalCode(value, formData.shippingCountry);
       if (!validation.valid) {
-        setAddressErrors(prev => ({ ...prev, shippingPostalCode: validation.errors[0] || 'Invalid postal code' }));
+        newErrors.shippingPostalCode = validation.errors[0] || 'Invalid postal code';
       } else {
-        setAddressErrors(prev => {
-          const newErrors = { ...prev };
-          delete newErrors.shippingPostalCode;
-          return newErrors;
-        });
+        delete newErrors.shippingPostalCode;
         // Auto-format postal code
         const formatted = formatPostalCode(value, formData.shippingCountry);
         if (formatted !== value) {
@@ -538,19 +573,27 @@ export default function CheckoutPage() {
       }
     }
 
-    // Clear postal code error when country changes
-    if (name === 'shippingCountry') {
-      setAddressErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors.shippingPostalCode;
-        return newErrors;
-      });
+    // Handle guest email separately
+    if (name === 'guestEmail') {
+      setGuestEmail(value);
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (value && !emailRegex.test(value)) {
+        newErrors.guestEmail = 'Please enter a valid email address';
+      } else {
+        delete newErrors.guestEmail;
+      }
+      setAddressErrors(newErrors);
+      return;
     }
 
-    // When country changes, auto-detect shipping region
+    // Clear postal code error when country changes
     if (name === 'shippingCountry') {
+      delete newErrors.shippingPostalCode;
+      // When country changes, auto-detect shipping region
       detectShippingRegion(value);
     }
+
+    setAddressErrors(newErrors);
   };
 
   const handleApplyDiscount = async () => {
@@ -624,20 +667,26 @@ export default function CheckoutPage() {
     return !!formData.paymentMethod;
   };
 
-  const handleNextStep = () => {
-    if (currentStep === 1 && isShippingComplete()) {
-      setCurrentStep(2);
-    } else if (currentStep === 2 && isPaymentComplete()) {
-      setCurrentStep(3);
+  // Auto-expand next section when current is complete
+  useEffect(() => {
+    if (isShippingComplete() && !expandedSections.payment) {
+      // Auto-expand payment section when shipping is complete
+      setExpandedSections(prev => ({ ...prev, payment: true }));
     }
-  };
+  }, [isShippingComplete(), expandedSections.payment]);
 
-  const handlePreviousStep = () => {
-    if (currentStep === 2) {
-      setCurrentStep(1);
-    } else if (currentStep === 3) {
-      setCurrentStep(2);
+  useEffect(() => {
+    if (isPaymentComplete() && isShippingComplete() && !expandedSections.review) {
+      // Auto-expand review section when payment is selected
+      setExpandedSections(prev => ({ ...prev, review: true }));
     }
+  }, [isPaymentComplete(), isShippingComplete(), expandedSections.review]);
+
+  const toggleSection = (section: 'shipping' | 'payment' | 'review') => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
   };
 
   if (loading) {
@@ -700,10 +749,10 @@ export default function CheckoutPage() {
     );
   }
 
-  const steps = [
-    { number: 1, label: t('shipping'), icon: 'location' },
-    { number: 2, label: t('payment'), icon: 'payment' },
-    { number: 3, label: t('review'), icon: 'check' },
+  const sections = [
+    { id: 'shipping' as const, label: t('shipping'), icon: 'location' },
+    { id: 'payment' as const, label: t('payment'), icon: 'payment' },
+    { id: 'review' as const, label: t('review'), icon: 'check' },
   ];
 
   return (
@@ -729,32 +778,40 @@ export default function CheckoutPage() {
               </h1>
             </div>
 
-            {/* Progress Indicator */}
+            {/* Progress Indicator - Shows completion status */}
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center justify-between">
-                {steps.map((step, index) => {
-                  const isActive = currentStep === step.number;
-                  const isCompleted = currentStep > step.number;
-                  const isLast = index === steps.length - 1;
+                {sections.map((section, index) => {
+                  const isShipping = section.id === 'shipping';
+                  const isPayment = section.id === 'payment';
+                  const isReview = section.id === 'review';
+                  
+                  const isCompleted = 
+                    (isShipping && isShippingComplete()) ||
+                    (isPayment && isPaymentComplete() && isShippingComplete()) ||
+                    (isReview && isPaymentComplete() && isShippingComplete());
+                  
+                  const isActive = expandedSections[section.id];
+                  const isLast = index === sections.length - 1;
 
                   return (
-                    <div key={step.number} className="flex items-center flex-1">
+                    <div key={section.id} className="flex items-center flex-1">
                       <div className="flex flex-col items-center flex-1">
                         <div className={`relative flex items-center justify-center w-12 h-12 border-2 transition-all duration-300 ${
-                          isActive || isCompleted
+                          isCompleted || isActive
                             ? 'border-amber-500 bg-amber-500 text-white'
                             : 'border-neutral-600 bg-transparent text-neutral-500'
                         }`}>
-                          {isCompleted ? (
+                          {isCompleted && !isActive ? (
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
-                          ) : step.icon === 'location' ? (
+                          ) : section.icon === 'location' ? (
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
-                          ) : step.icon === 'payment' ? (
+                          ) : section.icon === 'payment' ? (
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                             </svg>
@@ -767,7 +824,7 @@ export default function CheckoutPage() {
                         <span className={`mt-3 text-xs font-light uppercase tracking-wider hidden sm:block ${
                           isActive ? 'text-amber-400' : isCompleted ? 'text-neutral-400' : 'text-neutral-600'
                         }`}>
-                          {step.label}
+                          {section.label}
                         </span>
                       </div>
                       {!isLast && (
@@ -788,16 +845,53 @@ export default function CheckoutPage() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-neutral-50">
         <div className="max-w-[1400px] mx-auto">
           <div className="flex flex-col lg:flex-row gap-12">
-            {/* Left Column - Main Checkout Steps */}
+            {/* Left Column - Main Checkout Sections */}
             <div className="flex-1 space-y-8 min-w-0">
-              {/* Step 1: Shipping Information */}
-              {currentStep === 1 && (
-                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
-                  <div className="px-10 py-8 border-b border-neutral-200/30">
-                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                      {t('shippingInfo')}
-                    </h2>
+              {/* Section 1: Shipping Information */}
+              <div className="bg-white border border-neutral-200/30 shadow-sm w-full" data-section="shipping">
+                <button
+                  type="button"
+                  onClick={() => toggleSection('shipping')}
+                  className="w-full px-10 py-8 border-b border-neutral-200/30 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      isShippingComplete() 
+                        ? 'bg-green-100 text-green-600' 
+                        : expandedSections.shipping 
+                        ? 'bg-amber-100 text-amber-600' 
+                        : 'bg-neutral-100 text-neutral-400'
+                    }`}>
+                      {isShippingComplete() ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className="text-xs font-medium">1</span>
+                      )}
+                    </div>
+                    <div className="text-left">
+                      <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
+                        {t('shippingInfo')}
+                      </h2>
+                      {isShippingComplete() && (
+                        <p className="text-xs text-neutral-500 font-light mt-1 normal-case">
+                          {formData.shippingCity}, {formData.shippingCountry}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                  <svg 
+                    className={`w-5 h-5 text-neutral-400 transition-transform ${expandedSections.shipping ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {expandedSections.shipping && (
+                  <div>
                   <div className="p-10">
                     {/* Saved Addresses Selector */}
                     {savedAddresses.length > 0 && (
@@ -864,9 +958,21 @@ export default function CheckoutPage() {
                           required
                           value={formData.shippingName}
                           onChange={handleChange}
-                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                          className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
+                            addressErrors.shippingName
+                              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                              : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                          }`}
                           placeholder={t('fullNamePlaceholder')}
                         />
+                        {addressErrors.shippingName && (
+                          <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {addressErrors.shippingName}
+                          </p>
+                        )}
                       </div>
 
                       <div>
@@ -880,9 +986,21 @@ export default function CheckoutPage() {
                           required
                           value={formData.shippingAddressLine1}
                           onChange={handleChange}
-                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                          className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
+                            addressErrors.shippingAddressLine1
+                              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                              : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                          }`}
                           placeholder={t('addressLine1Placeholder')}
                         />
+                        {addressErrors.shippingAddressLine1 && (
+                          <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {addressErrors.shippingAddressLine1}
+                          </p>
+                        )}
                       </div>
 
                       <div>
@@ -912,9 +1030,21 @@ export default function CheckoutPage() {
                             required
                             value={formData.shippingCity}
                             onChange={handleChange}
-                            className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                            className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
+                              addressErrors.shippingCity
+                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                                : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                            }`}
                             placeholder={t('cityPlaceholder')}
                           />
+                          {addressErrors.shippingCity && (
+                            <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {addressErrors.shippingCity}
+                            </p>
+                          )}
                         </div>
 
                         <div>
@@ -1024,10 +1154,11 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
-              )}
+                )}
+              </div>
 
               {/* Guest Checkout - Email & Account Creation */}
-              {currentStep === 1 && isLoggedIn === false && (
+              {expandedSections.shipping && isLoggedIn === false && (
                 <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
                   <div className="px-10 py-8 border-b border-neutral-200/30">
                     <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
@@ -1045,10 +1176,22 @@ export default function CheckoutPage() {
                         name="guestEmail"
                         required
                         value={guestEmail}
-                        onChange={(e) => setGuestEmail(e.target.value)}
+                        onChange={handleChange}
                         placeholder={t('emailPlaceholder')}
-                        className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                        className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
+                          addressErrors.guestEmail
+                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                            : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                        }`}
                       />
+                      {addressErrors.guestEmail && (
+                        <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {addressErrors.guestEmail}
+                        </p>
+                      )}
                       <p className="mt-3 text-xs text-neutral-500 font-light tracking-wide">
                         {t('orderConfirmationEmail')}
                       </p>
@@ -1071,7 +1214,7 @@ export default function CheckoutPage() {
               )}
 
               {/* Order Notes & Gift Message */}
-              {currentStep === 1 && (
+              {expandedSections.shipping && (
                 <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
                   <div className="px-10 py-8 border-b border-neutral-200/30">
                     <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
@@ -1111,14 +1254,52 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Step 2: Payment */}
-              {currentStep === 2 && (
-                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
-                  <div className="px-10 py-8 border-b border-neutral-200/30">
-                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                      Payment Method
-                    </h2>
+              {/* Section 2: Payment */}
+              <div className="bg-white border border-neutral-200/30 shadow-sm w-full" data-section="payment">
+                <button
+                  type="button"
+                  onClick={() => toggleSection('payment')}
+                  disabled={!isShippingComplete()}
+                  className="w-full px-10 py-8 border-b border-neutral-200/30 flex items-center justify-between hover:bg-neutral-50/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      isPaymentComplete() && isShippingComplete()
+                        ? 'bg-green-100 text-green-600' 
+                        : expandedSections.payment && isShippingComplete()
+                        ? 'bg-amber-100 text-amber-600' 
+                        : 'bg-neutral-100 text-neutral-400'
+                    }`}>
+                      {isPaymentComplete() && isShippingComplete() ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className="text-xs font-medium">2</span>
+                      )}
+                    </div>
+                    <div className="text-left">
+                      <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
+                        {t('payment')}
+                      </h2>
+                      {isPaymentComplete() && (
+                        <p className="text-xs text-neutral-500 font-light mt-1 normal-case">
+                          {formData.paymentMethod === 'stripe' ? t('creditDebitCard') : 'PayPal'}
+                        </p>
+                      )}
+                    </div>
                   </div>
+                  <svg 
+                    className={`w-5 h-5 text-neutral-400 transition-transform ${expandedSections.payment ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {expandedSections.payment && isShippingComplete() && (
+                  <div>
                   <div className="p-10">
                     <div className="space-y-4">
                       {/* Stripe Payment Option */}
@@ -1203,43 +1384,51 @@ export default function CheckoutPage() {
                     </div>
 
 
-                    {/* Navigation Buttons */}
-                    <div className="mt-10 pt-8 border-t border-neutral-200/30 flex gap-4">
-                      <button
-                        type="button"
-                        onClick={handlePreviousStep}
-                        className="flex-1 py-5 px-6 border border-neutral-200/40 text-sm font-light uppercase tracking-[0.15em] text-neutral-900 bg-white hover:bg-neutral-50 transition-all duration-200"
-                      >
-                        <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </div>
+                )}
+              </div>
+
+              {/* Section 3: Review & Complete Order */}
+              <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
+                <button
+                  type="button"
+                  onClick={() => toggleSection('review')}
+                  disabled={!isPaymentComplete() || !isShippingComplete()}
+                  className="w-full px-10 py-8 border-b border-neutral-200/30 flex items-center justify-between hover:bg-neutral-50/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      isPaymentComplete() && isShippingComplete()
+                        ? expandedSections.review 
+                        ? 'bg-amber-100 text-amber-600' 
+                        : 'bg-green-100 text-green-600'
+                        : 'bg-neutral-100 text-neutral-400'
+                    }`}>
+                      {isPaymentComplete() && isShippingComplete() && !expandedSections.review ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
-                        {t('back')}
-                      </button>
-                      {formData.paymentMethod && (
-                        <button
-                          type="button"
-                          onClick={handleNextStep}
-                          className="flex-1 py-5 px-6 border border-transparent text-sm font-light uppercase tracking-[0.15em] text-white bg-neutral-900 hover:bg-neutral-800 transition-all duration-200"
-                        >
-                          {t('reviewOrder')}
-                          <svg className="w-4 h-4 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                          </svg>
-                        </button>
+                      ) : (
+                        <span className="text-xs font-medium">3</span>
                       )}
                     </div>
+                    <div className="text-left">
+                      <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
+                        {t('reviewYourOrder')}
+                      </h2>
+                    </div>
                   </div>
-                </div>
-              )}
-
-              {/* Step 3: Review */}
-              {currentStep === 3 && (
-                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
-                  <div className="px-10 py-8 border-b border-neutral-200/30">
-                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                      {t('reviewYourOrder')}
-                    </h2>
-                  </div>
+                  <svg 
+                    className={`w-5 h-5 text-neutral-400 transition-transform ${expandedSections.review ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {expandedSections.review && isPaymentComplete() && isShippingComplete() && (
+                  <div>
                   <div className="p-10 space-y-10">
                     {/* Shipping Address Review */}
                     <div>
@@ -1262,7 +1451,13 @@ export default function CheckoutPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setCurrentStep(1)}
+                        onClick={() => {
+                          setExpandedSections(prev => ({ ...prev, shipping: true, review: false }));
+                          // Scroll to shipping section
+                          setTimeout(() => {
+                            document.querySelector('[data-section="shipping"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 100);
+                        }}
                         className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
                       >
                         {t('editAddress')}
@@ -1279,7 +1474,13 @@ export default function CheckoutPage() {
                       </div>
                       <button
                         type="button"
-                        onClick={() => setCurrentStep(2)}
+                        onClick={() => {
+                          setExpandedSections(prev => ({ ...prev, payment: true, review: false }));
+                          // Scroll to payment section
+                          setTimeout(() => {
+                            document.querySelector('[data-section="payment"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 100);
+                        }}
                         className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
                       >
                         {t('changePaymentMethod')}
@@ -1366,22 +1567,9 @@ export default function CheckoutPage() {
                       </div>
                     )}
 
-                    {/* Navigation Buttons */}
-                    <div className="pt-8 border-t border-neutral-200/30 flex gap-4">
-                      <button
-                        type="button"
-                        onClick={handlePreviousStep}
-                        className="flex-1 py-5 px-6 border border-neutral-200/40 text-sm font-light uppercase tracking-[0.15em] text-neutral-900 bg-white hover:bg-neutral-50 transition-all duration-200"
-                      >
-                        <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        {t('back')}
-                      </button>
-                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
 
@@ -1447,7 +1635,7 @@ export default function CheckoutPage() {
                 </div>
 
                   {/* Discount Code */}
-                  {currentStep === 1 && (
+                  {expandedSections.shipping && (
                     <div className="border-b border-neutral-200/30 pb-8 mb-8">
                       {!appliedDiscount ? (
                         <div className="space-y-4">
@@ -1585,11 +1773,18 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Continue to Payment Button - Bottom of Order Summary */}
-                  {currentStep === 1 && (
+                  {expandedSections.shipping && !isShippingComplete() && (
                     <div className="mt-10 pt-10 border-t border-neutral-200/30">
                       <button
                         type="button"
-                        onClick={handleNextStep}
+                        onClick={() => {
+                          if (isShippingComplete()) {
+                            setExpandedSections(prev => ({ ...prev, payment: true }));
+                            setTimeout(() => {
+                              document.querySelector('[data-section="payment"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 100);
+                          }
+                        }}
                         disabled={!isShippingComplete()}
                         className="w-full py-5 px-6 border border-transparent text-sm font-light uppercase tracking-[0.15em] text-white bg-neutral-900 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
                       >
