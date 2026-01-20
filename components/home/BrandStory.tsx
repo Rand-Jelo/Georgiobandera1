@@ -1,7 +1,7 @@
-'use client';
+ 'use client';
 
 import { useState, useEffect } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface SiteImage {
   id: string;
@@ -14,6 +14,7 @@ interface SiteImage {
 
 export default function BrandStory() {
   const locale = useLocale();
+  const t = useTranslations('home');
   const [image, setImage] = useState<SiteImage | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -49,26 +50,23 @@ export default function BrandStory() {
           <div className="space-y-6 sm:space-y-7 md:space-y-8">
             <div className="inline-block">
               <p className="text-[9px] font-light uppercase tracking-[0.4em] text-amber-400/80 sm:text-[10px]">
-                Our Philosophy
+                {t('philosophyLabel')}
               </p>
               <div className="mt-2 h-px w-12 bg-gradient-to-r from-amber-500/50 to-transparent sm:w-16" />
             </div>
 
             <h2 className="text-3xl font-light tracking-wide leading-tight sm:text-4xl md:text-5xl">
-              Crafted for Excellence,<br />
-              <span className="text-amber-400/90">Designed for You</span>
+              {t('philosophyTitleLine1')}
+              <br />
+              <span className="text-amber-400/90">{t('philosophyTitleHighlight')}</span>
             </h2>
 
             <div className="space-y-4 text-neutral-300 leading-relaxed sm:space-y-5 md:space-y-6">
               <p className="text-sm sm:text-base md:text-lg">
-                At Georgio Bandera, we believe that exceptional hair care is an art form. 
-                Each product is meticulously formulated with premium ingredients, combining 
-                time-honored techniques with cutting-edge innovation.
+                {t('philosophyP1')}
               </p>
               <p className="text-sm sm:text-base md:text-lg">
-                Our commitment to quality extends beyond the bottle—we create experiences 
-                that elevate your daily routine, transforming simple moments into rituals 
-                of self-care and sophistication.
+                {t('philosophyP2')}
               </p>
             </div>
 
@@ -76,34 +74,34 @@ export default function BrandStory() {
             <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/10 sm:gap-5 sm:pt-7 md:gap-6 md:pt-8">
               <div>
                 <p className="text-[10px] font-light uppercase tracking-[0.3em] text-amber-400/60 mb-1.5 sm:text-xs sm:mb-2">
-                  Premium
+                  {t('philosophyPremiumLabel')}
                 </p>
                 <p className="text-xs text-neutral-400 sm:text-sm">
-                  Only the finest ingredients
+                  {t('philosophyPremiumText')}
                 </p>
               </div>
               <div>
                 <p className="text-[10px] font-light uppercase tracking-[0.3em] text-amber-400/60 mb-1.5 sm:text-xs sm:mb-2">
-                  Professional
+                  {t('philosophyProfessionalLabel')}
                 </p>
                 <p className="text-xs text-neutral-400 sm:text-sm">
-                  Salon-grade formulations
+                  {t('philosophyProfessionalText')}
                 </p>
               </div>
               <div>
                 <p className="text-[10px] font-light uppercase tracking-[0.3em] text-amber-400/60 mb-1.5 sm:text-xs sm:mb-2">
-                  Sustainable
+                  {t('philosophySustainableLabel')}
                 </p>
                 <p className="text-xs text-neutral-400 sm:text-sm">
-                  Ethically sourced materials
+                  {t('philosophySustainableText')}
                 </p>
               </div>
               <div>
                 <p className="text-[10px] font-light uppercase tracking-[0.3em] text-amber-400/60 mb-1.5 sm:text-xs sm:mb-2">
-                  Effective
+                  {t('philosophyEffectiveLabel')}
                 </p>
                 <p className="text-xs text-neutral-400 sm:text-sm">
-                  Proven results you'll love
+                  {t('philosophyEffectiveText')}
                 </p>
               </div>
             </div>
@@ -142,10 +140,10 @@ export default function BrandStory() {
                   <div className="text-center space-y-4 p-8">
                     <div className="inline-block h-1 w-24 bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
                     <p className="text-sm font-light tracking-wider text-neutral-400">
-                      Brand Image Placeholder
+                      {t('philosophyImagePlaceholderTitle')}
                     </p>
                     <p className="text-xs text-neutral-500">
-                      High-end product photography or brand imagery
+                      {t('philosophyImagePlaceholderText')}
                     </p>
                   </div>
                 )}

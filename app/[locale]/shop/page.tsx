@@ -400,7 +400,7 @@ export default function ShopPage() {
                       onClick={handleFiltersChange.bind(null, { categoryIds: [], minPrice: undefined, maxPrice: undefined, inStock: undefined })}
                       className="text-xs font-light text-neutral-400 hover:text-amber-600 transition-colors duration-300"
                     >
-                      Clear all
+                      {tProduct('clearAll') || 'Clear all'}
                     </button>
                   )}
                 </div>

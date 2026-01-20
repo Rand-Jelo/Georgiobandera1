@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link, usePathname } from '@/lib/i18n/routing';
 import type { Category } from '@/types/database';
 
@@ -58,7 +58,7 @@ export default function Footer() {
   const t = useTranslations('footer');
   const tCommon = useTranslations('common');
   const pathname = usePathname();
-  const currentLocale = pathname.startsWith('/sv') ? 'sv' : 'en';
+  const currentLocale = useLocale() as 'en' | 'sv';
   const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
@@ -87,8 +87,7 @@ export default function Footer() {
               Georgio Bandera
             </p>
             <p className="text-xs text-neutral-400">
-              Professional hair care products crafted for salons and clients who
-              want a premium finish.
+              {t('brandTagline')}
             </p>
           </div>
 
@@ -122,7 +121,7 @@ export default function Footer() {
           {/* Info column */}
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
-              Information
+              {t('infoHeading')}
             </p>
             <ul className="space-y-2">
               <li>
@@ -147,7 +146,7 @@ export default function Footer() {
           {/* Legal / policies column */}
           <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
-              Legal &amp; policies
+              {t('legalHeading')}
             </p>
             <ul className="space-y-2">
               <li>
@@ -163,7 +162,7 @@ export default function Footer() {
                   href="/legal/privacy"
                   className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:text-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                 >
-                  Privacy policy
+                  {t('privacy')}
                 </Link>
               </li>
               <li>
@@ -171,7 +170,7 @@ export default function Footer() {
                   href="/legal/shipping"
                   className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:text-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                 >
-                  Shipping policy
+                  {t('shipping')}
                 </Link>
               </li>
               <li>
@@ -179,7 +178,7 @@ export default function Footer() {
                   href="/legal/returns"
                   className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:text-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
                 >
-                  Returns &amp; refunds
+                  {t('returns')}
                 </Link>
               </li>
             </ul>
@@ -188,31 +187,31 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-8 sm:mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 sm:pt-7 text-[11px] text-neutral-500 md:flex-row">
-          <p>© {year} Georgiobandera.se. All rights reserved.</p>
+          <p>© {year} Georgiobandera.se. {t('allRightsReserved')}</p>
 
           <div className="flex flex-col items-center gap-4 sm:gap-3 md:flex-row md:gap-6">
             {/* Social links */}
             <div className="flex items-center gap-3 sm:gap-4">
               <span className="text-[11px] uppercase tracking-wide text-neutral-500">
-                Follow
+                {t('follow')}
               </span>
               <Link
                 href="https://www.instagram.com"
-                aria-label="Georgio Bandera on Instagram"
+                aria-label={t('instagramLabel')}
                 className="text-neutral-400 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
               >
                 <InstagramIcon className="h-4 w-4 hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
               </Link>
               <Link
                 href="https://www.facebook.com"
-                aria-label="Georgio Bandera on Facebook"
+                aria-label={t('facebookLabel')}
                 className="text-neutral-400 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
               >
                 <FacebookIcon className="h-4 w-4 hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
               </Link>
               <Link
                 href="https://www.tiktok.com"
-                aria-label="Georgio Bandera on TikTok"
+                aria-label={t('tiktokLabel')}
                 className="text-neutral-400 hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
               >
                 <TiktokIcon className="h-4 w-4 hover:scale-110 hover:drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]" />
@@ -247,7 +246,7 @@ export default function Footer() {
               </Link>
               <span className="hidden h-3 w-px bg-neutral-700 md:block" />
               <p className="text-[11px] text-neutral-500">
-                Built with Next.js &amp; Tailwind CSS
+                {t('builtWith')}
               </p>
             </div>
           </div>
