@@ -1701,7 +1701,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
             )}
-          </div>
 
             {/* Right Column - Order Summary */}
             <div className="mt-8 lg:mt-0 flex-1 min-w-0">
@@ -1922,6 +1921,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
+          </div>
         </div>
       </section>
     </div>
