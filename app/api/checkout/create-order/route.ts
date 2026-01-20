@@ -38,6 +38,7 @@ const createOrderSchema = z.object({
   giftMessage: z.string().optional(),
   guestEmail: z.string().email().optional(),
   createAccount: z.boolean().optional(),
+  locale: z.enum(['en', 'sv']).optional().default('en'),
 });
 
 export async function POST(request: NextRequest) {
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
     // Calculate subtotal and prepare order items
     let subtotal = 0;
     const orderItems = [];
+    const locale = validated.locale || 'en';
 
     for (const item of cartItems) {
       const product = await getProductById(db, item.product_id);
@@ -76,11 +78,17 @@ export async function POST(request: NextRequest) {
       const itemTotal = price * quantity;
       subtotal += itemTotal;
 
+      // Use locale-specific product and variant names
+      const productName = locale === 'sv' ? product.name_sv : product.name_en;
+      const variantName = variant 
+        ? (locale === 'sv' ? variant.name_sv : variant.name_en) || undefined
+        : undefined;
+
       orderItems.push({
         productId: product.id,
         variantId: variant?.id,
-        productName: product.name_en, // Will be stored in order
-        variantName: variant?.name_en || undefined,
+        productName: productName,
+        variantName: variantName,
         sku: variant?.sku || product.sku || undefined,
         price,
         quantity,

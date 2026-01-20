@@ -401,7 +401,7 @@ export default function CheckoutPage() {
         }
       } catch (err) {
         console.error('Error initializing payment:', err);
-        setError('Failed to initialize payment. Please try again.');
+        setError(t('failedToInitializePayment'));
       }
     };
 
@@ -454,6 +454,7 @@ export default function CheckoutPage() {
           giftMessage: giftMessage || undefined,
           guestEmail: guestEmail || undefined,
           createAccount: createAccount || false,
+          locale: locale,
         }),
       });
 
@@ -487,12 +488,12 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     if (!formData.paymentMethod) {
-      setError('Please select a payment method');
+      setError(t('pleaseSelectPaymentMethod'));
       return;
     }
 
     if (!isShippingComplete()) {
-      setError('Please complete your shipping information');
+      setError(t('pleaseCompleteShippingInfo'));
       setCurrentStep(1);
       return;
     }
@@ -554,7 +555,7 @@ export default function CheckoutPage() {
 
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) {
-      setDiscountError('Please enter a discount code');
+      setDiscountError(t('pleaseEnterDiscountCode'));
       return;
     }
 
@@ -579,7 +580,7 @@ export default function CheckoutPage() {
       };
 
       if (!response.ok || !data.valid) {
-        setDiscountError(data.error || 'Invalid discount code');
+        setDiscountError(data.error || t('invalidDiscountCode'));
         setAppliedDiscount(null);
         return;
       }
@@ -593,7 +594,7 @@ export default function CheckoutPage() {
       }
     } catch (err) {
       console.error('Error validating discount code:', err);
-      setDiscountError('Failed to validate discount code');
+      setDiscountError(t('failedToValidateDiscountCode'));
       setAppliedDiscount(null);
     } finally {
       setValidatingDiscount(false);
@@ -644,7 +645,7 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto"></div>
-          <p className="mt-4 text-neutral-500 font-light">Loading checkout...</p>
+          <p className="mt-4 text-neutral-500 font-light">{t('loading')}</p>
         </div>
       </div>
     );
@@ -683,7 +684,7 @@ export default function CheckoutPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <p className="text-neutral-600 mb-6 font-light">Your cart is empty</p>
+            <p className="text-neutral-600 mb-6 font-light">{tCart('empty')}</p>
             <button
               onClick={() => router.push('/shop')}
               className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white text-sm font-light uppercase tracking-wider hover:bg-neutral-800 transition-all duration-300"
@@ -691,7 +692,7 @@ export default function CheckoutPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Continue Shopping
+              {tCart('continueShopping')}
             </button>
           </div>
         </section>
@@ -700,9 +701,9 @@ export default function CheckoutPage() {
   }
 
   const steps = [
-    { number: 1, label: 'Shipping', icon: 'location' },
-    { number: 2, label: 'Payment', icon: 'payment' },
-    { number: 3, label: 'Review', icon: 'check' },
+    { number: 1, label: t('shipping'), icon: 'location' },
+    { number: 2, label: t('payment'), icon: 'payment' },
+    { number: 3, label: t('review'), icon: 'check' },
   ];
 
   return (
@@ -719,7 +720,7 @@ export default function CheckoutPage() {
             <div className="text-center mb-12">
               <div className="inline-block mb-6">
                 <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
-                  Secure Checkout
+                  {t('secureCheckout')}
                 </p>
                 <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
               </div>
@@ -854,7 +855,7 @@ export default function CheckoutPage() {
                     <div className="space-y-8">
                       <div>
                         <label htmlFor="shippingName" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          Full Name <span className="text-red-500">*</span>
+                          {t('fullName')} <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -864,13 +865,13 @@ export default function CheckoutPage() {
                           value={formData.shippingName}
                           onChange={handleChange}
                           className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                          placeholder="John Doe"
+                          placeholder={t('fullNamePlaceholder')}
                         />
                       </div>
 
                       <div>
                         <label htmlFor="shippingAddressLine1" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          Address Line 1 <span className="text-red-500">*</span>
+                          {t('addressLine1')} <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
@@ -880,13 +881,13 @@ export default function CheckoutPage() {
                           value={formData.shippingAddressLine1}
                           onChange={handleChange}
                           className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                          placeholder="Street address"
+                          placeholder={t('addressLine1Placeholder')}
                         />
                       </div>
 
                       <div>
                         <label htmlFor="shippingAddressLine2" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          Address Line 2 <span className="text-neutral-400 font-normal normal-case">(Optional)</span>
+                          {t('addressLine2')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
                         </label>
                         <input
                           type="text"
@@ -895,14 +896,14 @@ export default function CheckoutPage() {
                           value={formData.shippingAddressLine2}
                           onChange={handleChange}
                           className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                          placeholder="Apartment, suite, etc."
+                          placeholder={t('addressLine2Placeholder')}
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-6">
                         <div>
                           <label htmlFor="shippingCity" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            City <span className="text-red-500">*</span>
+                            {t('city')} <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="text"
@@ -912,13 +913,13 @@ export default function CheckoutPage() {
                             value={formData.shippingCity}
                             onChange={handleChange}
                             className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                            placeholder="City"
+                            placeholder={t('cityPlaceholder')}
                           />
                         </div>
 
                         <div>
                           <label htmlFor="shippingPostalCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            Postal Code <span className="text-red-500">*</span>
+                            {t('postalCode')} <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="text"
@@ -932,7 +933,7 @@ export default function CheckoutPage() {
                                 ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                                 : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
                             }`}
-                            placeholder="12345"
+                            placeholder={t('postalCodePlaceholder')}
                           />
                           {addressErrors.shippingPostalCode && (
                             <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
@@ -947,7 +948,7 @@ export default function CheckoutPage() {
 
                       <div>
                         <label htmlFor="shippingCountry" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          Country <span className="text-red-500">*</span>
+                          {t('country')} <span className="text-red-500">*</span>
                         </label>
                         <select
                           id="shippingCountry"
@@ -957,7 +958,7 @@ export default function CheckoutPage() {
                           onChange={handleChange}
                           className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
                         >
-                          <option value="">Select a country</option>
+                          <option value="">{t('selectCountry')}</option>
                           {COUNTRIES.map((country) => (
                             <option key={country.code} value={country.code}>
                               {country.name}
@@ -968,7 +969,7 @@ export default function CheckoutPage() {
 
                       <div>
                         <label htmlFor="shippingPhone" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          Phone <span className="text-neutral-400 font-normal normal-case">(Optional)</span>
+                          {t('phone')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
                         </label>
                         <input
                           type="tel"
@@ -985,13 +986,13 @@ export default function CheckoutPage() {
                         <div className="bg-neutral-50 border border-neutral-200/30 p-6">
                           <div className="flex items-center justify-between mb-3">
                             <div>
-                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">Shipping Region</p>
+                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('shippingRegion')}</p>
                               <p className="text-sm font-light text-neutral-900 tracking-wide">
                                 {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
                               </p>
                             </div>
                             <div className="text-right">
-                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">Base Price</p>
+                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('basePrice')}</p>
                               <p className="text-sm font-light text-neutral-900 tracking-wide">
                                 {formatPrice(selectedRegion.base_price, 'SEK')}
                               </p>
@@ -999,7 +1000,7 @@ export default function CheckoutPage() {
                           </div>
                           {selectedRegion.free_shipping_threshold && (
                             <p className="text-xs text-neutral-500 font-light tracking-wide pt-3 border-t border-neutral-200/30">
-                              Free shipping on orders over {formatPrice(selectedRegion.free_shipping_threshold, 'SEK')}
+                              {t('freeShippingOver', { amount: formatPrice(selectedRegion.free_shipping_threshold, 'SEK') })}
                             </p>
                           )}
                         </div>
@@ -1016,7 +1017,7 @@ export default function CheckoutPage() {
                             className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
                           />
                           <label htmlFor="saveAddress" className="ml-3 text-sm text-neutral-700 font-light tracking-wide">
-                            Save this address for future orders
+                            {t('saveAddressForFuture')}
                           </label>
                         </div>
                       )}
@@ -1030,13 +1031,13 @@ export default function CheckoutPage() {
                 <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
                   <div className="px-10 py-8 border-b border-neutral-200/30">
                     <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                      Contact Information
+                      {t('contactInformation')}
                     </h2>
                   </div>
                   <div className="p-10 space-y-8">
                     <div>
                       <label htmlFor="guestEmail" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                        Email Address <span className="text-red-500">*</span>
+                        {t('emailAddress')} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
@@ -1045,11 +1046,11 @@ export default function CheckoutPage() {
                         required
                         value={guestEmail}
                         onChange={(e) => setGuestEmail(e.target.value)}
-                        placeholder="your.email@example.com"
+                        placeholder={t('emailPlaceholder')}
                         className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
                       />
                       <p className="mt-3 text-xs text-neutral-500 font-light tracking-wide">
-                        We'll send your order confirmation to this email
+                        {t('orderConfirmationEmail')}
                       </p>
                     </div>
 
@@ -1062,7 +1063,7 @@ export default function CheckoutPage() {
                         className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
                       />
                       <label htmlFor="createAccount" className="ml-3 text-sm text-neutral-700 font-light tracking-wide">
-                        Create an account for faster checkout next time
+                        {t('createAccountForFasterCheckout')}
                       </label>
                     </div>
                   </div>
@@ -1074,13 +1075,13 @@ export default function CheckoutPage() {
                 <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
                   <div className="px-10 py-8 border-b border-neutral-200/30">
                     <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                      Additional Information
+                      {t('additionalInformation')}
                     </h2>
                   </div>
                   <div className="p-10 space-y-8">
                     <div>
                       <label htmlFor="orderNotes" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                        Order Notes <span className="text-neutral-400 font-normal normal-case">(Optional)</span>
+                        {t('orderNotes')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
                       </label>
                       <textarea
                         id="orderNotes"
@@ -1088,13 +1089,13 @@ export default function CheckoutPage() {
                         rows={4}
                         value={orderNotes}
                         onChange={(e) => setOrderNotes(e.target.value)}
-                        placeholder="Special instructions for your order..."
+                        placeholder={t('orderNotesPlaceholder')}
                         className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide resize-none"
                       />
                     </div>
                     <div>
                       <label htmlFor="giftMessage" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                        Gift Message <span className="text-neutral-400 font-normal normal-case">(Optional)</span>
+                        {t('giftMessage')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
                       </label>
                       <textarea
                         id="giftMessage"
@@ -1102,7 +1103,7 @@ export default function CheckoutPage() {
                         rows={4}
                         value={giftMessage}
                         onChange={(e) => setGiftMessage(e.target.value)}
-                        placeholder="Add a personal message for the recipient..."
+                        placeholder={t('giftMessagePlaceholder')}
                         className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide resize-none"
                       />
                     </div>
@@ -1140,8 +1141,8 @@ export default function CheckoutPage() {
                               className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300"
                             />
                             <div>
-                              <p className="text-sm font-light text-neutral-900 tracking-wide">Credit / Debit Card</p>
-                              <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">Secure payment via Stripe</p>
+                              <p className="text-sm font-light text-neutral-900 tracking-wide">{t('creditDebitCard')}</p>
+                              <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">{t('securePaymentViaStripe')}</p>
                             </div>
                           </div>
                           <div className="flex gap-2 items-center">
@@ -1212,7 +1213,7 @@ export default function CheckoutPage() {
                         <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Back
+                        {t('back')}
                       </button>
                       {formData.paymentMethod && (
                         <button
@@ -1220,7 +1221,7 @@ export default function CheckoutPage() {
                           onClick={handleNextStep}
                           className="flex-1 py-5 px-6 border border-transparent text-sm font-light uppercase tracking-[0.15em] text-white bg-neutral-900 hover:bg-neutral-800 transition-all duration-200"
                         >
-                          Review Order
+                          {t('reviewOrder')}
                           <svg className="w-4 h-4 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                           </svg>
@@ -1236,13 +1237,13 @@ export default function CheckoutPage() {
                 <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
                   <div className="px-10 py-8 border-b border-neutral-200/30">
                     <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                      Review Your Order
+                      {t('reviewYourOrder')}
                     </h2>
                   </div>
                   <div className="p-10 space-y-10">
                     {/* Shipping Address Review */}
                     <div>
-                      <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">Shipping Address</h3>
+                      <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">{t('shippingAddress')}</h3>
                       <div className="bg-neutral-50 border border-neutral-200/30 p-6">
                         <p className="font-light text-neutral-900 text-sm tracking-wide">{formData.shippingName}</p>
                         <p className="font-light text-neutral-900 text-sm tracking-wide mt-1">{formData.shippingAddressLine1}</p>
@@ -1264,16 +1265,16 @@ export default function CheckoutPage() {
                         onClick={() => setCurrentStep(1)}
                         className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
                       >
-                        Edit address
+                        {t('editAddress')}
                       </button>
                     </div>
 
                     {/* Payment Method Review */}
                     <div>
-                      <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">Payment Method</h3>
+                      <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">{t('paymentMethod')}</h3>
                       <div className="bg-neutral-50 border border-neutral-200/30 p-6">
                         <p className="font-light text-neutral-900 text-sm tracking-wide capitalize">
-                          {formData.paymentMethod === 'stripe' ? 'Credit / Debit Card' : 'PayPal'}
+                          {formData.paymentMethod === 'stripe' ? t('creditDebitCard') : 'PayPal'}
                         </p>
                       </div>
                       <button
@@ -1281,24 +1282,24 @@ export default function CheckoutPage() {
                         onClick={() => setCurrentStep(2)}
                         className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
                       >
-                        Change payment method
+                        {t('changePaymentMethod')}
                       </button>
                     </div>
 
                     {/* Order Notes & Gift Message */}
                     {(orderNotes || giftMessage) && (
                       <div>
-                        <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">Additional Information</h3>
+                        <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">{t('additionalInformation')}</h3>
                         <div className="bg-neutral-50 border border-neutral-200/30 p-6 space-y-5">
                           {orderNotes && (
                             <div>
-                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">Order Notes</p>
+                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('orderNotes')}</p>
                               <p className="text-sm font-light text-neutral-900 tracking-wide">{orderNotes}</p>
                             </div>
                           )}
                           {giftMessage && (
                             <div>
-                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">Gift Message</p>
+                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('giftMessage')}</p>
                               <p className="text-sm font-light text-neutral-900 tracking-wide">{giftMessage}</p>
                             </div>
                           )}
@@ -1360,7 +1361,7 @@ export default function CheckoutPage() {
                     {formData.paymentMethod && !stripeClientSecret && !paypalOrderId && shippingCost !== null && (
                       <div className="pt-6 border-t border-neutral-200/50">
                         <p className="text-sm text-neutral-500 text-center font-light">
-                          Initializing payment...
+                          {t('initializingPayment')}
                         </p>
                       </div>
                     )}
@@ -1375,7 +1376,7 @@ export default function CheckoutPage() {
                         <svg className="w-4 h-4 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Back
+                        {t('back')}
                       </button>
                     </div>
                   </div>
@@ -1435,7 +1436,7 @@ export default function CheckoutPage() {
                           {variantName && (
                             <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">{variantName}</p>
                           )}
-                          <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">Qty: {item.quantity}</p>
+                          <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">{t('quantity')}: {item.quantity}</p>
                           <p className="text-neutral-900 font-light text-sm mt-3 tracking-wide">
                             {formatPrice(price * item.quantity, 'SEK')}
                           </p>
@@ -1451,7 +1452,7 @@ export default function CheckoutPage() {
                       {!appliedDiscount ? (
                         <div className="space-y-4">
                           <label htmlFor="discountCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600">
-                            Discount Code
+                            {t('discountCode')}
                           </label>
                           <div className="flex gap-3">
                             <input
@@ -1459,7 +1460,7 @@ export default function CheckoutPage() {
                               id="discountCode"
                               value={discountCode}
                               onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                              placeholder="Enter code"
+                              placeholder={t('enterCode')}
                               className="flex-1 px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
                             />
                             <button
@@ -1473,7 +1474,7 @@ export default function CheckoutPage() {
                                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                              ) : 'Apply'}
+                              ) : t('apply')}
                             </button>
                           </div>
                           {discountError && (
@@ -1489,7 +1490,7 @@ export default function CheckoutPage() {
                         <div className="flex items-center justify-between p-5 bg-green-50 border border-green-200/40">
                           <div>
                             <p className="text-sm font-light text-green-800 tracking-wide">
-                              Discount Applied: {appliedDiscount.code}
+                              {t('discountApplied')}: {appliedDiscount.code}
                             </p>
                             <p className="text-xs text-green-600 mt-1.5 font-light tracking-wide">
                               -{formatPrice(appliedDiscount.amount, 'SEK')}
@@ -1500,7 +1501,7 @@ export default function CheckoutPage() {
                             onClick={handleRemoveDiscount}
                             className="text-xs text-green-600 hover:text-green-800 font-light transition-colors tracking-wide"
                           >
-                            Remove
+                            {t('remove')}
                           </button>
                         </div>
                       )}
@@ -1510,12 +1511,12 @@ export default function CheckoutPage() {
                   {/* Totals */}
                   <dl className="space-y-5 text-sm">
                     <div className="flex justify-between">
-                      <dt className="text-neutral-600 font-light tracking-wide">Subtotal (incl. VAT)</dt>
+                      <dt className="text-neutral-600 font-light tracking-wide">{t('subtotalInclVat')}</dt>
                       <dd className="text-neutral-900 font-light tracking-wide">{formatPrice(subtotal, 'SEK')}</dd>
                     </div>
                     {appliedDiscount && (
                       <div className="flex justify-between text-green-600">
-                        <dt className="font-light tracking-wide">Discount ({appliedDiscount.code})</dt>
+                        <dt className="font-light tracking-wide">{t('discount')} ({appliedDiscount.code})</dt>
                         <dd className="font-light tracking-wide">-{formatPrice(appliedDiscount.amount, 'SEK')}</dd>
                       </div>
                     )}
@@ -1524,7 +1525,7 @@ export default function CheckoutPage() {
                         <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
                         <dd className="text-neutral-900 font-light tracking-wide">
                           {shippingCost === 0 ? (
-                            <span className="text-green-600">Free</span>
+                            <span className="text-green-600">{t('free')}</span>
                           ) : (
                             formatPrice(shippingCost, 'SEK')
                           )}
@@ -1535,14 +1536,14 @@ export default function CheckoutPage() {
                         <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
                         <dd className="text-neutral-500 text-xs italic font-light tracking-wide">
                           {formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry
-                            ? 'Calculating...'
-                            : 'Enter address to calculate'
+                            ? t('calculating')
+                            : t('enterAddressToCalculate')
                           }
                         </dd>
                       </div>
                     )}
                     <div className="flex justify-between text-xs text-neutral-500 pt-3 border-t border-neutral-200/30 font-light tracking-wide">
-                      <dt>VAT included in subtotal</dt>
+                      <dt>{t('vatIncludedInSubtotal')}</dt>
                       <dd>{formatPrice(tax, 'SEK')}</dd>
                     </div>
                     <div className="flex justify-between text-base font-light border-t border-neutral-200/30 pt-5 mt-5">
@@ -1552,7 +1553,7 @@ export default function CheckoutPage() {
                           formatPrice(total, 'SEK')
                         ) : (
                           <span className="text-neutral-500 text-sm font-light italic">
-                            {formatPrice(subtotal - discountAmount, 'SEK')} + shipping
+                            {formatPrice(subtotal - discountAmount, 'SEK')} + {t('shipping')}
                           </span>
                         )}
                       </dd>
@@ -1568,8 +1569,8 @@ export default function CheckoutPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
                         </div>
-                        <p className="text-xs font-light text-neutral-700 tracking-wide">Secure Payment</p>
-                        <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">SSL Encrypted</p>
+                        <p className="text-xs font-light text-neutral-700 tracking-wide">{t('securePayment')}</p>
+                        <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">{t('sslEncrypted')}</p>
                       </div>
                       <div className="flex flex-col items-center">
                         <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-3">
@@ -1577,8 +1578,8 @@ export default function CheckoutPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                           </svg>
                         </div>
-                        <p className="text-xs font-light text-neutral-700 tracking-wide">Money-Back</p>
-                        <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">30-Day Guarantee</p>
+                        <p className="text-xs font-light text-neutral-700 tracking-wide">{t('moneyBack')}</p>
+                        <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">{t('thirtyDayGuarantee')}</p>
                       </div>
                     </div>
                   </div>
@@ -1592,7 +1593,7 @@ export default function CheckoutPage() {
                         disabled={!isShippingComplete()}
                         className="w-full py-5 px-6 border border-transparent text-sm font-light uppercase tracking-[0.15em] text-white bg-neutral-900 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
                       >
-                        Continue to Payment
+                        {t('continueToPayment')}
                         <svg className="w-4 h-4 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>

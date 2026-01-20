@@ -182,7 +182,7 @@ export default function CartPage() {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto"></div>
-          <p className="mt-4 text-neutral-500 font-light">Loading...</p>
+          <p className="mt-4 text-neutral-500 font-light">{t('loading')}</p>
         </div>
       </div>
     );
@@ -202,7 +202,7 @@ export default function CartPage() {
             <div className="max-w-2xl mx-auto text-center space-y-6">
               <div className="inline-block">
                 <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
-                  Shopping Cart
+                  {t('title')}
                 </p>
                 <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
               </div>
@@ -234,7 +234,7 @@ export default function CartPage() {
               </div>
               <h3 className="text-lg font-light text-neutral-900 mb-2">{t('empty')}</h3>
               <p className="text-sm text-neutral-500 font-light mb-8">
-                Start shopping to add items to your cart.
+                {t('emptyDescription')}
               </p>
               <div>
                 <Link
@@ -267,7 +267,7 @@ export default function CartPage() {
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <div className="inline-block">
               <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
-                Shopping Cart
+                {t('title')}
               </p>
               <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
             </div>
@@ -276,7 +276,7 @@ export default function CartPage() {
             </h1>
             {items.length > 0 && (
               <p className="text-sm font-light tracking-wide text-neutral-400 sm:text-base">
-                {items.length} {items.length === 1 ? 'item' : 'items'}
+                {t('itemCount', { count: items.length })}
               </p>
             )}
           </div>
@@ -339,7 +339,7 @@ export default function CartPage() {
                                   </h3>
                                 </Link>
                                 <p className="mt-1 text-sm text-neutral-500 font-light">
-                                  {formatPrice(price, 'SEK')} each
+                                  {formatPrice(price, 'SEK')} {t('each')}
                                 </p>
                               </div>
                               <button

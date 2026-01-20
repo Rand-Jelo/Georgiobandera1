@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { formatPrice } from '@/lib/utils';
 import { Link } from '@/lib/i18n/routing';
 
@@ -48,6 +48,7 @@ interface Order {
 export default function OrderConfirmationPage() {
   const t = useTranslations('orders');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const params = useParams();
   const router = useRouter();
   const orderNumber = params?.orderNumber as string;
@@ -67,8 +68,8 @@ export default function OrderConfirmationPage() {
   const fetchOrder = async (email?: string) => {
     try {
       const url = email 
-        ? `/api/orders/${orderNumber}?email=${encodeURIComponent(email)}`
-        : `/api/orders/${orderNumber}`;
+        ? `/api/orders/${orderNumber}?email=${encodeURIComponent(email)}&locale=${locale}`
+        : `/api/orders/${orderNumber}?locale=${locale}`;
       
       const response = await fetch(url);
       const data = await response.json() as { order?: Order; error?: string };
@@ -283,7 +284,7 @@ export default function OrderConfirmationPage() {
                                 </p>
                               </div>
                               {status.message && (
-                                <p className="text-sm text-neutral-600 font-light">{status.message}</p>
+                                <p className="text-sm text-neutral-600 font-light">{translateStatusMessage(status.message, t)}</p>
                               )}
                             </div>
                           </div>
@@ -466,5 +467,24 @@ function getStatusConfig(status: string, t: (key: string) => string): { label: s
   }
 
   return { label: status, icon: '📋' };
+}
+
+// Helper function to translate status messages
+function translateStatusMessage(message: string, t: (key: string) => string): string {
+  // Map known English messages to translation keys
+  const messageMap: Record<string, string> = {
+    'Order placed': t('statusMessageOrderPlaced'),
+    'Order placed and payment confirmed': t('statusMessageOrderPlacedPaid'),
+    'Order has been delivered': t('statusMessageOrderDelivered'),
+  };
+
+  // Check for "Order shipped with tracking number: X" pattern
+  const shippedMatch = message.match(/^Order shipped with tracking number: (.+)$/);
+  if (shippedMatch) {
+    return t('statusMessageOrderShipped', { trackingNumber: shippedMatch[1] });
+  }
+
+  // Return translated message if found, otherwise return original
+  return messageMap[message] || message;
 }
 
