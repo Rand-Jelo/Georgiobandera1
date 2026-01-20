@@ -203,7 +203,17 @@
     "pleaseEnterDiscountCode": "Vänligen ange en rabattkod",
     "invalidDiscountCode": "Ogiltig rabattkod",
     "failedToValidateDiscountCode": "Kunde inte validera rabattkod",
-    "failedToInitializePayment": "Kunde inte initiera betalning. Försök igen."
+    "failedToInitializePayment": "Kunde inte initiera betalning. Försök igen.",
+    "useSavedAddress": "Använd sparad adress",
+    "selectSavedAddress": "Välj en sparad adress...",
+    "useDifferentAddress": "Använd annan adress",
+    "validationNameMinLength": "Namnet måste vara minst 2 tecken",
+    "validationAddressMinLength": "Adressen måste vara minst 5 tecken",
+    "validationCityMinLength": "Staden måste vara minst 2 tecken",
+    "validationEmailInvalid": "Vänligen ange en giltig e-postadress",
+    "calculatingShipping": "Beräknar fraktkostnad...",
+    "addressSavedSuccess": "Adress sparad",
+    "paymentInitializing": "Konfigurerar betalning..."
   },
   "footer": {
     "about": "Om oss",

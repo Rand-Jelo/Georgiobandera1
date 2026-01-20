@@ -203,7 +203,17 @@
     "pleaseEnterDiscountCode": "Please enter a discount code",
     "invalidDiscountCode": "Invalid discount code",
     "failedToValidateDiscountCode": "Failed to validate discount code",
-    "failedToInitializePayment": "Failed to initialize payment. Please try again."
+    "failedToInitializePayment": "Failed to initialize payment. Please try again.",
+    "useSavedAddress": "Use Saved Address",
+    "selectSavedAddress": "Select a saved address...",
+    "useDifferentAddress": "Use different address",
+    "validationNameMinLength": "Name must be at least 2 characters",
+    "validationAddressMinLength": "Address must be at least 5 characters",
+    "validationCityMinLength": "City must be at least 2 characters",
+    "validationEmailInvalid": "Please enter a valid email address",
+    "calculatingShipping": "Calculating shipping cost...",
+    "addressSavedSuccess": "Address saved successfully",
+    "paymentInitializing": "Setting up payment..."
   },
   "footer": {
     "about": "About Us",

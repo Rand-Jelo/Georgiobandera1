@@ -94,6 +94,7 @@ export default function CheckoutPage() {
   });
 
   const [shippingCost, setShippingCost] = useState<number | null>(null); // null means not calculated yet
+  const [calculatingShipping, setCalculatingShipping] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<ShippingRegion | null>(null);
   const [taxRate, setTaxRate] = useState(0.25); // Default 25%
   const [discountCode, setDiscountCode] = useState('');
@@ -127,6 +128,9 @@ export default function CheckoutPage() {
 
   // Address validation
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+  
+  // Success/error notifications
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Guest checkout
   const [createAccount, setCreateAccount] = useState(false);
@@ -296,13 +300,16 @@ export default function CheckoutPage() {
 
     if (!formData.shippingRegionId || currentSubtotal === 0) {
       setShippingCost(null);
+      setCalculatingShipping(false);
       return;
     }
 
+    setCalculatingShipping(true);
     try {
       const region = shippingRegions.find(r => r.id === formData.shippingRegionId);
       if (!region) {
         setShippingCost(null);
+        setCalculatingShipping(false);
         return;
       }
 
@@ -324,6 +331,8 @@ export default function CheckoutPage() {
     } catch (err) {
       console.error('Error calculating shipping:', err);
       setShippingCost(null);
+    } finally {
+      setCalculatingShipping(false);
     }
   };
 
@@ -424,7 +433,7 @@ export default function CheckoutPage() {
         const lastName = nameParts.slice(1).join(' ') || '';
         
         try {
-          await fetch('/api/addresses', {
+          const saveResponse = await fetch('/api/addresses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -439,6 +448,11 @@ export default function CheckoutPage() {
               is_default: savedAddresses.length === 0, // Set as default if it's the first address
             }),
           });
+          
+          if (saveResponse.ok) {
+            setNotification({ type: 'success', message: t('addressSavedSuccess') });
+            setTimeout(() => setNotification(null), 3000);
+          }
         } catch (err) {
           console.error('Error saving address:', err);
           // Continue with order creation even if address save fails
@@ -488,11 +502,21 @@ export default function CheckoutPage() {
   const handlePaymentError = (errorMessage: string) => {
     setError(errorMessage);
     setPaymentProcessing(false);
+    setNotification({ type: 'error', message: errorMessage });
+    // Scroll to error
+    setTimeout(() => {
+      const errorElement = document.querySelector('[data-error-section]');
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   const handlePlaceOrder = async () => {
     if (!formData.paymentMethod) {
-      setError(t('pleaseSelectPaymentMethod'));
+      const errorMsg = t('pleaseSelectPaymentMethod');
+      setError(errorMsg);
+      setNotification({ type: 'error', message: errorMsg });
       setExpandedSections(prev => ({ ...prev, payment: true }));
       setTimeout(() => {
         document.querySelector('[data-section="payment"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -501,7 +525,9 @@ export default function CheckoutPage() {
     }
 
     if (!isShippingComplete()) {
-      setError(t('pleaseCompleteShippingInfo'));
+      const errorMsg = t('pleaseCompleteShippingInfo');
+      setError(errorMsg);
+      setNotification({ type: 'error', message: errorMsg });
       setExpandedSections(prev => ({ ...prev, shipping: true }));
       setTimeout(() => {
         document.querySelector('[data-section="shipping"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -513,10 +539,43 @@ export default function CheckoutPage() {
     // This function is mainly for validation and triggering payment
     setProcessing(true);
     setError('');
+    setNotification(null);
 
     // The actual order placement happens in handlePaymentSuccess
     // which is called by the payment components after successful payment
   };
+  
+  // Auto-hide notification after 5 seconds and scroll to it
+  useEffect(() => {
+    if (notification) {
+      // Scroll to notification if it's an error
+      if (notification.type === 'error') {
+        setTimeout(() => {
+          const errorElement = document.querySelector('[data-error-section]');
+          if (errorElement) {
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+      }
+      
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+  
+  // Scroll to first error field when validation errors appear
+  useEffect(() => {
+    const firstErrorKey = Object.keys(addressErrors)[0];
+    if (firstErrorKey) {
+      const errorField = document.getElementById(firstErrorKey === 'guestEmail' ? 'guestEmail' : `shipping${firstErrorKey.charAt(0).toUpperCase() + firstErrorKey.slice(1)}`);
+      if (errorField) {
+        setTimeout(() => {
+          errorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          errorField.focus();
+        }, 100);
+      }
+    }
+  }, [addressErrors]);
 
   // Auto-detect shipping region when country changes
   useEffect(() => {
@@ -536,7 +595,7 @@ export default function CheckoutPage() {
     // Validate required fields
     if (name === 'shippingName') {
       if (value.trim().length < 2) {
-        newErrors.shippingName = 'Name must be at least 2 characters';
+        newErrors.shippingName = t('validationNameMinLength');
       } else {
         delete newErrors.shippingName;
       }
@@ -544,7 +603,7 @@ export default function CheckoutPage() {
 
     if (name === 'shippingAddressLine1') {
       if (value.trim().length < 5) {
-        newErrors.shippingAddressLine1 = 'Address must be at least 5 characters';
+        newErrors.shippingAddressLine1 = t('validationAddressMinLength');
       } else {
         delete newErrors.shippingAddressLine1;
       }
@@ -552,7 +611,7 @@ export default function CheckoutPage() {
 
     if (name === 'shippingCity') {
       if (value.trim().length < 2) {
-        newErrors.shippingCity = 'City must be at least 2 characters';
+        newErrors.shippingCity = t('validationCityMinLength');
       } else {
         delete newErrors.shippingCity;
       }
@@ -578,7 +637,7 @@ export default function CheckoutPage() {
       setGuestEmail(value);
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (value && !emailRegex.test(value)) {
-        newErrors.guestEmail = 'Please enter a valid email address';
+        newErrors.guestEmail = t('validationEmailInvalid');
       } else {
         delete newErrors.guestEmail;
       }
@@ -853,6 +912,8 @@ export default function CheckoutPage() {
                   type="button"
                   onClick={() => toggleSection('shipping')}
                   className="w-full px-10 py-8 border-b border-neutral-200/30 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
+                  aria-label={t('shippingInfo')}
+                  aria-expanded={expandedSections.shipping}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
@@ -897,7 +958,7 @@ export default function CheckoutPage() {
                     {savedAddresses.length > 0 && (
                       <div className="mb-10 pb-10 border-b border-neutral-200/30">
                         <label className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          Use Saved Address
+                          {t('useSavedAddress')}
                         </label>
                         <select
                           value={selectedAddressId || ''}
@@ -913,8 +974,9 @@ export default function CheckoutPage() {
                             }
                           }}
                           className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                          aria-label={t('useSavedAddress')}
                         >
-                          <option value="">Select a saved address...</option>
+                          <option value="">{t('selectSavedAddress')}</option>
                           {savedAddresses.map((address) => (
                             <option key={address.id} value={address.id}>
                               {address.label || `${address.first_name} ${address.last_name}`} - {address.city}, {address.country}
@@ -939,8 +1001,9 @@ export default function CheckoutPage() {
                               });
                             }}
                             className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
+                            aria-label={t('useDifferentAddress')}
                           >
-                            Use different address
+                            {t('useDifferentAddress')}
                           </button>
                         )}
                       </div>
@@ -966,7 +1029,7 @@ export default function CheckoutPage() {
                           placeholder={t('fullNamePlaceholder')}
                         />
                         {addressErrors.shippingName && (
-                          <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                          <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -994,7 +1057,7 @@ export default function CheckoutPage() {
                           placeholder={t('addressLine1Placeholder')}
                         />
                         {addressErrors.shippingAddressLine1 && (
-                          <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                          <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -1038,7 +1101,7 @@ export default function CheckoutPage() {
                             placeholder={t('cityPlaceholder')}
                           />
                           {addressErrors.shippingCity && (
-                            <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                            <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
@@ -1066,7 +1129,7 @@ export default function CheckoutPage() {
                             placeholder={t('postalCodePlaceholder')}
                           />
                           {addressErrors.shippingPostalCode && (
-                            <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                            <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
@@ -1177,15 +1240,18 @@ export default function CheckoutPage() {
                         required
                         value={guestEmail}
                         onChange={handleChange}
+                        onBlur={handleChange}
                         placeholder={t('emailPlaceholder')}
                         className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
                           addressErrors.guestEmail
                             ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
                             : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
                         }`}
+                        aria-invalid={!!addressErrors.guestEmail}
+                        aria-describedby={addressErrors.guestEmail ? 'guestEmail-error' : undefined}
                       />
                       {addressErrors.guestEmail && (
-                        <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light">
+                        <p id="guestEmail-error" className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -1261,6 +1327,8 @@ export default function CheckoutPage() {
                   onClick={() => toggleSection('payment')}
                   disabled={!isShippingComplete()}
                   className="w-full px-10 py-8 border-b border-neutral-200/30 flex items-center justify-between hover:bg-neutral-50/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label={t('payment')}
+                  aria-expanded={expandedSections.payment}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
@@ -1394,6 +1462,8 @@ export default function CheckoutPage() {
                   onClick={() => toggleSection('review')}
                   disabled={!isPaymentComplete() || !isShippingComplete()}
                   className="w-full px-10 py-8 border-b border-neutral-200/30 flex items-center justify-between hover:bg-neutral-50/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label={t('reviewYourOrder')}
+                  aria-expanded={expandedSections.review}
                 >
                   <div className="flex items-center gap-4">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
@@ -1560,9 +1630,13 @@ export default function CheckoutPage() {
 
                     {formData.paymentMethod && !stripeClientSecret && !paypalOrderId && shippingCost !== null && (
                       <div className="pt-6 border-t border-neutral-200/50">
-                        <p className="text-sm text-neutral-500 text-center font-light">
-                          {t('initializingPayment')}
-                        </p>
+                        <div className="flex items-center justify-center gap-3 text-sm text-neutral-500 font-light">
+                          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          <span>{t('paymentInitializing')}</span>
+                        </div>
                       </div>
                     )}
 
@@ -1574,8 +1648,51 @@ export default function CheckoutPage() {
 
 
 
-            {error && (
-              <div className="rounded-xl bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm">
+            {/* Notification Banner */}
+            {notification && (
+              <div 
+                data-error-section
+                className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 rounded-lg shadow-lg p-4 backdrop-blur-sm transition-all duration-300 ${
+                  notification.type === 'error' 
+                    ? 'bg-red-50/95 border border-red-200/50' 
+                    : 'bg-green-50/95 border border-green-200/50'
+                }`}
+                role="alert"
+                aria-live="assertive"
+              >
+                <div className={`flex items-center gap-3 text-sm ${
+                  notification.type === 'error' ? 'text-red-800' : 'text-green-800'
+                }`}>
+                  {notification.type === 'error' ? (
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                  <p className="font-light">{notification.message}</p>
+                  <button
+                    onClick={() => setNotification(null)}
+                    className="ml-auto text-current opacity-60 hover:opacity-100 transition-opacity"
+                    aria-label="Close notification"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {error && !notification && (
+              <div 
+                data-error-section
+                className="rounded-xl bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm"
+                role="alert"
+                aria-live="assertive"
+              >
                 <div className="flex items-center gap-2 text-sm text-red-800">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1634,9 +1751,8 @@ export default function CheckoutPage() {
                   })}
                 </div>
 
-                  {/* Discount Code */}
-                  {expandedSections.shipping && (
-                    <div className="border-b border-neutral-200/30 pb-8 mb-8">
+                  {/* Discount Code - Moved to order summary for better visibility */}
+                  <div className="border-b border-neutral-200/30 pb-8 mb-8">
                       {!appliedDiscount ? (
                         <div className="space-y-4">
                           <label htmlFor="discountCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600">
@@ -1694,7 +1810,7 @@ export default function CheckoutPage() {
                         </div>
                       )}
                     </div>
-                  )}
+                  </div>
 
                   {/* Totals */}
                   <dl className="space-y-5 text-sm">
@@ -1723,7 +1839,15 @@ export default function CheckoutPage() {
                       <div className="flex justify-between">
                         <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
                         <dd className="text-neutral-500 text-xs italic font-light tracking-wide">
-                          {formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry
+                          {calculatingShipping ? (
+                            <span className="flex items-center gap-2">
+                              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              {t('calculatingShipping')}
+                            </span>
+                          ) : formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry
                             ? t('calculating')
                             : t('enterAddressToCalculate')
                           }
