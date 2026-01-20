@@ -470,7 +470,10 @@ function getStatusConfig(status: string, t: (key: string) => string): { label: s
 }
 
 // Helper function to translate status messages
-function translateStatusMessage(message: string, t: (key: string) => string): string {
+function translateStatusMessage(
+  message: string,
+  t: (key: string, values?: Record<string, any>) => string
+): string {
   // Map known English messages to translation keys
   const messageMap: Record<string, string> = {
     'Order placed': t('statusMessageOrderPlaced'),
