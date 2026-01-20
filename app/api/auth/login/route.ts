@@ -35,6 +35,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if email is verified
+    if (!user.email_verified) {
+      // Set session so they can access verification page
+      await setSession({
+        userId: user.id,
+        email: user.email,
+      });
+
+      return NextResponse.json({
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          emailVerified: false,
+        },
+        requiresVerification: true,
+        message: 'Please verify your email address to continue.',
+      });
+    }
+
     // Set session
     await setSession({
       userId: user.id,
@@ -46,6 +66,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
+        emailVerified: true,
       },
     });
   } catch (error) {

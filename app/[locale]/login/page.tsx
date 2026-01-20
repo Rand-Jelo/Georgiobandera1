@@ -27,7 +27,7 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json() as { error?: string; user?: any };
+      const data = await response.json() as { error?: string; user?: any; requiresVerification?: boolean; message?: string };
 
       if (!response.ok) {
         setError(data.error || 'Login failed');
@@ -35,9 +35,15 @@ export default function LoginPage() {
         return;
       }
 
-      // Redirect to profile or home
-      router.push('/profile');
-      router.refresh();
+      // Check if email verification is required
+      if (data.requiresVerification) {
+        router.push('/verify-email-required');
+        router.refresh();
+      } else {
+        // Redirect to profile or home
+        router.push('/profile');
+        router.refresh();
+      }
     } catch (err) {
       setError('An error occurred. Please try again.');
       setLoading(false);

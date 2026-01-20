@@ -30,6 +30,16 @@ export default function OrdersPage() {
 
   const fetchOrders = async () => {
     try {
+      // First check if user is authenticated and verified
+      const authResponse = await fetch('/api/auth/me');
+      if (authResponse.ok) {
+        const authData = await authResponse.json() as { user?: { email_verified?: boolean } };
+        if (authData.user && !authData.user.email_verified) {
+          router.push('/verify-email-required');
+          return;
+        }
+      }
+
       const response = await fetch('/api/orders');
       if (response.status === 401) {
         router.push('/login');

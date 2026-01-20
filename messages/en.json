@@ -153,7 +153,16 @@
     "noVerificationToken": "No verification token found.",
     "redirectingToAccount": "Redirecting to your account...",
     "goToAccount": "Go to My Account",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "verificationRequired": "Email Verification Required",
+    "verificationRequiredTitle": "Check Your Email",
+    "verificationRequiredDescription": "Please verify your email address to continue.",
+    "verificationRequiredMessage": "We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.",
+    "sentTo": "Sent to:",
+    "didntReceiveEmail": "Didn't receive the email?",
+    "verificationEmailResent": "Verification email has been resent. Please check your inbox.",
+    "resendVerificationEmail": "Resend Verification Email",
+    "verificationHelpText": "Make sure to check your spam folder if you don't see the email. The verification link will expire in 24 hours."
   },
   "profile": {
     "title": "My Profile",

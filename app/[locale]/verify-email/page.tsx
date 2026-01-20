@@ -35,9 +35,9 @@ export default function VerifyEmailPage() {
           setStatus('success');
           setMessage(data.message || t('emailVerifiedSuccess'));
           
-          // Redirect to account page after 3 seconds
+          // Redirect to profile page after 3 seconds
           setTimeout(() => {
-            router.push('/account');
+            router.push('/profile');
           }, 3000);
         } else {
           setStatus('error');

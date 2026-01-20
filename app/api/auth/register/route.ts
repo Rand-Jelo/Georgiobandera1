@@ -107,16 +107,8 @@ export async function POST(request: NextRequest) {
       // Continue anyway - user is created, they can request a new verification email
     }
 
-    // Set session (user can use the site but with limited features until verified)
-    try {
-      await setSession({
-        userId: user.id,
-        email: user.email,
-      });
-    } catch (sessionError: any) {
-      console.error('Error setting session:', sessionError);
-      // Continue anyway - user is created, session can be set on next login
-    }
+    // Don't set session - user must verify email first
+    // They will be logged in after email verification
 
     return NextResponse.json(
       {
@@ -127,6 +119,7 @@ export async function POST(request: NextRequest) {
           emailVerified: false,
         },
         message: 'Account created. Please check your email to verify your account.',
+        requiresVerification: true,
       },
       { status: 201 }
     );

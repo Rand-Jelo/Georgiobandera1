@@ -87,8 +87,13 @@ export default function ProfilePage() {
         router.push('/login');
         return;
       }
-      const data = await response.json() as { user?: User };
+      const data = await response.json() as { user?: User & { email_verified?: boolean } };
       if (data.user) {
+        // Check if email is verified
+        if (!data.user.email_verified) {
+          router.push('/verify-email-required');
+          return;
+        }
         setUser(data.user);
         setFormData({
           name: data.user.name || '',

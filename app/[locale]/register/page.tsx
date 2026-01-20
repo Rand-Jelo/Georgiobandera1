@@ -55,7 +55,7 @@ export default function RegisterPage() {
         }),
       });
 
-      const data = await response.json() as { error?: string; user?: any };
+      const data = await response.json() as { error?: string; user?: any; requiresVerification?: boolean };
 
       if (!response.ok) {
         setError(data.error || 'Registration failed');
@@ -63,9 +63,15 @@ export default function RegisterPage() {
         return;
       }
 
-      // Redirect to profile
-      router.push('/profile');
-      router.refresh();
+      // Redirect to verification required page
+      if (data.requiresVerification) {
+        router.push('/verify-email-required');
+        router.refresh();
+      } else {
+        // Should not happen, but fallback
+        router.push('/profile');
+        router.refresh();
+      }
     } catch (err) {
       setError('An error occurred. Please try again.');
       setLoading(false);

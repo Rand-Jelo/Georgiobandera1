@@ -153,7 +153,16 @@
     "noVerificationToken": "Ingen verifieringstoken hittades.",
     "redirectingToAccount": "Omdirigerar till ditt konto...",
     "goToAccount": "Gå till mitt konto",
-    "backToHome": "Tillbaka till startsidan"
+    "backToHome": "Tillbaka till startsidan",
+    "verificationRequired": "E-postverifiering krävs",
+    "verificationRequiredTitle": "Kontrollera din e-post",
+    "verificationRequiredDescription": "Vänligen verifiera din e-postadress för att fortsätta.",
+    "verificationRequiredMessage": "Vi har skickat en verifieringslänk till din e-postadress. Vänligen kontrollera din inkorg och klicka på länken för att verifiera ditt konto.",
+    "sentTo": "Skickat till:",
+    "didntReceiveEmail": "Fick du inte e-postmeddelandet?",
+    "verificationEmailResent": "Verifieringsmejl har skickats igen. Vänligen kontrollera din inkorg.",
+    "resendVerificationEmail": "Skicka verifieringsmejl igen",
+    "verificationHelpText": "Se till att kontrollera din skräppostmapp om du inte ser e-postmeddelandet. Verifieringslänken kommer att upphöra om 24 timmar."
   },
   "profile": {
     "title": "Min profil",

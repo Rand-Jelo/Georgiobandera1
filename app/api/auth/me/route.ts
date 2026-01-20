@@ -33,6 +33,7 @@ export async function GET() {
         name: user.name,
         phone: user.phone,
         is_admin: user.is_admin || false,
+        email_verified: user.email_verified || false,
       },
     }, { headers });
   } catch (error) {
