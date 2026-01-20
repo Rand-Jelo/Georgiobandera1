@@ -230,7 +230,7 @@ export async function POST(request: NextRequest) {
     // Clear cart after successful order creation
     await clearCart(db, session?.userId, sessionId);
 
-    // Send order confirmation email (async, don't wait)
+    // Send order confirmation email (await to ensure it actually runs before the worker is torn down)
     const orderItemsForEmail = await getOrderItems(db, order.id);
     const locale = request.headers.get('accept-language')?.includes('sv') ? 'sv' : 'en';
     const orderDate = new Date(order.created_at * 1000).toLocaleDateString(locale === 'sv' ? 'sv-SE' : 'en-SE');
@@ -248,55 +248,55 @@ export async function POST(request: NextRequest) {
     };
 
     // Send confirmation email to customer
-    sendOrderConfirmationEmail({
-      to: order.email,
-      name: order.shipping_name,
-      orderNumber: order.order_number,
-      orderDate,
-      items: orderItemsForEmailFormatted,
-      subtotal: order.subtotal,
-      shipping: order.shipping_cost,
-      total: order.total,
-      shippingAddress,
-      locale: locale as 'sv' | 'en',
-    })
-      .then(result => {
-        if (result.success) {
-          console.log('Order confirmation email sent successfully to:', order.email);
-        } else {
-          console.error('Failed to send order confirmation email:', result.error);
-          console.error('Email details:', { to: order.email, orderNumber: order.order_number });
-        }
-      })
-      .catch(err => {
-        console.error('Error sending order confirmation email:', err);
-        console.error('Email details:', { to: order.email, orderNumber: order.order_number });
+    try {
+      const confirmResult = await sendOrderConfirmationEmail({
+        to: order.email,
+        name: order.shipping_name,
+        orderNumber: order.order_number,
+        orderDate,
+        items: orderItemsForEmailFormatted,
+        subtotal: order.subtotal,
+        shipping: order.shipping_cost,
+        total: order.total,
+        shippingAddress,
+        locale: locale as 'sv' | 'en',
       });
 
+      if (!confirmResult.success) {
+        console.error('Failed to send order confirmation email:', confirmResult.error);
+        console.error('Email details:', { to: order.email, orderNumber: order.order_number });
+      } else {
+        console.log('Order confirmation email sent successfully to:', order.email);
+      }
+    } catch (err) {
+      console.error('Error sending order confirmation email:', err);
+      console.error('Email details:', { to: order.email, orderNumber: order.order_number });
+    }
+
     // Send notification email to admin (order@georgiobandera.se)
-    sendOrderNotificationEmail({
-      orderNumber: order.order_number,
-      customerName: order.shipping_name,
-      customerEmail: order.email,
-      orderDate,
-      items: orderItemsForEmailFormatted,
-      subtotal: order.subtotal,
-      shipping: order.shipping_cost,
-      total: order.total,
-      shippingAddress,
-    })
-      .then(result => {
-        if (result.success) {
-          console.log('Order notification email sent successfully to order@georgiobandera.se');
-        } else {
-          console.error('Failed to send order notification email:', result.error);
-          console.error('Order details:', { orderNumber: order.order_number, customerEmail: order.email });
-        }
-      })
-      .catch(err => {
-        console.error('Error sending order notification email:', err);
-        console.error('Order details:', { orderNumber: order.order_number, customerEmail: order.email });
+    try {
+      const notificationResult = await sendOrderNotificationEmail({
+        orderNumber: order.order_number,
+        customerName: order.shipping_name,
+        customerEmail: order.email,
+        orderDate,
+        items: orderItemsForEmailFormatted,
+        subtotal: order.subtotal,
+        shipping: order.shipping_cost,
+        total: order.total,
+        shippingAddress,
       });
+
+      if (!notificationResult.success) {
+        console.error('Failed to send order notification email:', notificationResult.error);
+        console.error('Order details:', { orderNumber: order.order_number, customerEmail: order.email });
+      } else {
+        console.log('Order notification email sent successfully to order@georgiobandera.se');
+      }
+    } catch (err) {
+      console.error('Error sending order notification email:', err);
+      console.error('Order details:', { orderNumber: order.order_number, customerEmail: order.email });
+    }
 
     return NextResponse.json({
       order: {
