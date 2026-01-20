@@ -149,7 +149,7 @@ export default function OrderConfirmationPage() {
             <div className="max-w-2xl mx-auto text-center space-y-6">
               <div className="inline-block">
                 <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
-                  View Order
+                  {t('viewOrder') || 'View Order'}
                 </p>
                 <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
               </div>
@@ -167,7 +167,7 @@ export default function OrderConfirmationPage() {
               <form className="px-8 py-10 space-y-6" onSubmit={handleGuestAccess}>
                 <div>
                   <label htmlFor="guestEmail" className="block text-xs font-light uppercase tracking-wider text-neutral-700 mb-3">
-                    Email Address
+                    {t('guestEmailLabel') || 'Email Address'}
                   </label>
                   <input
                     type="email"
@@ -175,7 +175,7 @@ export default function OrderConfirmationPage() {
                     value={guestEmail}
                     onChange={(e) => setGuestEmail(e.target.value)}
                     required
-                    placeholder="your.email@example.com"
+                    placeholder={t('guestEmailPlaceholder') || 'your.email@example.com'}
                     className="block w-full px-5 py-3.5 border border-neutral-200/50 bg-white/80 backdrop-blur-sm text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/30 transition-all text-sm font-light"
                   />
                 </div>
@@ -192,7 +192,7 @@ export default function OrderConfirmationPage() {
                     disabled={loading}
                     className="w-full py-4 px-6 border border-transparent text-sm font-light uppercase tracking-wider text-white bg-neutral-900 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
                   >
-                    {loading ? 'Loading...' : 'View Order'}
+                    {loading ? (t('loadingOrder') || 'Loading...') : (t('viewOrderButton') || 'View Order')}
                   </button>
                 </div>
               </form>
@@ -220,7 +220,7 @@ export default function OrderConfirmationPage() {
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <div className="inline-block">
               <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
-                Order Details
+                {t('orderDetails') || 'Order Details'}
               </p>
               <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
             </div>
@@ -242,7 +242,7 @@ export default function OrderConfirmationPage() {
           <div className="bg-white border border-neutral-200/50">
             <div className="p-8 border-b border-neutral-200/50">
               <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">
-                Order Tracking
+                {t('orderTracking') || 'Order Tracking'}
               </h2>
             </div>
             <div className="p-8">

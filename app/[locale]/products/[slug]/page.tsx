@@ -891,7 +891,9 @@ export default function ProductPage() {
             <>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-12 pb-8 border-b border-neutral-200/50">
                 <div>
-                  <h2 className="text-2xl font-extralight tracking-wide text-neutral-900 mb-4">Customer Reviews</h2>
+                  <h2 className="text-2xl font-extralight tracking-wide text-neutral-900 mb-4">
+                    {t('customerReviews') || 'Customer Reviews'}
+                  </h2>
                   {reviewStats && reviewStats.total > 0 && (
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
@@ -900,7 +902,11 @@ export default function ProductPage() {
                           {reviewStats.average.toFixed(1)}
                         </span>
                         <span className="text-neutral-500 text-sm font-light">
-                          ({reviewStats.total} {reviewStats.total === 1 ? 'review' : 'reviews'})
+                          ({reviewStats.total}{' '}
+                          {reviewStats.total === 1
+                            ? t('singleReview') || 'review'
+                            : t('multipleReviews') || 'reviews'}
+                          )
                         </span>
                       </div>
                     </div>
@@ -923,14 +929,14 @@ export default function ProductPage() {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        Write a Review
+                        {t('writeReview') || 'Write a Review'}
                       </>
                     )}
                   </button>
                 )}
                 {hasReviewed && (
                   <p className="text-sm text-neutral-600 italic">
-                    You have already reviewed this product
+                    {t('alreadyReviewed') || 'You have already reviewed this product'}
                   </p>
                 )}
               </div>
@@ -957,8 +963,8 @@ export default function ProductPage() {
                     <form onSubmit={handleSubmitReview} className="space-y-5">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <label htmlFor="review-name" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                            Name *
+                        <label htmlFor="review-name" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
+                            {t('reviewNameLabel') || 'Name *'}
                           </label>
                           <input
                             type="text"
@@ -970,8 +976,8 @@ export default function ProductPage() {
                           />
                         </div>
                         <div>
-                          <label htmlFor="review-email" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                            Email *
+                        <label htmlFor="review-email" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
+                            {t('reviewEmailLabel') || 'Email *'}
                           </label>
                           <input
                             type="email"
@@ -986,7 +992,7 @@ export default function ProductPage() {
 
                       <div>
                         <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                          Rating *
+                          {t('reviewRatingLabel') || 'Rating *'}
                         </label>
                         {renderStars(reviewFormData.rating, true, (rating) =>
                           setReviewFormData({ ...reviewFormData, rating })
@@ -995,7 +1001,10 @@ export default function ProductPage() {
 
                       <div>
                         <label htmlFor="review-title" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                          Review Title <span className="text-neutral-400 font-normal normal-case">(optional)</span>
+                          {t('reviewTitleLabel') || 'Review Title'}{' '}
+                          <span className="text-neutral-400 font-normal normal-case">
+                            ({t('optional') || 'optional'})
+                          </span>
                         </label>
                         <input
                           type="text"
@@ -1008,7 +1017,7 @@ export default function ProductPage() {
 
                       <div>
                         <label htmlFor="review-text" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                          Your Review *
+                          {t('reviewTextLabel') || 'Your Review *'}
                         </label>
                         <textarea
                           id="review-text"
@@ -1018,10 +1027,10 @@ export default function ProductPage() {
                           value={reviewFormData.review_text}
                           onChange={(e) => setReviewFormData({ ...reviewFormData, review_text: e.target.value })}
                           className="w-full px-5 py-3 border border-neutral-200/50 bg-white/50 backdrop-blur-sm text-neutral-900 text-sm font-light resize-none focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
-                          placeholder="Share your experience with this product..."
+                          placeholder={t('reviewPlaceholder') || 'Share your experience with this product...'}
                         />
                         <p className="mt-2 text-xs text-neutral-400 font-light">
-                          Minimum 10 characters
+                          {t('reviewMinChars') || 'Minimum 10 characters'}
                         </p>
                       </div>
 
@@ -1047,14 +1056,14 @@ export default function ProductPage() {
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            Submitting...
+                            {t('submittingReview') || 'Submitting...'}
                           </>
                         ) : (
                           <>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
-                            Submit Review
+                            {t('submitReview') || 'Submit Review'}
                           </>
                         )}
                       </button>
@@ -1066,7 +1075,9 @@ export default function ProductPage() {
               {/* Reviews List */}
               {reviews.length === 0 ? (
                 <div className="text-center py-16">
-                  <p className="text-neutral-500 font-light">No reviews yet. Be the first to review this product!</p>
+                  <p className="text-neutral-500 font-light">
+                    {t('noReviewsYet') || 'No reviews yet. Be the first to review this product!'}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-12">
@@ -1109,7 +1120,7 @@ export default function ProductPage() {
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                         </svg>
-                        Helpful ({review.helpful_count})
+                        {t('reviewHelpful') || 'Helpful'} ({review.helpful_count})
                         {helpfulClicked.has(review.id) && (
                           <span className="text-xs text-neutral-500">(You marked this)</span>
                         )}
@@ -1122,7 +1133,9 @@ export default function ProductPage() {
               {/* Rating Distribution */}
               {reviewStats && reviewStats.total > 0 && (
                 <div className="mt-16 p-10 bg-white border border-neutral-200/50">
-                  <h3 className="text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-8">Rating Distribution</h3>
+                  <h3 className="text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-8">
+                    {t('ratingDistribution') || 'Rating Distribution'}
+                  </h3>
                   <div className="space-y-3">
                     {reviewStats.ratingDistribution.map(({ rating, count }) => {
                       const percentage = reviewStats.total > 0 ? (count / reviewStats.total) * 100 : 0;
@@ -1154,7 +1167,9 @@ export default function ProductPage() {
         {/* Related Products Section */}
         {product.category_id && (
           <div className="mt-24 border-t border-neutral-200/50 pt-16">
-            <h2 className="text-3xl font-extralight tracking-wide text-neutral-900 mb-12">Related Products</h2>
+            <h2 className="text-3xl font-extralight tracking-wide text-neutral-900 mb-12">
+              {t('relatedProducts')}
+            </h2>
             {loadingRelated ? (
               <div className="flex justify-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-neutral-900"></div>

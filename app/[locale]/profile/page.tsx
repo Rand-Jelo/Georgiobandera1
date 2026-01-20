@@ -345,7 +345,7 @@ export default function ProfilePage() {
               {/* Elegant subtitle */}
               <div className="inline-block mb-4">
                 <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
-                  My Account
+                  {tCommon('profile') || 'My Account'}
                 </p>
                 <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent" />
               </div>
@@ -437,7 +437,9 @@ export default function ProfilePage() {
                 <div>
                   <div className="mb-8 pb-6 border-b border-neutral-200/50">
                     <h2 className="text-2xl font-extralight tracking-wide text-neutral-900 mb-2">{t('personalInfo')}</h2>
-                    <p className="text-sm font-light text-neutral-500">Update your personal information</p>
+                    <p className="text-sm font-light text-neutral-500">
+                      {t('personalInfoSubtitle') || 'Update your personal information'}
+                    </p>
                   </div>
 
                   <form onSubmit={handleSubmit} className="space-y-8">
@@ -549,8 +551,12 @@ export default function ProfilePage() {
               {activeSection === 'password' && (
                 <div>
                   <div className="mb-8 pb-6 border-b border-neutral-200/50">
-                    <h2 className="text-2xl font-extralight tracking-wide text-neutral-900 mb-2">{t('changePassword') || 'Change Password'}</h2>
-                    <p className="text-sm font-light text-neutral-500">Update your account password</p>
+                    <h2 className="text-2xl font-extralight tracking-wide text-neutral-900 mb-2">
+                      {t('changePassword') || 'Change Password'}
+                    </h2>
+                    <p className="text-sm font-light text-neutral-500">
+                      {t('changePasswordSubtitle') || 'Update your account password'}
+                    </p>
                   </div>
 
                   <form onSubmit={handlePasswordChange} className="space-y-8">
@@ -654,8 +660,12 @@ export default function ProfilePage() {
                 <div>
                   <div className="mb-8 pb-6 border-b border-neutral-200/50 flex items-center justify-between">
                     <div>
-                      <h2 className="text-2xl font-extralight tracking-wide text-neutral-900 mb-2">{t('savedAddresses') || 'Saved Addresses'}</h2>
-                      <p className="text-sm font-light text-neutral-500">Manage your saved shipping addresses</p>
+                      <h2 className="text-2xl font-extralight tracking-wide text-neutral-900 mb-2">
+                        {t('savedAddresses') || 'Saved Addresses'}
+                      </h2>
+                      <p className="text-sm font-light text-neutral-500">
+                        {t('savedAddressesSubtitle') || 'Manage your saved shipping addresses'}
+                      </p>
                     </div>
                     <button
                       onClick={handleNewAddress}

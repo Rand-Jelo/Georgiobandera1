@@ -44,6 +44,7 @@ const ITEMS_PER_PAGE = 12;
 
 export default function ShopPage() {
   const t = useTranslations('common');
+  const tHome = useTranslations('home');
   const tProduct = useTranslations('product');
   const locale = useLocale();
   const router = useRouter();
@@ -356,7 +357,7 @@ export default function ShopPage() {
             {/* Elegant subtitle */}
             <div className="inline-block mb-4 sm:mb-6">
               <p className="text-[9px] sm:text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
-                Our Collection
+                {tHome('collectionLabel')}
               </p>
               <div className="mt-2 h-px w-12 sm:w-16 bg-gradient-to-r from-amber-500/50 to-transparent" />
             </div>
@@ -369,8 +370,8 @@ export default function ShopPage() {
             {/* Description */}
             <p className="text-base sm:text-lg text-neutral-300 font-light leading-relaxed max-w-2xl mb-6 sm:mb-8">
               {totalCount > 0 
-                ? `Discover ${totalCount} premium products crafted for excellence`
-                : 'Browse our curated collection of professional hair care products'
+                ? tHome('discoverProducts', { count: totalCount })
+                : tHome('browseCollection')
               }
             </p>
 
@@ -459,7 +460,11 @@ export default function ShopPage() {
               {totalCount > 0 && (
                 <div>
                   <p className="text-[10px] sm:text-xs font-light text-neutral-400 tracking-wide uppercase">
-                    Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, totalCount)} of {totalCount}
+                    {tHome('showingResults', {
+                      start: ((currentPage - 1) * ITEMS_PER_PAGE) + 1,
+                      end: Math.min(currentPage * ITEMS_PER_PAGE, totalCount),
+                      total: totalCount
+                    })}
                   </p>
                 </div>
               )}
@@ -531,8 +536,8 @@ export default function ShopPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                   </svg>
                 </div>
-                <p className="text-neutral-600 text-xl font-light tracking-wide mb-3">No products found</p>
-                <p className="text-neutral-400 text-sm font-light">Try adjusting your filters or search terms</p>
+                <p className="text-neutral-600 text-xl font-light tracking-wide mb-3">{tHome('noProductsFound')}</p>
+                <p className="text-neutral-400 text-sm font-light">{tHome('adjustFiltersOrSearch')}</p>
               </div>
             ) : (
               <>

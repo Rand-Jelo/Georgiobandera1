@@ -120,7 +120,7 @@ export default function OrdersPage() {
             {/* Description */}
             {orders.length > 0 && (
               <p className="text-sm font-light tracking-wide text-neutral-400 sm:text-base">
-                {orders.length} {orders.length === 1 ? 'order' : 'orders'} found
+                {t('ordersFound', { count: orders.length })}
               </p>
             )}
           </div>
@@ -143,7 +143,7 @@ export default function OrdersPage() {
                   href="/shop"
                   className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-neutral-900 text-white text-sm font-light uppercase tracking-wider hover:bg-neutral-800 transition-all duration-300"
                 >
-                  Continue Shopping
+                  {t('continueShopping') || 'Continue Shopping'}
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                   </svg>
