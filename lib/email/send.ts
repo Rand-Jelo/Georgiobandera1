@@ -180,6 +180,7 @@ export async function sendOrderConfirmationEmail({
   total,
   shippingAddress,
   locale = 'sv',
+  baseUrl,
 }: {
   to: string;
   name: string;
@@ -191,6 +192,7 @@ export async function sendOrderConfirmationEmail({
   total: number;
   shippingAddress: ShippingAddress;
   locale?: Locale;
+  baseUrl?: string;
 }) {
   if (!isEmailConfigured() || !resend) {
     console.error('Email not configured - RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'SET' : 'NOT SET');
@@ -215,6 +217,7 @@ export async function sendOrderConfirmationEmail({
         total,
         shippingAddress,
         locale,
+        baseUrl,
       })
     );
 
@@ -256,6 +259,7 @@ export async function sendDeliveryNotificationEmail({
   carrier,
   estimatedDelivery,
   locale = 'sv',
+  baseUrl,
 }: {
   to: string;
   name: string;
@@ -265,6 +269,7 @@ export async function sendDeliveryNotificationEmail({
   carrier?: string;
   estimatedDelivery?: string;
   locale?: Locale;
+  baseUrl?: string;
 }) {
   if (!isEmailConfigured() || !resend) {
     console.log('Email not configured, skipping delivery notification email to:', to);
@@ -281,6 +286,7 @@ export async function sendDeliveryNotificationEmail({
         carrier,
         estimatedDelivery,
         locale,
+        baseUrl,
       })
     );
 

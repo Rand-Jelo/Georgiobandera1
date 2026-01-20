@@ -24,6 +24,7 @@ interface OrderConfirmationEmailProps {
     country: string;
   };
   locale?: 'sv' | 'en';
+  baseUrl?: string;
 }
 
 export function OrderConfirmationEmail({
@@ -36,10 +37,12 @@ export function OrderConfirmationEmail({
   total,
   shippingAddress,
   locale = 'sv',
+  baseUrl,
 }: OrderConfirmationEmailProps) {
   const isSv = locale === 'sv';
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
-  const orderUrl = `${baseUrl}/account/orders/${orderNumber}`;
+  const finalBaseUrl = baseUrl || process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
+  const localePath = isSv ? 'sv' : 'en';
+  const orderUrl = `${finalBaseUrl}/${localePath}/orders/${orderNumber}`;
 
   const formatPrice = (price: number) => {
     return `${price.toLocaleString(isSv ? 'sv-SE' : 'en-SE')} SEK`;

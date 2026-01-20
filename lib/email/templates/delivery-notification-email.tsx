@@ -10,6 +10,7 @@ interface DeliveryNotificationEmailProps {
   carrier?: string;
   estimatedDelivery?: string;
   locale?: 'sv' | 'en';
+  baseUrl?: string;
 }
 
 export function DeliveryNotificationEmail({
@@ -20,10 +21,12 @@ export function DeliveryNotificationEmail({
   carrier,
   estimatedDelivery,
   locale = 'sv',
+  baseUrl,
 }: DeliveryNotificationEmailProps) {
   const isSv = locale === 'sv';
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
-  const orderUrl = `${baseUrl}/account/orders/${orderNumber}`;
+  const finalBaseUrl = baseUrl || process.env.NEXT_PUBLIC_APP_URL || 'https://georgiobandera1.pages.dev';
+  const localePath = isSv ? 'sv' : 'en';
+  const orderUrl = `${finalBaseUrl}/${localePath}/orders/${orderNumber}`;
 
   const content = {
     sv: {

@@ -109,6 +109,10 @@ export async function PATCH(
 
       const locale = request.headers.get('accept-language')?.includes('sv') ? 'sv' : 'en';
       
+      // Get base URL from request (for preview URLs)
+      const requestUrl = new URL(request.url);
+      const baseUrl = requestUrl.origin;
+      
       // Send delivery notification when order is shipped
       if (body.status === 'shipped') {
         // Use tracking_number from body if provided, otherwise from order
@@ -120,6 +124,7 @@ export async function PATCH(
           orderNumber: updatedOrder.order_number,
           trackingNumber,
           locale: locale as 'sv' | 'en',
+          baseUrl,
         }).catch(err => {
           console.error('Failed to send delivery notification:', err);
         });
@@ -136,6 +141,7 @@ export async function PATCH(
             orderNumber: finalOrder.order_number,
             trackingNumber: finalOrder.tracking_number || undefined,
             locale: locale as 'sv' | 'en',
+            baseUrl,
           }).catch(err => {
             console.error('Failed to send delivery notification:', err);
           });
@@ -150,12 +156,18 @@ export async function PATCH(
       const updatedOrder = await getOrderById(db, id);
       if (updatedOrder && updatedOrder.status === 'shipped') {
         const locale = request.headers.get('accept-language')?.includes('sv') ? 'sv' : 'en';
+        
+        // Get base URL from request (for preview URLs)
+        const requestUrl = new URL(request.url);
+        const baseUrl = requestUrl.origin;
+        
         sendDeliveryNotificationEmail({
           to: updatedOrder.email,
           name: updatedOrder.shipping_name,
           orderNumber: updatedOrder.order_number,
           trackingNumber: body.tracking_number,
           locale: locale as 'sv' | 'en',
+          baseUrl,
         }).catch(err => {
           console.error('Failed to send delivery notification:', err);
         });

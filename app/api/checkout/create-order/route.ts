@@ -247,6 +247,10 @@ export async function POST(request: NextRequest) {
       country: order.shipping_country,
     };
 
+    // Get base URL from request (for preview URLs)
+    const requestUrl = new URL(request.url);
+    const baseUrl = requestUrl.origin;
+
     // Send confirmation email to customer
     try {
       const confirmResult = await sendOrderConfirmationEmail({
@@ -260,6 +264,7 @@ export async function POST(request: NextRequest) {
         total: order.total,
         shippingAddress,
         locale: locale as 'sv' | 'en',
+        baseUrl,
       });
 
       if (!confirmResult.success) {
