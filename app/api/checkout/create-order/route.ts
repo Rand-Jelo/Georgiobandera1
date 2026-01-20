@@ -240,7 +240,6 @@ export async function POST(request: NextRequest) {
 
     // Send order confirmation email (await to ensure it actually runs before the worker is torn down)
     const orderItemsForEmail = await getOrderItems(db, order.id);
-    const locale = request.headers.get('accept-language')?.includes('sv') ? 'sv' : 'en';
     const orderDate = new Date(order.created_at * 1000).toLocaleDateString(locale === 'sv' ? 'sv-SE' : 'en-SE');
     const orderItemsForEmailFormatted = orderItemsForEmail.map(item => ({
       name: item.product_name,
