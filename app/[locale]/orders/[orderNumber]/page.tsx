@@ -85,7 +85,7 @@ export default function OrderConfirmationPage() {
         setShowGuestForm(false);
       }
     } catch (err) {
-      setError('Failed to load order');
+      setError(t('failedToLoadOrder'));
       console.error('Error fetching order:', err);
     } finally {
       setLoading(false);
@@ -95,7 +95,7 @@ export default function OrderConfirmationPage() {
   const handleGuestAccess = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!guestEmail.trim()) {
-      setError('Please enter your email address');
+      setError(t('pleaseEnterEmail'));
       return;
     }
     setLoading(true);
@@ -108,7 +108,7 @@ export default function OrderConfirmationPage() {
       <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto"></div>
-          <p className="mt-4 text-neutral-500 font-light">Loading order...</p>
+          <p className="mt-4 text-neutral-500 font-light">{t('loadingOrder')}</p>
         </div>
       </div>
     );
@@ -128,7 +128,7 @@ export default function OrderConfirmationPage() {
             href="/orders"
             className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white text-sm font-light uppercase tracking-wider hover:bg-neutral-800 transition-all duration-300"
           >
-            View all orders
+            {t('viewAllOrders')}
           </Link>
         </div>
       </div>
@@ -253,7 +253,7 @@ export default function OrderConfirmationPage() {
                   <div className="space-y-6">
                     {order.statusHistory.map((status, index) => {
                       const isLast = index === order.statusHistory!.length - 1;
-                      const statusConfig = getStatusConfig(status.status);
+                      const statusConfig = getStatusConfig(status.status, t);
                       
                       return (
                         <div key={status.id} className="relative flex items-start gap-4">
@@ -294,7 +294,7 @@ export default function OrderConfirmationPage() {
                 </div>
               ) : (
                 <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-6 text-center">
-                  <p className="text-neutral-600 font-light">No tracking information available yet.</p>
+                  <p className="text-neutral-600 font-light">{t('noTrackingInfo')}</p>
                 </div>
               )}
 
@@ -302,7 +302,7 @@ export default function OrderConfirmationPage() {
                 <div className="mt-6 bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1 font-light">Tracking Number</p>
+                      <p className="text-xs text-neutral-500 uppercase tracking-wider mb-1 font-light">{t('trackingNumber')}</p>
                       <p className="text-base font-light text-neutral-900 font-mono">{order.tracking_number}</p>
                     </div>
                     <a
@@ -311,7 +311,7 @@ export default function OrderConfirmationPage() {
                       rel="noopener noreferrer"
                       className="px-4 py-2 bg-neutral-900 text-white text-xs font-light uppercase tracking-wider hover:bg-neutral-800 transition-colors"
                     >
-                      Track Package
+                      {t('trackPackage')}
                     </a>
                   </div>
                 </div>
@@ -323,28 +323,28 @@ export default function OrderConfirmationPage() {
           <div className="bg-white border border-neutral-200/50">
             <div className="p-8 border-b border-neutral-200/50">
               <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">
-                Order Details
+                {t('orderDetails')}
               </h2>
             </div>
             <div className="p-8">
               <dl className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
-                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">Order Number</dt>
+                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">{t('orderNumber')}</dt>
                   <dd className="text-base font-light text-neutral-900">{order.order_number}</dd>
                 </div>
                 <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
-                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">Date</dt>
+                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">{t('date')}</dt>
                   <dd className="text-base font-light text-neutral-900">
                     {new Date(order.created_at * 1000).toLocaleDateString()}
                   </dd>
                 </div>
                 <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
-                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">Status</dt>
-                  <dd className="text-base font-light text-neutral-900 uppercase tracking-wide">{order.status}</dd>
+                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">{t('status')}</dt>
+                  <dd className="text-base font-light text-neutral-900 uppercase tracking-wide">{getStatusConfig(order.status, t).label}</dd>
                 </div>
                 <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-4">
-                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">Payment Status</dt>
-                  <dd className="text-base font-light text-neutral-900 uppercase tracking-wide">{order.payment_status}</dd>
+                  <dt className="text-xs text-neutral-500 uppercase tracking-wider mb-2 font-light">{t('paymentStatus')}</dt>
+                  <dd className="text-base font-light text-neutral-900 uppercase tracking-wide">{getStatusConfig(order.payment_status, t).label}</dd>
                 </div>
               </dl>
             </div>
@@ -353,7 +353,7 @@ export default function OrderConfirmationPage() {
           {/* Order Items */}
           <div className="bg-white border border-neutral-200/50">
             <div className="p-8 border-b border-neutral-200/50">
-              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">Items</h2>
+              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">{t('items')}</h2>
             </div>
             <div className="p-8 space-y-3">
               {order.items.map((item) => (
@@ -363,7 +363,7 @@ export default function OrderConfirmationPage() {
                     {item.variant_name && (
                       <p className="text-sm text-neutral-500 mt-1 font-light">{item.variant_name}</p>
                     )}
-                    <p className="text-sm text-neutral-500 mt-1 font-light">Quantity: {item.quantity}</p>
+                    <p className="text-sm text-neutral-500 mt-1 font-light">{t('quantity')}: {item.quantity}</p>
                   </div>
                   <p className="font-light text-neutral-900 whitespace-nowrap">
                     {formatPrice(item.total, order.currency)}
@@ -376,7 +376,7 @@ export default function OrderConfirmationPage() {
           {/* Shipping Address */}
           <div className="bg-white border border-neutral-200/50">
             <div className="p-8 border-b border-neutral-200/50">
-              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">Shipping Address</h2>
+              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">{t('shippingAddress')}</h2>
             </div>
             <div className="p-8">
               <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-6 text-sm text-neutral-600 font-light">
@@ -394,25 +394,25 @@ export default function OrderConfirmationPage() {
           {/* Order Summary */}
           <div className="bg-white border border-neutral-200/50">
             <div className="p-8 border-b border-neutral-200/50">
-              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">Order Summary</h2>
+              <h2 className="text-sm font-light uppercase tracking-wider text-neutral-900">{t('orderSummary')}</h2>
             </div>
             <div className="p-8">
               <div className="bg-neutral-50/50 backdrop-blur-sm border border-neutral-200/50 p-6">
                 <dl className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <dt className="text-neutral-600 font-light">Subtotal (incl. VAT)</dt>
+                    <dt className="text-neutral-600 font-light">{t('subtotalInclVat')}</dt>
                     <dd className="text-neutral-900 font-light">{formatPrice(order.subtotal, order.currency)}</dd>
                   </div>
                   <div className="flex justify-between">
-                    <dt className="text-neutral-600 font-light">Shipping</dt>
+                    <dt className="text-neutral-600 font-light">{t('shipping')}</dt>
                     <dd className="text-neutral-900 font-light">{formatPrice(order.shipping_cost, order.currency)}</dd>
                   </div>
                   <div className="flex justify-between text-xs text-neutral-500 pt-2 border-t border-neutral-200/50 font-light">
-                    <dt>VAT included in subtotal</dt>
+                    <dt>{t('vatIncludedInSubtotal')}</dt>
                     <dd>{formatPrice(order.tax, order.currency)}</dd>
                   </div>
                   <div className="flex justify-between text-lg font-light border-t border-neutral-200/50 pt-3 mt-3">
-                    <dt className="text-neutral-900">Total</dt>
+                    <dt className="text-neutral-900">{t('total')}</dt>
                     <dd className="text-neutral-900">{formatPrice(order.subtotal + order.shipping_cost, order.currency)}</dd>
                   </div>
                 </dl>
@@ -429,13 +429,13 @@ export default function OrderConfirmationPage() {
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              Continue Shopping
+              {t('continueShopping')}
             </Link>
             <Link
               href="/orders"
               className="flex-1 inline-flex items-center justify-center gap-2 text-center bg-neutral-900 text-white py-4 px-6 text-sm font-light uppercase tracking-wider hover:bg-neutral-800 transition-all duration-300"
             >
-              View All Orders
+              {t('viewAllOrders')}
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
@@ -448,16 +448,23 @@ export default function OrderConfirmationPage() {
 }
 
 // Helper function to get status configuration
-function getStatusConfig(status: string): { label: string; icon: string } {
-  const statusMap: Record<string, { label: string; icon: string }> = {
-    pending: { label: 'Order Placed', icon: '📦' },
-    processing: { label: 'Processing', icon: '⚙️' },
-    shipped: { label: 'Shipped', icon: '🚚' },
-    delivered: { label: 'Delivered', icon: '✅' },
-    cancelled: { label: 'Cancelled', icon: '❌' },
-    refunded: { label: 'Refunded', icon: '↩️' },
+function getStatusConfig(status: string, t: (key: string) => string): { label: string; icon: string } {
+  const statusKey = status.toLowerCase();
+  const statusMap: Record<string, { labelKey: string; icon: string }> = {
+    pending: { labelKey: 'pending', icon: '📦' },
+    processing: { labelKey: 'processing', icon: '⚙️' },
+    shipped: { labelKey: 'shipped', icon: '🚚' },
+    delivered: { labelKey: 'delivered', icon: '✅' },
+    cancelled: { labelKey: 'cancelled', icon: '❌' },
+    refunded: { labelKey: 'refunded', icon: '↩️' },
+    paid: { labelKey: 'paid', icon: '💳' },
   };
 
-  return statusMap[status.toLowerCase()] || { label: status, icon: '📋' };
+  const config = statusMap[statusKey];
+  if (config) {
+    return { label: t(config.labelKey), icon: config.icon };
+  }
+
+  return { label: status, icon: '📋' };
 }
 

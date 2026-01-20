@@ -481,7 +481,7 @@ export default function ProfilePage() {
 
                       <div>
                         <label htmlFor="name" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                          {t('name') || 'Name'}
+                          {t('name')}
                         </label>
                         <input
                           type="text"
