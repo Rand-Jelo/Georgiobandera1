@@ -1497,7 +1497,6 @@ export default function CheckoutPage() {
                   </svg>
                 </button>
                 {expandedSections.review && isPaymentComplete() && isShippingComplete() && (
-                  <div>
                   <div className="p-10 space-y-10">
                     {/* Shipping Address Review */}
                     <div>
@@ -1640,7 +1639,6 @@ export default function CheckoutPage() {
                       </div>
                     )}
 
-                  </div>
                   </div>
                 )}
               </div>
@@ -1920,7 +1918,6 @@ export default function CheckoutPage() {
               </div>
             </div>
           )}
-        </div>
       </section>
     </div>
   );
