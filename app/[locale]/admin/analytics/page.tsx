@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import {
   LineChart,
@@ -44,6 +45,7 @@ interface RevenueByStatus {
 type TabType = 'overview' | 'sales' | 'products' | 'settings';
 
 export default function AdminAnalyticsPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -338,7 +340,7 @@ export default function AdminAnalyticsPage() {
   const tabs: { id: TabType; label: string; icon: React.ReactNode }[] = [
     {
       id: 'overview',
-      label: 'Overview',
+      label: t('overview'),
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -347,7 +349,7 @@ export default function AdminAnalyticsPage() {
     },
     {
       id: 'sales',
-      label: 'Sales',
+      label: t('sales'),
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -356,7 +358,7 @@ export default function AdminAnalyticsPage() {
     },
     {
       id: 'products',
-      label: 'Products',
+      label: t('products'),
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -365,7 +367,7 @@ export default function AdminAnalyticsPage() {
     },
     {
       id: 'settings',
-      label: 'Settings',
+      label: t('settings'),
       icon: (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -388,12 +390,12 @@ export default function AdminAnalyticsPage() {
             href="/admin"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Dashboard
+            {t('backToDashboard')}
           </Link>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">Analytics</h1>
-              <p className="text-sm sm:text-base text-neutral-400">Sales performance and product insights</p>
+              <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('analytics')}</h1>
+              <p className="text-sm sm:text-base text-neutral-400">{t('salesPerformance')}</p>
             </div>
             
             {/* Date Range Picker */}
@@ -407,7 +409,7 @@ export default function AdminAnalyticsPage() {
                       : 'bg-black/50 text-neutral-400 border border-white/10 hover:border-white/20'
                   }`}
                 >
-                  Preset
+                  {t('preset')}
                 </button>
                 <button
                   onClick={() => setDateRangeType('custom')}
@@ -417,7 +419,7 @@ export default function AdminAnalyticsPage() {
                       : 'bg-black/50 text-neutral-400 border border-white/10 hover:border-white/20'
                   }`}
                 >
-                  Custom
+                  {t('custom')}
                 </button>
               </div>
               
@@ -427,11 +429,11 @@ export default function AdminAnalyticsPage() {
                   onChange={(e) => setPresetDays(parseInt(e.target.value, 10))}
                   className="px-3 py-2 text-sm border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                 >
-                  <option value="7">Last 7 days</option>
-                  <option value="30">Last 30 days</option>
-                  <option value="90">Last 90 days</option>
-                  <option value="180">Last 6 months</option>
-                  <option value="365">Last year</option>
+                  <option value="7">{t('last7Days')}</option>
+                  <option value="30">{t('last30Days')}</option>
+                  <option value="90">{t('last90Days')}</option>
+                  <option value="180">{t('last6Months')}</option>
+                  <option value="365">{t('lastYear')}</option>
                 </select>
               ) : (
                 <div className="flex items-center gap-2">
@@ -492,12 +494,12 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <h3 className="text-xs font-medium text-emerald-400/80 uppercase tracking-wider">
-                      Total Revenue
+                      {t('totalRevenue')}
                     </h3>
                   </div>
                   <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{formatCurrency(kpis.totalRevenue)}</p>
                   <p className={`text-xs mt-2 ${kpis.revenueGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {formatPercent(kpis.revenueGrowth)} vs prev. period
+                    {formatPercent(kpis.revenueGrowth)} {t('vsPrevPeriod')}
                   </p>
                 </div>
               </div>
@@ -508,12 +510,12 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-blue-500" />
                     <h3 className="text-xs font-medium text-blue-400/80 uppercase tracking-wider">
-                      Total Orders
+                      {t('orders')}
                     </h3>
                   </div>
                   <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{kpis.totalOrders}</p>
                   <p className={`text-xs mt-2 ${kpis.orderGrowth >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {formatPercent(kpis.orderGrowth)} vs prev. period
+                    {formatPercent(kpis.orderGrowth)} {t('vsPrevPeriod')}
                   </p>
                 </div>
               </div>
@@ -524,11 +526,11 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-purple-500" />
                     <h3 className="text-xs font-medium text-purple-400/80 uppercase tracking-wider">
-                      Avg Order Value
+                      {t('averageOrderValue')}
                     </h3>
                   </div>
                   <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{formatCurrency(kpis.avgOrderValue)}</p>
-                  <p className="text-xs text-neutral-500 mt-2">Per transaction</p>
+                  <p className="text-xs text-neutral-500 mt-2">{t('perTransaction')}</p>
                 </div>
               </div>
               
@@ -538,11 +540,11 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-amber-500" />
                     <h3 className="text-xs font-medium text-amber-400/80 uppercase tracking-wider">
-                      Daily Average
+                      {t('average')}
                     </h3>
                   </div>
                   <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{formatCurrency(kpis.avgDailyRevenue)}</p>
-                  <p className="text-xs text-neutral-500 mt-2">Revenue per day</p>
+                  <p className="text-xs text-neutral-500 mt-2">{t('revenuePerDay')}</p>
                 </div>
               </div>
             </div>
@@ -555,7 +557,7 @@ export default function AdminAnalyticsPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                       <h3 className="text-xs font-medium text-amber-400/80 uppercase tracking-wider">
-                        Pending Revenue
+                        {t('pendingRevenue')}
                       </h3>
                     </div>
                     <p className="text-xl font-bold text-white">{formatCurrency(revenueByStatus.pending)}</p>
@@ -574,7 +576,7 @@ export default function AdminAnalyticsPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                       <h3 className="text-xs font-medium text-rose-400/80 uppercase tracking-wider">
-                        Refund Rate
+                        {t('refundRate')}
                       </h3>
                     </div>
                     <p className="text-xl font-bold text-white">{kpis.refundRate.toFixed(1)}%</p>
@@ -593,7 +595,7 @@ export default function AdminAnalyticsPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       <h3 className="text-xs font-medium text-emerald-400/80 uppercase tracking-wider">
-                        Best Day
+                        {t('bestDay')}
                       </h3>
                     </div>
                     <p className="text-xl font-bold text-white">
@@ -618,14 +620,14 @@ export default function AdminAnalyticsPage() {
               <div className="lg:col-span-2 bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-white">Revenue Trend</h2>
-                    <p className="text-xs text-neutral-500 mt-1">Daily revenue over selected period</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-white">{t('revenueTrend')}</h2>
+                    <p className="text-xs text-neutral-500 mt-1">{t('dailyRevenueOverPeriod')}</p>
                   </div>
                   <button
                     onClick={() => setActiveTab('sales')}
                     className="text-xs text-neutral-400 hover:text-white transition-colors focus:outline-none px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10"
                   >
-                    View details →
+                    {t('viewDetails')} →
                   </button>
                 </div>
                 {salesData.length === 0 ? (
@@ -636,7 +638,7 @@ export default function AdminAnalyticsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                       </div>
-                      <p className="text-sm">No sales data available</p>
+                      <p className="text-sm">{t('noSalesData')}</p>
                     </div>
                   </div>
                 ) : (
@@ -696,11 +698,11 @@ export default function AdminAnalyticsPage() {
 
               {/* Revenue Distribution Pie Chart */}
               <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
-                <h2 className="text-lg sm:text-xl font-bold text-white mb-1">Revenue Status</h2>
-                <p className="text-xs text-neutral-500 mb-4">Payment distribution</p>
+                <h2 className="text-lg sm:text-xl font-bold text-white mb-1">{t('revenueStatus')}</h2>
+                <p className="text-xs text-neutral-500 mb-4">{t('paymentDistribution')}</p>
                 {pieChartData.length === 0 ? (
                   <div className="h-64 flex items-center justify-center text-neutral-400">
-                    <p className="text-sm">No data available</p>
+                    <p className="text-sm">{t('noDataAvailable')}</p>
                   </div>
                 ) : (
                   <div>
@@ -762,14 +764,14 @@ export default function AdminAnalyticsPage() {
             <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white">Top Products</h2>
-                  <p className="text-xs text-neutral-500 mt-1">Best performing products this period</p>
+                  <h2 className="text-lg sm:text-xl font-bold text-white">{t('topProducts')}</h2>
+                  <p className="text-xs text-neutral-500 mt-1">{t('bestPerformingProducts')}</p>
                 </div>
                 <button
                   onClick={() => setActiveTab('products')}
                   className="text-xs text-neutral-400 hover:text-white transition-colors focus:outline-none px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10"
                 >
-                  View all →
+                  {t('viewAll')} →
                 </button>
               </div>
               {topProducts.length === 0 ? (
@@ -779,7 +781,7 @@ export default function AdminAnalyticsPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
                   </div>
-                  <p className="text-sm">No product sales data available</p>
+                  <p className="text-sm">{t('noProductSalesData')}</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -802,7 +804,7 @@ export default function AdminAnalyticsPage() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-bold text-emerald-400">{formatCurrency(product.total_revenue)}</p>
-                            <p className="text-xs text-neutral-500">{product.total_quantity} units</p>
+                            <p className="text-xs text-neutral-500">{product.total_quantity} {t('units')}</p>
                           </div>
                         </div>
                         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
@@ -831,11 +833,11 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <h3 className="text-xs sm:text-sm font-medium text-emerald-400/80 uppercase tracking-wider">
-                      Paid Revenue
+                      {t('paidRevenue')}
                     </h3>
                   </div>
                   <p className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{formatCurrency(revenueByStatus.paid)}</p>
-                  <p className="text-xs text-neutral-500 mt-2">Completed transactions</p>
+                  <p className="text-xs text-neutral-500 mt-2">{t('completedTransactions')}</p>
                 </div>
               </div>
               <div className="group relative p-4 sm:p-6 rounded-xl border border-amber-500/20 bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-transparent overflow-hidden">
@@ -844,11 +846,11 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-amber-500" />
                     <h3 className="text-xs sm:text-sm font-medium text-amber-400/80 uppercase tracking-wider">
-                      Pending
+                      {t('pending')}
                     </h3>
                   </div>
                   <p className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{formatCurrency(revenueByStatus.pending)}</p>
-                  <p className="text-xs text-neutral-500 mt-2">Awaiting payment</p>
+                  <p className="text-xs text-neutral-500 mt-2">{t('awaitingPayment')}</p>
                 </div>
               </div>
               <div className="group relative p-4 sm:p-6 rounded-xl border border-rose-500/20 bg-gradient-to-br from-rose-500/10 via-rose-600/5 to-transparent overflow-hidden">
@@ -857,11 +859,11 @@ export default function AdminAnalyticsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-rose-500" />
                     <h3 className="text-xs sm:text-sm font-medium text-rose-400/80 uppercase tracking-wider">
-                      Refunded
+                      {t('refunded')}
                     </h3>
                   </div>
                   <p className="text-3xl sm:text-4xl font-bold text-white tracking-tight">{formatCurrency(revenueByStatus.refunded)}</p>
-                  <p className="text-xs text-neutral-500 mt-2">Money returned</p>
+                  <p className="text-xs text-neutral-500 mt-2">{t('moneyReturned')}</p>
                 </div>
               </div>
             </div>
@@ -871,7 +873,7 @@ export default function AdminAnalyticsPage() {
               {/* Chart Header */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Sales Performance</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{t('salesPerformance')}</h2>
                   <p className="text-sm text-neutral-400">
                     {salesData.length > 0 && (
                       <>
@@ -891,7 +893,7 @@ export default function AdminAnalyticsPage() {
                         : 'text-neutral-400 hover:text-white'
                     }`}
                   >
-                    All
+                    {t('all')}
                   </button>
                   <button
                     onClick={() => setSalesChartView('revenue')}
@@ -902,7 +904,7 @@ export default function AdminAnalyticsPage() {
                     }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    Revenue
+                    {t('revenue')}
                   </button>
                   <button
                     onClick={() => setSalesChartView('orders')}
@@ -913,34 +915,34 @@ export default function AdminAnalyticsPage() {
                     }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-blue-500" />
-                    Orders
+                    {t('orders')}
                   </button>
                 </div>
               </div>
 
               {/* Quick Stats Row */}
               {salesData.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                  <div className="p-3 rounded-lg bg-white/5 border border-white/5">
-                    <p className="text-xs text-neutral-500 mb-1">Total Revenue</p>
-                    <p className="text-lg font-semibold text-white">
-                      {formatCurrency(salesData.reduce((sum, d) => sum + d.revenue, 0))}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-white/5 border border-white/5">
-                    <p className="text-xs text-neutral-500 mb-1">Total Orders</p>
-                    <p className="text-lg font-semibold text-white">
-                      {salesData.reduce((sum, d) => sum + d.orders, 0)}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-white/5 border border-white/5">
-                    <p className="text-xs text-neutral-500 mb-1">Avg. Daily Revenue</p>
-                    <p className="text-lg font-semibold text-white">
-                      {formatCurrency(salesData.reduce((sum, d) => sum + d.revenue, 0) / salesData.length)}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-white/5 border border-white/5">
-                    <p className="text-xs text-neutral-500 mb-1">Avg. Order Value</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                      <p className="text-xs text-neutral-500 mb-1">{t('totalRevenue')}</p>
+                      <p className="text-lg font-semibold text-white">
+                        {formatCurrency(salesData.reduce((sum, d) => sum + d.revenue, 0))}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                      <p className="text-xs text-neutral-500 mb-1">{t('orders')}</p>
+                      <p className="text-lg font-semibold text-white">
+                        {salesData.reduce((sum, d) => sum + d.orders, 0)}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                      <p className="text-xs text-neutral-500 mb-1">{t('average')}</p>
+                      <p className="text-lg font-semibold text-white">
+                        {formatCurrency(salesData.reduce((sum, d) => sum + d.revenue, 0) / salesData.length)}
+                      </p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-white/5 border border-white/5">
+                      <p className="text-xs text-neutral-500 mb-1">{t('averageOrderValue')}</p>
                     <p className="text-lg font-semibold text-white">
                       {formatCurrency(
                         salesData.reduce((sum, d) => sum + d.orders, 0) > 0
@@ -960,8 +962,7 @@ export default function AdminAnalyticsPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
                     </div>
-                    <p className="text-sm">No sales data available for this period</p>
-                    <p className="text-xs text-neutral-500 mt-1">Try selecting a different date range</p>
+                    <p className="text-sm">{t('noSalesData')}</p>
                   </div>
                 </div>
               ) : (
@@ -1131,13 +1132,13 @@ export default function AdminAnalyticsPage() {
                   {(salesChartView === 'both' || salesChartView === 'revenue') && (
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                      <span className="text-sm text-neutral-400">Revenue (SEK)</span>
+                      <span className="text-sm text-neutral-400">{t('chartLegendRevenue')}</span>
                     </div>
                   )}
                   {(salesChartView === 'both' || salesChartView === 'orders') && (
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full bg-blue-500" />
-                      <span className="text-sm text-neutral-400">Orders (count)</span>
+                      <span className="text-sm text-neutral-400">{t('chartLegendOrders')}</span>
                     </div>
                   )}
                 </div>
@@ -1155,7 +1156,7 @@ export default function AdminAnalyticsPage() {
                 <div className="p-4 sm:p-5 rounded-xl border border-white/10 bg-gradient-to-br from-blue-500/10 via-blue-600/5 to-transparent">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-blue-500" />
-                    <h3 className="text-xs font-medium text-blue-400/80 uppercase tracking-wider">Total Units</h3>
+                    <h3 className="text-xs font-medium text-blue-400/80 uppercase tracking-wider">{t('totalUnits')}</h3>
                   </div>
                   <p className="text-2xl sm:text-3xl font-bold text-white">
                     {topProducts.reduce((sum, p) => sum + p.total_quantity, 0)}
@@ -1164,7 +1165,7 @@ export default function AdminAnalyticsPage() {
                 <div className="p-4 sm:p-5 rounded-xl border border-white/10 bg-gradient-to-br from-emerald-500/10 via-emerald-600/5 to-transparent">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <h3 className="text-xs font-medium text-emerald-400/80 uppercase tracking-wider">Total Revenue</h3>
+                    <h3 className="text-xs font-medium text-emerald-400/80 uppercase tracking-wider">{t('totalRevenue')}</h3>
                   </div>
                   <p className="text-2xl sm:text-3xl font-bold text-white">
                     {formatCurrency(topProducts.reduce((sum, p) => sum + p.total_revenue, 0))}
@@ -1173,17 +1174,17 @@ export default function AdminAnalyticsPage() {
                 <div className="p-4 sm:p-5 rounded-xl border border-white/10 bg-gradient-to-br from-purple-500/10 via-purple-600/5 to-transparent">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-purple-500" />
-                    <h3 className="text-xs font-medium text-purple-400/80 uppercase tracking-wider">Best Seller</h3>
+                    <h3 className="text-xs font-medium text-purple-400/80 uppercase tracking-wider">{t('bestSeller')}</h3>
                   </div>
                   <p className="text-lg sm:text-xl font-bold text-white truncate">
                     {topProducts[0]?.product_name || '-'}
                   </p>
-                  <p className="text-xs text-neutral-500 mt-1">{topProducts[0]?.total_quantity || 0} units sold</p>
+                  <p className="text-xs text-neutral-500 mt-1">{topProducts[0]?.total_quantity || 0} {t('unitsSold')}</p>
                 </div>
                 <div className="p-4 sm:p-5 rounded-xl border border-white/10 bg-gradient-to-br from-amber-500/10 via-amber-600/5 to-transparent">
                   <div className="flex items-center gap-2 mb-2">
                     <div className="w-2 h-2 rounded-full bg-amber-500" />
-                    <h3 className="text-xs font-medium text-amber-400/80 uppercase tracking-wider">Avg. Price</h3>
+                    <h3 className="text-xs font-medium text-amber-400/80 uppercase tracking-wider">{t('avgPrice')}</h3>
                   </div>
                   <p className="text-2xl sm:text-3xl font-bold text-white">
                     {formatCurrency(
@@ -1192,7 +1193,7 @@ export default function AdminAnalyticsPage() {
                         : 0
                     )}
                   </p>
-                  <p className="text-xs text-neutral-500 mt-1">Per unit</p>
+                  <p className="text-xs text-neutral-500 mt-1">{t('perUnit')}</p>
                 </div>
               </div>
             )}
@@ -1201,8 +1202,8 @@ export default function AdminAnalyticsPage() {
             <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-8">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">Product Performance</h2>
-                  <p className="text-sm text-neutral-400">Top {topProducts.length} products by sales</p>
+                  <h2 className="text-xl sm:text-2xl font-bold text-white mb-1">{t('productPerformance')}</h2>
+                  <p className="text-sm text-neutral-400">{t('topProductsBySales', { count: topProducts.length })}</p>
                 </div>
               </div>
               
@@ -1214,8 +1215,8 @@ export default function AdminAnalyticsPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                       </svg>
                     </div>
-                    <p className="text-sm">No product sales data available</p>
-                    <p className="text-xs text-neutral-500 mt-1">Products will appear here after sales are made</p>
+                    <p className="text-sm">{t('noProductSalesData')}</p>
+                    <p className="text-xs text-neutral-500 mt-1">{t('productsWillAppear')}</p>
                   </div>
                 </div>
               ) : (
@@ -1306,14 +1307,14 @@ export default function AdminAnalyticsPage() {
               {/* Chart Legend */}
               {topProducts.length > 0 && (
                 <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-white/5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-blue-500" />
-                    <span className="text-sm text-neutral-400">Units Sold</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-sm bg-emerald-500" />
-                    <span className="text-sm text-neutral-400">Revenue (SEK)</span>
-                  </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-blue-500" />
+                      <span className="text-sm text-neutral-400">{t('unitsSold')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-sm bg-emerald-500" />
+                      <span className="text-sm text-neutral-400">{t('chartLegendRevenue')}</span>
+                    </div>
                 </div>
               )}
             </div>
@@ -1321,14 +1322,14 @@ export default function AdminAnalyticsPage() {
             {/* Top Products Table */}
             <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold text-white">Product Rankings</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">{t('productRankings')}</h2>
                 <span className="text-xs text-neutral-500 bg-white/5 px-3 py-1 rounded-full">
-                  {topProducts.length} products
+                  {topProducts.length} {t('products')}
                 </span>
               </div>
               {topProducts.length === 0 ? (
                 <div className="text-center py-8 text-neutral-400">
-                  No product sales data available
+                  {t('noProductSalesData')}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -1367,7 +1368,7 @@ export default function AdminAnalyticsPage() {
                             <div className="space-y-2">
                               {/* Revenue Bar */}
                               <div className="flex items-center gap-3">
-                                <span className="text-xs text-neutral-500 w-16">Revenue</span>
+                                <span className="text-xs text-neutral-500 w-16">{t('revenue')}</span>
                                 <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
                                   <div 
                                     className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-500"
@@ -1377,7 +1378,7 @@ export default function AdminAnalyticsPage() {
                               </div>
                               {/* Units Bar */}
                               <div className="flex items-center gap-3">
-                                <span className="text-xs text-neutral-500 w-16">Units</span>
+                                <span className="text-xs text-neutral-500 w-16">{t('units')}</span>
                                 <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
                                   <div 
                                     className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-500"
@@ -1391,17 +1392,17 @@ export default function AdminAnalyticsPage() {
                             {/* Stats Row */}
                             <div className="flex items-center gap-4 mt-3 pt-3 border-t border-white/5">
                               <div className="flex items-center gap-1.5">
-                                <span className="text-xs text-neutral-500">Orders:</span>
+                                <span className="text-xs text-neutral-500">{t('ordersLabel')}:</span>
                                 <span className="text-xs font-medium text-neutral-300">{product.order_count}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <span className="text-xs text-neutral-500">Avg/Order:</span>
+                                <span className="text-xs text-neutral-500">{t('avgPerOrder')}:</span>
                                 <span className="text-xs font-medium text-neutral-300">
                                   {formatCurrency(product.total_revenue / product.order_count)}
                                 </span>
                               </div>
                               <div className="flex items-center gap-1.5">
-                                <span className="text-xs text-neutral-500">Avg/Unit:</span>
+                                <span className="text-xs text-neutral-500">{t('avgPerUnit')}:</span>
                                 <span className="text-xs font-medium text-neutral-300">
                                   {formatCurrency(product.total_revenue / product.total_quantity)}
                                 </span>
@@ -1428,8 +1429,8 @@ export default function AdminAnalyticsPage() {
                 className="w-full p-4 sm:p-6 flex items-center justify-between text-left hover:bg-white/5 transition-colors focus:outline-none"
               >
                 <div>
-                  <h2 className="text-lg sm:text-xl font-semibold text-white">Developer Tools</h2>
-                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">Generate and manage sample data for testing</p>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white">{t('developerTools')}</h2>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">{t('generateManageSampleData')}</p>
                 </div>
                 <svg
                   className={`w-5 h-5 text-neutral-400 transition-transform ${showDevTools ? 'rotate-180' : ''}`}
@@ -1448,9 +1449,9 @@ export default function AdminAnalyticsPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                     <div>
-                      <p className="text-sm text-amber-200 font-medium">Development Only</p>
+                      <p className="text-sm text-amber-200 font-medium">{t('developmentOnly')}</p>
                       <p className="text-xs text-amber-200/70 mt-1">
-                        These tools are for testing purposes. Sample data uses fake customer emails (customer*@example.com).
+                        {t('devToolsWarning')}
                       </p>
                     </div>
                   </div>
@@ -1466,10 +1467,10 @@ export default function AdminAnalyticsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
                         <span className="text-sm font-medium text-blue-300">
-                          {seeding ? 'Generating...' : 'Generate Data'}
+                          {seeding ? t('generating') : t('generateData')}
                         </span>
                       </div>
-                      <p className="text-xs text-neutral-400 text-left">Create 100 random test orders</p>
+                      <p className="text-xs text-neutral-400 text-left">{t('createTestOrders')}</p>
                     </button>
 
                     <button
@@ -1482,10 +1483,10 @@ export default function AdminAnalyticsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                         <span className="text-sm font-medium text-red-300">
-                          {deleting ? 'Deleting...' : 'Delete Sample Data'}
+                          {deleting ? t('deleting') : t('deleteSampleData')}
                         </span>
                       </div>
-                      <p className="text-xs text-neutral-400 text-left">Remove all test orders</p>
+                      <p className="text-xs text-neutral-400 text-left">{t('removeTestOrders')}</p>
                     </button>
 
                     <button
@@ -1498,10 +1499,10 @@ export default function AdminAnalyticsPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
                         <span className="text-sm font-medium text-green-300">
-                          {(deleting || seeding) ? 'Processing...' : 'Regenerate All'}
+                          {(deleting || seeding) ? t('processing') : t('regenerateAll')}
                         </span>
                       </div>
-                      <p className="text-xs text-neutral-400 text-left">Delete and create fresh data</p>
+                      <p className="text-xs text-neutral-400 text-left">{t('deleteAndCreateFresh')}</p>
                     </button>
                   </div>
                 </div>
@@ -1510,22 +1511,22 @@ export default function AdminAnalyticsPage() {
 
             {/* Data Info */}
             <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">Data Information</h2>
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('dataInformation')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">Current Period</p>
-                  <p className="text-sm text-white font-medium">{days} days</p>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">{t('currentPeriod')}</p>
+                  <p className="text-sm text-white font-medium">{days} {t('days')}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">Data Points</p>
-                  <p className="text-sm text-white font-medium">{salesData.length} days of data</p>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">{t('dataPoints')}</p>
+                  <p className="text-sm text-white font-medium">{salesData.length} {t('daysOfData')}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">Products Tracked</p>
-                  <p className="text-sm text-white font-medium">{topProducts.length} products</p>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">{t('productsTracked')}</p>
+                  <p className="text-sm text-white font-medium">{topProducts.length} {t('products')}</p>
                 </div>
                 <div className="p-4 rounded-lg bg-white/5">
-                  <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">Last Updated</p>
+                  <p className="text-xs text-neutral-400 uppercase tracking-wide mb-1">{t('lastUpdated')}</p>
                   <p className="text-sm text-white font-medium">{new Date().toLocaleString('sv-SE')}</p>
                 </div>
               </div>
