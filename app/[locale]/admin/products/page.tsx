@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Product } from '@/types/database';
 
 export default function AdminProductsPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const locale = useLocale();
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -254,28 +255,28 @@ export default function AdminProductsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <Link
               href="/admin"
               className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
             >
-              ← Back to Dashboard
+              {t('backToDashboard')}
             </Link>
-            <h1 className="text-4xl font-semibold text-white mb-2">Products</h1>
-            <p className="text-neutral-400">Manage your product catalog</p>
+            <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('products')}</h1>
+            <p className="text-sm sm:text-base text-neutral-400">{t('manageProducts')}</p>
           </div>
           <Link
             href="/admin/products/new"
-            className="rounded-lg bg-white px-6 py-3 text-sm font-medium text-black hover:bg-neutral-100 transition-colors"
+            className="w-full sm:w-auto text-center rounded-lg bg-white px-6 py-3 text-sm font-medium text-black hover:bg-neutral-100 transition-colors"
           >
-            Add Product
+            {t('addProduct')}
           </Link>
         </div>
 
@@ -285,7 +286,7 @@ export default function AdminProductsPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search products by name, SKU, or description..."
+              placeholder={t('search') + '...'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-4 py-3 pl-10 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
@@ -311,20 +312,20 @@ export default function AdminProductsPage() {
           </div>
 
           {/* Status Filter */}
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-neutral-400">Filter by status:</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <span className="text-sm text-neutral-400">{t('filter')}:</span>
             <div className="flex gap-2 flex-wrap">
               {(['all', 'draft', 'active', 'archived'] as const).map((status) => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors ${
                     statusFilter === status
                       ? 'bg-white text-black'
                       : 'bg-black/50 text-neutral-300 hover:bg-black/70 border border-white/10'
                   }`}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === 'all' ? t('all') : status === 'draft' ? t('draft') : status === 'active' ? t('active') : t('archive')}
                 </button>
               ))}
             </div>
@@ -334,36 +335,36 @@ export default function AdminProductsPage() {
         {/* Bulk Actions Toolbar */}
         {selectedProducts.size > 0 && (
           <div className="mb-4 bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="text-white font-medium">
-                {selectedProducts.size} product(s) selected
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="text-white font-medium text-sm sm:text-base">
+                {t('itemsSelected', { count: selectedProducts.size })}
               </div>
-              <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
                 <select
                   value={bulkAction}
                   onChange={(e) => {
                     setBulkAction(e.target.value as typeof bulkAction);
                     setBulkValue('');
                   }}
-                  className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                  className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
                 >
-                  <option value="">Select action...</option>
-                  <option value="delete">Archive Selected</option>
-                  <option value="status">Change Status</option>
-                  <option value="category">Change Category</option>
-                  <option value="featured">Toggle Featured</option>
+                  <option value="">{t('bulkActions')}...</option>
+                  <option value="delete">{t('archive')}</option>
+                  <option value="status">{t('status')}</option>
+                  <option value="category">{t('category')}</option>
+                  <option value="featured">{t('featuredProduct')}</option>
                 </select>
 
                 {bulkAction === 'status' && (
                   <select
                     value={bulkValue}
                     onChange={(e) => setBulkValue(e.target.value)}
-                    className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                    className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
                   >
-                    <option value="">Select status...</option>
-                    <option value="draft">Draft</option>
-                    <option value="active">Active</option>
-                    <option value="archived">Archived</option>
+                    <option value="">{t('status')}...</option>
+                    <option value="draft">{t('draft')}</option>
+                    <option value="active">{t('active')}</option>
+                    <option value="archived">{t('archive')}</option>
                   </select>
                 )}
 
@@ -371,9 +372,9 @@ export default function AdminProductsPage() {
                   <select
                     value={bulkValue}
                     onChange={(e) => setBulkValue(e.target.value)}
-                    className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                    className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
                   >
-                    <option value="">No Category</option>
+                    <option value="">{t('noParent')}</option>
                     {categories.map((cat) => (
                       <option key={cat.id} value={cat.id}>
                         {locale === 'sv' ? cat.name_sv : cat.name_en}
@@ -386,42 +387,44 @@ export default function AdminProductsPage() {
                   <select
                     value={bulkValue}
                     onChange={(e) => setBulkValue(e.target.value)}
-                    className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                    className="px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
                   >
-                    <option value="">Select...</option>
-                    <option value="true">Mark as Featured</option>
-                    <option value="false">Remove from Featured</option>
+                    <option value="">{t('featuredProduct')}...</option>
+                    <option value="true">{t('yes')}</option>
+                    <option value="false">{t('no')}</option>
                   </select>
                 )}
 
-                <button
-                  onClick={handleBulkOperation}
-                  disabled={bulkProcessing || !bulkAction || (bulkAction !== 'delete' && !bulkValue)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg bg-white text-black hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {bulkProcessing ? 'Processing...' : 'Apply'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleBulkOperation}
+                    disabled={bulkProcessing || !bulkAction || (bulkAction !== 'delete' && !bulkValue)}
+                    className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-lg bg-white text-black hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {bulkProcessing ? t('processing') : t('apply')}
+                  </button>
 
-                <button
-                  onClick={() => {
-                    setSelectedProducts(new Set());
-                    setBulkAction('');
-                    setBulkValue('');
-                  }}
-                  className="px-4 py-2 text-sm font-medium rounded-lg bg-black/50 text-white hover:bg-black/70 border border-white/10 transition-colors"
-                >
-                  Cancel
-                </button>
+                  <button
+                    onClick={() => {
+                      setSelectedProducts(new Set());
+                      setBulkAction('');
+                      setBulkValue('');
+                    }}
+                    className="flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-lg bg-black/50 text-white hover:bg-black/70 border border-white/10 transition-colors"
+                  >
+                    {t('cancel')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        <div className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
+        <div className="bg-black/50 border border-white/10 rounded-lg overflow-x-auto">
           <table className="min-w-full divide-y divide-white/10">
             <thead className="bg-black/70">
               <tr>
-                <th className="px-6 py-3 text-left">
+                <th className="px-3 sm:px-6 py-3 text-left">
                   <input
                     type="checkbox"
                     checked={selectedProducts.size > 0 && selectedProducts.size === products.length}
@@ -429,23 +432,23 @@ export default function AdminProductsPage() {
                     className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Name
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                  {t('name')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  SKU
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden sm:table-cell">
+                  {t('sku')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Price
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                  {t('price')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Status
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                  {t('status')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Stock
+                <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden md:table-cell">
+                  {t('stockQuantity')}
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Actions
+                <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                  {t('actions')}
                 </th>
               </tr>
             </thead>
@@ -454,14 +457,14 @@ export default function AdminProductsPage() {
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center">
-                      <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-12 sm:w-16 h-12 sm:h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                       </svg>
-                      <p className="text-neutral-400 text-lg font-medium mb-2">No products found</p>
-                      <p className="text-neutral-500 text-sm mb-4">
+                      <p className="text-neutral-400 text-base sm:text-lg font-medium mb-2">{t('noResults')}</p>
+                      <p className="text-neutral-500 text-xs sm:text-sm mb-4">
                         {searchQuery || statusFilter !== 'all' 
-                          ? 'Try adjusting your search or filters'
-                          : 'Get started by creating your first product'
+                          ? t('noResults')
+                          : t('addProduct')
                         }
                       </p>
                       {!searchQuery && statusFilter === 'all' && (
@@ -472,7 +475,7 @@ export default function AdminProductsPage() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
-                          Add Your First Product
+                          {t('addProduct')}
                         </Link>
                       )}
                     </div>
@@ -483,7 +486,7 @@ export default function AdminProductsPage() {
                   const name = locale === 'sv' ? product.name_sv : product.name_en;
                   return (
                     <tr key={product.id} className="hover:bg-black/30 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         <input
                           type="checkbox"
                           checked={selectedProducts.has(product.id)}
@@ -491,16 +494,16 @@ export default function AdminProductsPage() {
                           className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
                         />
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-white">{name}</div>
+                      <td className="px-3 sm:px-6 py-4">
+                        <div className="text-sm font-medium text-white truncate max-w-[120px] sm:max-w-none">{name}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                         <div className="text-sm text-neutral-400">{product.sku || '-'}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-white">{product.price} SEK</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${
                             product.status === 'active'
@@ -510,15 +513,15 @@ export default function AdminProductsPage() {
                               : 'bg-gray-500/20 text-gray-300'
                           }`}
                         >
-                          {product.status}
+                          {product.status === 'active' ? t('active') : product.status === 'draft' ? t('draft') : t('archive')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                         <div className="text-sm text-neutral-400">
                           {product.track_inventory ? product.stock_quantity : '∞'}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="relative inline-block">
                           <button
                             ref={(el) => {
@@ -599,7 +602,7 @@ export default function AdminProductsPage() {
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors block"
                   >
-                    Edit
+                    {t('edit')}
                   </Link>
                   <button
                     onClick={(e) => {
@@ -610,7 +613,7 @@ export default function AdminProductsPage() {
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
                   >
-                    Delete
+                    {t('delete')}
                   </button>
                 </div>
               </div>
