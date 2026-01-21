@@ -1755,7 +1755,7 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Totals */}
-                  <dl className="space-y-8 text-sm">
+                  <dl className="space-y-8 text-sm px-10 pb-10">
                     <div className="flex items-baseline justify-between">
                       <dt className="text-neutral-600 font-light tracking-wide">{t('subtotalInclVat')}</dt>
                       <dd className="text-neutral-900 font-light tracking-wide">
@@ -1819,7 +1819,7 @@ export default function CheckoutPage() {
                   </dl>
 
                   {/* Trust Badges */}
-                  <div className="mt-10 pt-10 border-t border-neutral-200/30">
+                  <div className="mt-10 pt-10 border-t border-neutral-200/30 mx-10 mb-10">
                     <div className="grid grid-cols-2 gap-6 text-center">
                       <div className="flex flex-col items-center">
                         <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-3">
