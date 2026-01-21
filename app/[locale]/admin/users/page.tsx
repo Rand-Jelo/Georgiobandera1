@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { User } from '@/types/database';
 
 export default function AdminUsersPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -141,7 +143,7 @@ export default function AdminUsersPage() {
   };
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+    return new Date(timestamp * 1000).toLocaleDateString('sv-SE', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -157,28 +159,28 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Dashboard
+            {t('backToDashboard')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Users</h1>
-          <p className="text-neutral-400">Manage user accounts</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('users')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('manageUserAccounts')}</p>
         </div>
 
         {/* Search Bar */}
         <div className="mb-6 relative">
           <input
             type="text"
-            placeholder="Search users by email, name, or phone..."
+            placeholder={t('searchUsersPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-3 pl-10 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
@@ -208,39 +210,39 @@ export default function AdminUsersPage() {
             <table className="min-w-full divide-y divide-white/10">
             <thead className="bg-black/70">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Email
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                  {t('email')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Name
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden sm:table-cell">
+                  {t('name')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Phone
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden lg:table-cell">
+                  {t('phone')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Role
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                  {t('role')}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Created
+                <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden md:table-cell">
+                  {t('created')}
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                  Actions
+                <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                  {t('actions')}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
+                  <td colSpan={6} className="px-4 sm:px-6 py-8 sm:py-12 text-center">
                     <div className="flex flex-col items-center justify-center">
-                      <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-12 sm:w-16 h-12 sm:h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      <p className="text-neutral-400 text-lg font-medium mb-2">No users found</p>
-                      <p className="text-neutral-500 text-sm">
+                      <p className="text-neutral-400 text-base sm:text-lg font-medium mb-2">{t('noUsersFound')}</p>
+                      <p className="text-neutral-500 text-xs sm:text-sm">
                         {searchQuery 
-                          ? 'Try adjusting your search'
-                          : 'Users will appear here once they register'
+                          ? t('tryAdjustingSearch')
+                          : t('usersWillAppear')
                         }
                       </p>
                     </div>
@@ -251,16 +253,16 @@ export default function AdminUsersPage() {
                   const isCurrentUser = user.id === currentUserId;
                   return (
                     <tr key={user.id} className="hover:bg-black/30 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-white">{user.email}</div>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium text-white break-all">{user.email}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                         <div className="text-sm text-neutral-400">{user.name || '-'}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                         <div className="text-sm text-neutral-400">{user.phone || '-'}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${
                             user.is_admin
@@ -268,10 +270,10 @@ export default function AdminUsersPage() {
                               : 'bg-neutral-500/20 text-neutral-300'
                           }`}
                         >
-                          {user.is_admin ? 'Admin' : 'User'}
+                          {user.is_admin ? t('admin') : t('user')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                         <div className="text-sm text-neutral-400">{formatDate(user.created_at)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -366,7 +368,7 @@ export default function AdminUsersPage() {
                         : ''
                     }`}
                   >
-                    {user.is_admin ? 'Remove Admin' : 'Make Admin'}
+                    {user.is_admin ? t('removeAdmin') : t('makeAdmin')}
                   </button>
                   <button
                     onClick={(e) => {
@@ -382,7 +384,7 @@ export default function AdminUsersPage() {
                         : ''
                     }`}
                   >
-                    Delete
+                    {t('delete')}
                   </button>
                 </div>
               </div>
