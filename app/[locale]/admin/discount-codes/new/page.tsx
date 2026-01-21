@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 
 type TabType = 'basic' | 'limits' | 'schedule';
 
 export default function NewDiscountCodePage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -115,37 +117,37 @@ export default function NewDiscountCodePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin/discount-codes"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Discount Codes
+            {t('backToDiscountCodes')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Create Discount Code</h1>
-          <p className="text-neutral-400">Create a new discount code or coupon</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('createDiscountCode')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('createNewDiscountCodeDesc')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
           {/* Tabs Navigation */}
           <div className="border-b border-white/10 bg-black/30">
-            <div className="flex space-x-1 px-6">
+            <div className="flex space-x-1 px-4 sm:px-6 overflow-x-auto">
               <button
                 type="button"
                 onClick={() => setActiveTab('basic')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-all relative whitespace-nowrap ${
                   activeTab === 'basic'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Basic Info</span>
+                <span>{t('basicInfo')}</span>
                 {activeTab === 'basic' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -153,13 +155,13 @@ export default function NewDiscountCodePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('limits')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-all relative whitespace-nowrap ${
                   activeTab === 'limits'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Limits</span>
+                <span>{t('limits')}</span>
                 {activeTab === 'limits' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -167,13 +169,13 @@ export default function NewDiscountCodePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('schedule')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-all relative whitespace-nowrap ${
                   activeTab === 'schedule'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Schedule</span>
+                <span>{t('schedule')}</span>
                 {activeTab === 'schedule' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -182,7 +184,7 @@ export default function NewDiscountCodePage() {
           </div>
 
           {/* Tab Content */}
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             {error && (
               <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 mb-6">
                 {error}
@@ -391,19 +393,19 @@ export default function NewDiscountCodePage() {
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-4 pt-6 border-t border-white/10 mt-6">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 pt-6 border-t border-white/10 mt-6">
               <Link
                 href="/admin/discount-codes"
-                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors text-center"
               >
-                Cancel
+                {t('cancel')}
               </Link>
               <button
                 type="submit"
                 disabled={saving}
                 className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                {saving ? 'Creating...' : 'Create Discount Code'}
+                {saving ? t('creating') : t('createDiscountCode')}
               </button>
             </div>
           </div>
