@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { ProductReview } from '@/types/database';
 
 export default function AdminReviewsPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const [allReviews, setAllReviews] = useState<ProductReview[]>([]);
   const [reviews, setReviews] = useState<ProductReview[]>([]);
@@ -159,21 +161,21 @@ export default function AdminReviewsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Dashboard
+            {t('backToDashboard')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Product Reviews</h1>
-          <p className="text-neutral-400">Manage customer reviews and ratings</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('productReviews')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('manageReviews')}</p>
         </div>
 
         {/* Search and Filters */}
@@ -182,7 +184,7 @@ export default function AdminReviewsPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search reviews by name, email, or review text..."
+              placeholder={t('searchReviewsPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-4 py-3 pl-10 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
@@ -208,20 +210,20 @@ export default function AdminReviewsPage() {
           </div>
 
           {/* Status Filter */}
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-neutral-400">Filter by status:</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <span className="text-sm text-neutral-400">{t('filterByStatus')}:</span>
             <div className="flex gap-2 flex-wrap">
               {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors ${
                     statusFilter === status
                       ? 'bg-white text-black'
                       : 'bg-black/50 text-neutral-300 hover:bg-black/70 border border-white/10'
                   }`}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === 'all' ? t('all') : status === 'pending' ? t('pending') : status === 'approved' ? t('approved') : t('rejected')}
                 </button>
               ))}
             </div>
@@ -230,16 +232,16 @@ export default function AdminReviewsPage() {
 
         <div className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
           {reviews.length === 0 ? (
-            <div className="p-12 text-center">
+            <div className="p-8 sm:p-12 text-center">
               <div className="flex flex-col items-center justify-center">
-                <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-12 sm:w-16 h-12 sm:h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
-                <p className="text-neutral-400 text-lg font-medium mb-2">No reviews found</p>
-                <p className="text-neutral-500 text-sm">
+                <p className="text-neutral-400 text-base sm:text-lg font-medium mb-2">{t('noReviewsFound')}</p>
+                <p className="text-neutral-500 text-xs sm:text-sm">
                   {searchQuery || statusFilter !== 'all' 
-                    ? 'Try adjusting your search or filters'
-                    : 'Product reviews will appear here once customers submit them'
+                    ? t('tryAdjustingSearchOrFilters')
+                    : t('reviewsWillAppear')
                   }
                 </p>
               </div>
@@ -247,17 +249,17 @@ export default function AdminReviewsPage() {
           ) : (
             <div className="divide-y divide-white/10">
               {reviews.map((review) => (
-                <div key={review.id} className="p-6 hover:bg-black/30 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-4 mb-2">
-                        <div>
-                          <p className="text-white font-medium">{review.name}</p>
-                          <p className="text-sm text-neutral-400">{review.email}</p>
+                <div key={review.id} className="p-4 sm:p-6 hover:bg-black/30 transition-colors">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-2">
+                        <div className="min-w-0">
+                          <p className="text-white font-medium text-sm sm:text-base truncate">{review.name}</p>
+                          <p className="text-xs sm:text-sm text-neutral-400 truncate">{review.email}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           {renderStars(review.rating)}
-                          <span className="text-sm text-neutral-400">({review.rating}/5)</span>
+                          <span className="text-xs sm:text-sm text-neutral-400">({review.rating}/5)</span>
                         </div>
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -268,21 +270,21 @@ export default function AdminReviewsPage() {
                               : 'bg-red-500/20 text-red-300'
                           }`}
                         >
-                          {review.status}
+                          {review.status === 'pending' ? t('pending') : review.status === 'approved' ? t('approved') : t('rejected')}
                         </span>
                       </div>
                       {review.title && (
-                        <h4 className="text-lg font-semibold text-white mb-2">{review.title}</h4>
+                        <h4 className="text-base sm:text-lg font-semibold text-white mb-2">{review.title}</h4>
                       )}
-                      <p className="text-neutral-300 mb-2">{review.review_text}</p>
-                      <div className="flex items-center gap-4 text-sm text-neutral-400">
-                        <span>Product ID: {review.product_id}</span>
-                        <span>•</span>
-                        <span>{new Date(review.created_at * 1000).toLocaleDateString()}</span>
+                      <p className="text-sm sm:text-base text-neutral-300 mb-2">{review.review_text}</p>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-neutral-400">
+                        <span>{t('productId')}: {review.product_id}</span>
+                        <span className="hidden sm:inline">•</span>
+                        <span>{new Date(review.created_at * 1000).toLocaleDateString('sv-SE')}</span>
                         {review.helpful_count > 0 && (
                           <>
-                            <span>•</span>
-                            <span>{review.helpful_count} helpful</span>
+                            <span className="hidden sm:inline">•</span>
+                            <span>{review.helpful_count} {t('helpful')}</span>
                           </>
                         )}
                       </div>
@@ -367,7 +369,7 @@ export default function AdminReviewsPage() {
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-green-400/10 transition-colors"
                       >
-                        Approve
+                        {t('approve')}
                       </button>
                       <button
                         onClick={(e) => {
@@ -378,7 +380,7 @@ export default function AdminReviewsPage() {
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-yellow-400/10 transition-colors"
                       >
-                        Reject
+                        {t('reject')}
                       </button>
                     </>
                   )}
@@ -392,7 +394,7 @@ export default function AdminReviewsPage() {
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-yellow-400 hover:bg-yellow-400/10 transition-colors"
                     >
-                      Reject
+                      {t('reject')}
                     </button>
                   )}
                   {review.status === 'rejected' && (
@@ -405,7 +407,7 @@ export default function AdminReviewsPage() {
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-green-400 hover:bg-green-400/10 transition-colors"
                     >
-                      Approve
+                      {t('approve')}
                     </button>
                   )}
                   <button
@@ -417,7 +419,7 @@ export default function AdminReviewsPage() {
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
                   >
-                    Delete
+                    {t('delete')}
                   </button>
                 </div>
               </div>
