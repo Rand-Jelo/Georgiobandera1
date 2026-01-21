@@ -65,7 +65,7 @@ export async function createCollection(
     name_sv: string;
     description_en?: string | null;
     description_sv?: string | null;
-    href: string;
+    href?: string;
     image_url?: string | null;
     sort_order?: number;
     active?: number;
@@ -75,6 +75,8 @@ export async function createCollection(
   const now = Date.now();
   const sortOrder = collection.sort_order ?? 0;
   const active = collection.active ?? 1;
+  // Auto-generate href based on collection ID - this will link to /shop?collection=ID
+  const href = collection.href || `/shop?collection=${id}`;
 
   await executeDB(
     db,
@@ -88,7 +90,7 @@ export async function createCollection(
       collection.name_sv,
       collection.description_en ?? null,
       collection.description_sv ?? null,
-      collection.href,
+      href,
       collection.image_url ?? null,
       sortOrder,
       active,

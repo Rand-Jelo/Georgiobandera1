@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       name_sv: string;
       description_en?: string | null;
       description_sv?: string | null;
-      href: string;
+      href?: string;
       image_url?: string | null;
       sort_order?: number;
       active?: number;

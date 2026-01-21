@@ -190,8 +190,7 @@ export default function AdminHomepageContentPage() {
     setError('');
   };
 
-  const handleSaveCollection = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveCollection = async () => {
     if (!editingCollection) return;
 
     setSaving(true);
@@ -228,9 +227,7 @@ export default function AdminHomepageContentPage() {
     }
   };
 
-  const handleCreateCollection = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const handleCreateCollection = async () => {
     setSaving(true);
     setError('');
 
@@ -529,7 +526,7 @@ export default function AdminHomepageContentPage() {
                           ✕
                         </button>
                       </div>
-                      <form onSubmit={handleCreateCollection} className="space-y-6">
+                      <div className="space-y-6">
                         {error && (
                           <div className="p-3 bg-red-900/50 border border-red-500/50 rounded-lg text-red-200 text-sm">
                             {error}
@@ -581,21 +578,11 @@ export default function AdminHomepageContentPage() {
                             </div>
                           </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-neutral-300 mb-2">Link (href) *</label>
-                          <input
-                            type="text"
-                            required
-                            value={collectionFormData.href}
-                            onChange={(e) => setCollectionFormData({ ...collectionFormData, href: e.target.value })}
-                            className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                            placeholder="/shop?category=shampoo"
-                          />
-                        </div>
                         <div className="flex items-center gap-4 pt-4 border-t border-white/10">
                           <button
-                            type="submit"
-                            disabled={saving}
+                            type="button"
+                            onClick={handleCreateCollection}
+                            disabled={saving || !collectionFormData.name_en || !collectionFormData.name_sv}
                             className="px-6 py-2.5 bg-white text-black text-sm font-medium hover:bg-neutral-100 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {saving ? 'Creating...' : 'Create Collection'}
@@ -620,7 +607,7 @@ export default function AdminHomepageContentPage() {
                             Cancel
                           </button>
                         </div>
-                      </form>
+                      </div>
                     </div>
                   )}
 
@@ -629,7 +616,7 @@ export default function AdminHomepageContentPage() {
                       <div key={collection.id} className="bg-black/30 border border-white/5 rounded-lg overflow-hidden">
                         <div className="p-6">
                           {editingCollection === collection.id ? (
-                            <form onSubmit={handleSaveCollection} className="space-y-6">
+                            <div className="space-y-6">
                               {error && (
                                 <div className="p-3 bg-red-900/50 border border-red-500/50 rounded-lg text-red-200 text-sm">
                                   {error}
@@ -682,16 +669,6 @@ export default function AdminHomepageContentPage() {
                                 </div>
                               </div>
                               <div>
-                                <label className="block text-sm font-medium text-neutral-300 mb-2">Link (href) *</label>
-                                <input
-                                  type="text"
-                                  required
-                                  value={collectionFormData.href}
-                                  onChange={(e) => setCollectionFormData({ ...collectionFormData, href: e.target.value })}
-                                  className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                                />
-                              </div>
-                              <div>
                                 <label className="block text-sm font-medium text-neutral-300 mb-2">Image</label>
                                 {collection.image_url && (
                                   <div className="mb-3">
@@ -729,7 +706,8 @@ export default function AdminHomepageContentPage() {
                               </div>
                               <div className="flex items-center gap-4 pt-4 border-t border-white/10">
                                 <button
-                                  type="submit"
+                                  type="button"
+                                  onClick={handleSaveCollection}
                                   disabled={saving}
                                   className="px-6 py-2.5 bg-white text-black text-sm font-medium hover:bg-neutral-100 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
@@ -747,7 +725,7 @@ export default function AdminHomepageContentPage() {
                                   Cancel
                                 </button>
                               </div>
-                            </form>
+                            </div>
                           ) : (
                             <>
                               <div className="flex items-start justify-between mb-4">
@@ -765,7 +743,7 @@ export default function AdminHomepageContentPage() {
                                     </span>
                                   </div>
                                   <p className="text-sm text-neutral-400 mb-2">{collection.description_en || 'No description'}</p>
-                                  <p className="text-xs text-neutral-500">Link: <span className="text-neutral-300">{collection.href}</span></p>
+                                  <p className="text-xs text-neutral-500">Link: <span className="text-neutral-300">/shop?collection={collection.id}</span></p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <button
