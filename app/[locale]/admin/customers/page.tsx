@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 
 interface Customer {
@@ -17,6 +18,7 @@ interface Customer {
 }
 
 export default function AdminCustomersPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -109,21 +111,21 @@ export default function AdminCustomersPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Dashboard
+            {t('backToDashboard')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Customers</h1>
-          <p className="text-neutral-400">View and manage customer information</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('customers')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('viewManageCustomers')}</p>
         </div>
 
         {/* Search Bar */}
@@ -131,7 +133,7 @@ export default function AdminCustomersPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search customers by name or email..."
+              placeholder={t('searchCustomersPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-4 py-3 pl-10 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
@@ -158,16 +160,16 @@ export default function AdminCustomersPage() {
         </div>
 
         {customers.length === 0 && !loading ? (
-          <div className="bg-black/50 border border-white/10 rounded-lg p-12 text-center">
+          <div className="bg-black/50 border border-white/10 rounded-lg p-8 sm:p-12 text-center">
             <div className="flex flex-col items-center justify-center">
-              <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-12 sm:w-16 h-12 sm:h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              <p className="text-neutral-400 text-lg font-medium mb-2">No customers found</p>
-              <p className="text-neutral-500 text-sm">
+              <p className="text-neutral-400 text-base sm:text-lg font-medium mb-2">{t('noCustomersFound')}</p>
+              <p className="text-neutral-500 text-xs sm:text-sm">
                 {searchQuery 
-                  ? 'Try adjusting your search'
-                  : 'Customers will appear here once they place orders'
+                  ? t('tryAdjustingSearch')
+                  : t('customersWillAppear')
                 }
               </p>
             </div>
@@ -178,39 +180,48 @@ export default function AdminCustomersPage() {
               <table className="min-w-full divide-y divide-white/10">
                 <thead className="bg-black/70">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                      Customer
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                      {t('customer')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                      Type
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden sm:table-cell">
+                      {t('type')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                      Orders
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                      {t('orders')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                      Total Spent
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden md:table-cell">
+                      {t('totalSpent')}
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                      Last Order
+                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden lg:table-cell">
+                      {t('lastOrder')}
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                      Actions
+                    <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                      {t('actions')}
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/10">
                   {customers.map((customer) => (
                     <tr key={customer.id} className="hover:bg-black/30 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-white">
-                          {customer.name || 'No name'}
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-medium text-white">
+                          {customer.name || t('noName')}
                         </div>
-                        <div className="text-xs text-neutral-500">{customer.email}</div>
+                        <div className="text-xs text-neutral-500 break-all">{customer.email}</div>
                         {customer.phone && (
                           <div className="text-xs text-neutral-500">{customer.phone}</div>
                         )}
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full sm:hidden mt-1 inline-block ${
+                            customer.is_registered
+                              ? 'bg-green-500/20 text-green-300'
+                              : 'bg-gray-500/20 text-gray-300'
+                          }`}
+                        >
+                          {customer.is_registered ? t('registered') : t('guest')}
+                        </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded-full ${
                             customer.is_registered
@@ -218,34 +229,34 @@ export default function AdminCustomersPage() {
                               : 'bg-gray-500/20 text-gray-300'
                           }`}
                         >
-                          {customer.is_registered ? 'Registered' : 'Guest'}
+                          {customer.is_registered ? t('registered') : t('guest')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-white">{customer.order_count}</div>
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm text-white">{customer.order_count}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                         <div className="text-sm font-medium text-white">
                           {formatCurrency(customer.total_spent)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                         <div className="text-sm text-neutral-400">
                           {customer.last_order_date
-                            ? new Date(customer.last_order_date * 1000).toLocaleDateString('en-US', {
+                            ? new Date(customer.last_order_date * 1000).toLocaleDateString('sv-SE', {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric',
                               })
-                            : 'Never'}
+                            : t('never')}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <Link
                           href={`/admin/customers/${encodeURIComponent(customer.id)}`}
-                          className="text-white hover:text-neutral-300"
+                          className="text-white hover:text-neutral-300 text-xs sm:text-sm"
                         >
-                          View Details
+                          {t('view')}
                         </Link>
                       </td>
                     </tr>

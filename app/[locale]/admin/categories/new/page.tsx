@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Category } from '@/types/database';
 import { slugify } from '@/lib/utils';
@@ -10,6 +10,7 @@ import { slugify } from '@/lib/utils';
 type TabType = 'basic';
 
 export default function NewCategoryPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const locale = useLocale();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -123,37 +124,37 @@ export default function NewCategoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin/categories"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Categories
+            {t('backToCategories')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Create Category</h1>
-          <p className="text-neutral-400">Add a new product category</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('createCategory')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('addNewCategory')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
           {/* Tabs Navigation */}
           <div className="border-b border-white/10 bg-black/30">
-            <div className="flex space-x-1 px-6">
+            <div className="flex space-x-1 px-4 sm:px-6">
               <button
                 type="button"
                 onClick={() => setActiveTab('basic')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'basic'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Basic Info</span>
+                <span>{t('basicInfo')}</span>
                 {activeTab === 'basic' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -162,7 +163,7 @@ export default function NewCategoryPage() {
           </div>
 
           {/* Tab Content */}
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             {error && (
               <div className="rounded-lg bg-red-900/20 border border-red-500/30 p-4 mb-6">
                 <div className="text-sm text-red-300 whitespace-pre-line">{error}</div>
@@ -173,12 +174,12 @@ export default function NewCategoryPage() {
             {activeTab === 'basic' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Category Information</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('categoryInfo')}</h2>
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                          Category Name (English) *
+                          {t('categoryNameEn')} *
                         </label>
                         <input
                           type="text"
@@ -193,7 +194,7 @@ export default function NewCategoryPage() {
 
                       <div>
                         <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                          Category Name (Swedish) *
+                          {t('categoryNameSv')} *
                         </label>
                         <input
                           type="text"
@@ -209,7 +210,7 @@ export default function NewCategoryPage() {
 
                     <div>
                       <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
-                        Slug *
+                        {t('slug')} *
                       </label>
                       <input
                         type="text"
@@ -220,13 +221,13 @@ export default function NewCategoryPage() {
                         onChange={handleChange}
                         className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                       />
-                      <p className="mt-1 text-xs text-neutral-400">URL-friendly identifier (auto-generated from English name)</p>
+                      <p className="mt-1 text-xs text-neutral-400">{t('slugDescription')}</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                          Description (English)
+                          {t('descriptionEn')}
                         </label>
                         <textarea
                           id="description_en"
@@ -240,7 +241,7 @@ export default function NewCategoryPage() {
 
                       <div>
                         <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                          Description (Swedish)
+                          {t('descriptionSv')}
                         </label>
                         <textarea
                           id="description_sv"
@@ -255,7 +256,7 @@ export default function NewCategoryPage() {
 
                     <div>
                       <label htmlFor="parent_id" className="block text-sm font-medium text-neutral-300 mb-2">
-                        Parent Category
+                        {t('parentCategory')}
                       </label>
                       <select
                         id="parent_id"
@@ -264,7 +265,7 @@ export default function NewCategoryPage() {
                         onChange={handleChange}
                         className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                       >
-                        <option value="">None (Top-level category)</option>
+                        <option value="">{t('noneTopLevel')}</option>
                         {categories.map((category) => {
                           const name = locale === 'sv' ? category.name_sv : category.name_en;
                           return (
@@ -278,7 +279,7 @@ export default function NewCategoryPage() {
 
                     <div>
                       <label htmlFor="image_url" className="block text-sm font-medium text-neutral-300 mb-2">
-                        Image URL
+                        {t('imageUrl')}
                       </label>
                       <input
                         type="url"
@@ -295,19 +296,19 @@ export default function NewCategoryPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-4 pt-6 border-t border-white/10">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 pt-6 border-t border-white/10">
               <Link
                 href="/admin/categories"
-                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors text-center"
               >
-                Cancel
+                {t('cancel')}
               </Link>
               <button
                 type="submit"
                 disabled={saving}
                 className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                {saving ? 'Creating...' : 'Create Category'}
+                {saving ? t('creating') : t('createCategory')}
               </button>
             </div>
           </div>

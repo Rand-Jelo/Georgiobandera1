@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Order, OrderItem } from '@/types/database';
 
 export default function AdminOrderDetailsPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const params = useParams();
   const orderId = params.id as string;
@@ -147,7 +149,7 @@ export default function AdminOrderDetailsPage() {
   };
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleString('en-US', {
+    return new Date(timestamp * 1000).toLocaleString('sv-SE', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -187,28 +189,28 @@ export default function AdminOrderDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin/orders"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Orders
+            {t('backToOrders')}
           </Link>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-semibold text-white mb-2">Order {order.order_number}</h1>
-              <p className="text-neutral-400">Order details and management</p>
+              <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('order')} {order.order_number}</h1>
+              <p className="text-sm sm:text-base text-neutral-400">{t('orderDetailsManagement')}</p>
             </div>
             <span
-              className={`px-4 py-2 text-sm font-medium rounded-full border ${getStatusColor(order.status)}`}
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium rounded-full border self-start sm:self-auto ${getStatusColor(order.status)}`}
             >
-              {order.status.toUpperCase()}
+              {order.status === 'pending' ? t('pending') : order.status === 'paid' ? t('paid') : order.status === 'processing' ? t('processing') : order.status === 'shipped' ? t('shipped') : order.status === 'delivered' ? t('delivered') : order.status === 'cancelled' ? t('cancelled') : t('refunded')}
             </span>
           </div>
         </div>
@@ -217,24 +219,24 @@ export default function AdminOrderDetailsPage() {
           {/* Order Information */}
           <div className="lg:col-span-2 space-y-6">
             {/* Order Items */}
-            <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Order Items</h2>
+            <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('orderItems')}</h2>
               <div className="space-y-4">
                 {items.map((item) => (
-                  <div key={item.id} className="flex items-center justify-between py-3 border-b border-white/10 last:border-0">
+                  <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 border-b border-white/10 last:border-0 gap-2">
                     <div>
-                      <p className="text-white font-medium">{item.product_name}</p>
+                      <p className="text-white font-medium text-sm sm:text-base">{item.product_name}</p>
                       {item.variant_name && (
-                        <p className="text-sm text-neutral-400">Variant: {item.variant_name}</p>
+                        <p className="text-xs sm:text-sm text-neutral-400">{t('variant')}: {item.variant_name}</p>
                       )}
                       {item.sku && (
                         <p className="text-xs text-neutral-500">SKU: {item.sku}</p>
                       )}
                     </div>
-                    <div className="text-right">
-                      <p className="text-white">Qty: {item.quantity}</p>
-                      <p className="text-neutral-400">{formatCurrency(item.price)}</p>
-                      <p className="text-sm text-white font-medium">Total: {formatCurrency(item.total)}</p>
+                    <div className="text-left sm:text-right">
+                      <p className="text-white text-sm">{t('quantity')}: {item.quantity}</p>
+                      <p className="text-neutral-400 text-sm">{formatCurrency(item.price)}</p>
+                      <p className="text-sm text-white font-medium">{t('total')}: {formatCurrency(item.total)}</p>
                     </div>
                   </div>
                 ))}
@@ -242,15 +244,15 @@ export default function AdminOrderDetailsPage() {
             </div>
 
             {/* Shipping Address */}
-            <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Shipping Address</h2>
-              <div className="text-neutral-300 space-y-1">
+            <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('shippingAddress')}</h2>
+              <div className="text-neutral-300 space-y-1 text-sm sm:text-base">
                 <p className="text-white font-medium">{order.shipping_name}</p>
                 <p>{order.shipping_address_line1}</p>
                 {order.shipping_address_line2 && <p>{order.shipping_address_line2}</p>}
                 <p>{order.shipping_city}, {order.shipping_postal_code}</p>
                 <p>{order.shipping_country}</p>
-                {order.shipping_phone && <p className="mt-2">Phone: {order.shipping_phone}</p>}
+                {order.shipping_phone && <p className="mt-2">{t('phone')}: {order.shipping_phone}</p>}
               </div>
             </div>
           </div>
@@ -258,49 +260,49 @@ export default function AdminOrderDetailsPage() {
           {/* Order Summary & Actions */}
           <div className="space-y-6">
             {/* Order Summary */}
-            <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Order Summary</h2>
+            <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('orderSummary')}</h2>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-neutral-400">
-                  <span>Subtotal (incl. VAT):</span>
+                  <span>{t('subtotalInclVat')}:</span>
                   <span>{formatCurrency(order.subtotal, order.currency)}</span>
                 </div>
                 <div className="flex justify-between text-neutral-400">
-                  <span>Shipping:</span>
+                  <span>{t('shipping')}:</span>
                   <span>{formatCurrency(order.shipping_cost, order.currency)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-neutral-500">
-                  <span>VAT included in subtotal:</span>
+                  <span>{t('vatIncluded')}:</span>
                   <span>{formatCurrency(order.tax, order.currency)}</span>
                 </div>
                 <div className="border-t border-white/10 pt-2 flex justify-between text-white font-semibold">
-                  <span>Total:</span>
+                  <span>{t('total')}:</span>
                   <span>{formatCurrency(order.subtotal + order.shipping_cost, order.currency)}</span>
                 </div>
               </div>
             </div>
 
             {/* Order Info */}
-            <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Order Information</h2>
+            <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('orderInfo')}</h2>
               <div className="space-y-2 text-sm">
                 <div>
-                  <span className="text-neutral-400">Order Date:</span>
+                  <span className="text-neutral-400">{t('orderDate')}:</span>
                   <p className="text-white">{formatDate(order.created_at)}</p>
                 </div>
                 <div>
-                  <span className="text-neutral-400">Email:</span>
-                  <p className="text-white">{order.email}</p>
+                  <span className="text-neutral-400">{t('email')}:</span>
+                  <p className="text-white break-all">{order.email}</p>
                 </div>
                 {order.payment_method && (
                   <div>
-                    <span className="text-neutral-400">Payment Method:</span>
+                    <span className="text-neutral-400">{t('paymentMethod')}:</span>
                     <p className="text-white capitalize">{order.payment_method}</p>
                   </div>
                 )}
                 {order.payment_status && (
                   <div>
-                    <span className="text-neutral-400">Payment Status:</span>
+                    <span className="text-neutral-400">{t('paymentStatus')}:</span>
                     <p className="text-white capitalize">{order.payment_status}</p>
                   </div>
                 )}
@@ -308,25 +310,25 @@ export default function AdminOrderDetailsPage() {
             </div>
 
             {/* Update Status */}
-            <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Update Status</h2>
+            <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('updateStatus')}</h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Order Status
+                    {t('orderStatus')}
                   </label>
                   <select
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value as Order['status'])}
                     className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                   >
-                    <option value="pending">Pending</option>
-                    <option value="paid">Paid</option>
-                    <option value="processing">Processing</option>
-                    <option value="shipped">Shipped</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                    <option value="refunded">Refunded</option>
+                    <option value="pending">{t('pending')}</option>
+                    <option value="paid">{t('paid')}</option>
+                    <option value="processing">{t('processing')}</option>
+                    <option value="shipped">{t('shipped')}</option>
+                    <option value="delivered">{t('delivered')}</option>
+                    <option value="cancelled">{t('cancelled')}</option>
+                    <option value="refunded">{t('refunded')}</option>
                   </select>
                 </div>
                 <button
@@ -334,24 +336,24 @@ export default function AdminOrderDetailsPage() {
                   disabled={updating || newStatus === order.status}
                   className="w-full px-4 py-2 bg-white text-black rounded-lg hover:bg-neutral-100 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {updating ? 'Updating...' : 'Update Status'}
+                  {updating ? t('updating') : t('updateStatus')}
                 </button>
               </div>
             </div>
 
             {/* Tracking Number */}
-            <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Tracking Number</h2>
+            <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('trackingNumber')}</h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Tracking Number
+                    {t('trackingNumber')}
                   </label>
                   <input
                     type="text"
                     value={newTrackingNumber}
                     onChange={(e) => setNewTrackingNumber(e.target.value)}
-                    placeholder="Enter tracking number"
+                    placeholder={t('enterTrackingNumber')}
                     className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 placeholder-neutral-500"
                   />
                 </div>
@@ -360,11 +362,11 @@ export default function AdminOrderDetailsPage() {
                   disabled={updating || !newTrackingNumber.trim() || newTrackingNumber === order.tracking_number}
                   className="w-full px-4 py-2 bg-white text-black rounded-lg hover:bg-neutral-100 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {updating ? 'Updating...' : 'Update Tracking'}
+                  {updating ? t('updating') : t('updateTracking')}
                 </button>
                 {order.tracking_number && (
                   <p className="text-sm text-neutral-400">
-                    Current: {order.tracking_number}
+                    {t('current')}: {order.tracking_number}
                   </p>
                 )}
               </div>

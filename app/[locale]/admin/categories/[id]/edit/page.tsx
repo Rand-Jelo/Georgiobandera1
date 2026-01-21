@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Category } from '@/types/database';
 import { slugify } from '@/lib/utils';
@@ -10,6 +10,7 @@ import { slugify } from '@/lib/utils';
 type TabType = 'basic' | 'subcategories';
 
 export default function EditCategoryPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const locale = useLocale();
   const params = useParams();
@@ -327,37 +328,37 @@ export default function EditCategoryPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin/categories"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Categories
+            {t('backToCategories')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Edit Category</h1>
-          <p className="text-neutral-400">Update category information</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('editCategory')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('updateCategoryInfo')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
           {/* Tabs Navigation */}
           <div className="border-b border-white/10 bg-black/30">
-            <div className="flex space-x-1 px-6">
+            <div className="flex space-x-1 px-4 sm:px-6">
               <button
                 type="button"
                 onClick={() => setActiveTab('basic')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'basic'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Basic Info</span>
+                <span>{t('basicInfo')}</span>
                 {activeTab === 'basic' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -365,13 +366,13 @@ export default function EditCategoryPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('subcategories')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-all relative ${
                   activeTab === 'subcategories'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Subcategories</span>
+                <span>{t('subcategories')}</span>
                 {activeTab === 'subcategories' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -380,7 +381,7 @@ export default function EditCategoryPage() {
           </div>
 
           {/* Tab Content */}
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             {error && (
               <div className="rounded-lg bg-red-900/20 border border-red-500/30 p-4 mb-6">
                 <div className="text-sm text-red-300 whitespace-pre-line">{error}</div>
@@ -391,12 +392,12 @@ export default function EditCategoryPage() {
             {activeTab === 'basic' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Category Information</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('categoryInfo')}</h2>
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                Category Name (English) *
+                {t('categoryNameEn')} *
               </label>
               <input
                 type="text"
@@ -411,7 +412,7 @@ export default function EditCategoryPage() {
 
             <div>
               <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                Category Name (Swedish) *
+                {t('categoryNameSv')} *
               </label>
               <input
                 type="text"
@@ -427,7 +428,7 @@ export default function EditCategoryPage() {
 
           <div>
             <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
-              Slug *
+              {t('slug')} *
             </label>
             <input
               type="text"
@@ -438,13 +439,13 @@ export default function EditCategoryPage() {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
             />
-            <p className="mt-1 text-xs text-neutral-400">URL-friendly identifier</p>
+            <p className="mt-1 text-xs text-neutral-400">{t('slugDescriptionShort')}</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                Description (English)
+                {t('descriptionEn')}
               </label>
               <textarea
                 id="description_en"
@@ -458,7 +459,7 @@ export default function EditCategoryPage() {
 
             <div>
               <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                Description (Swedish)
+                {t('descriptionSv')}
               </label>
               <textarea
                 id="description_sv"
@@ -473,7 +474,7 @@ export default function EditCategoryPage() {
 
                     <div>
                       <label htmlFor="image_url" className="block text-sm font-medium text-neutral-300 mb-2">
-                        Image URL
+                        {t('imageUrl')}
                       </label>
                       <input
                         type="url"
@@ -488,7 +489,7 @@ export default function EditCategoryPage() {
 
                     <div>
                       <label htmlFor="parent_id" className="block text-sm font-medium text-neutral-300 mb-2">
-                        Parent Category
+                        {t('parentCategory')}
                       </label>
                       <select
                         id="parent_id"
@@ -497,7 +498,7 @@ export default function EditCategoryPage() {
                         onChange={handleChange}
                         className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                       >
-                        <option value="">None (Top-level category)</option>
+                        <option value="">{t('noneTopLevel')}</option>
                         {categories.map((category) => {
                           const name = locale === 'sv' ? category.name_sv : category.name_en;
                           return (
@@ -516,22 +517,17 @@ export default function EditCategoryPage() {
             {/* Subcategories Tab */}
             {activeTab === 'subcategories' && (
               <div className="space-y-6">
-                <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Subcategories</h2>
-                  <p className="text-sm text-neutral-400 mb-6">Manage child categories under this category</p>
-                </div>
-
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-white mb-1">Subcategories</h3>
-                    <p className="text-sm text-neutral-400">Manage child categories under this category</p>
+                    <h3 className="text-lg font-semibold text-white mb-1">{t('subcategories')}</h3>
+                    <p className="text-sm text-neutral-400">{t('manageSubcategories')}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowAddChild(!showAddChild)}
-                    className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
+                    className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors self-start sm:self-auto"
                   >
-                    {showAddChild ? 'Cancel' : '+ Add Subcategory'}
+                    {showAddChild ? t('cancel') : t('addSubcategory')}
                   </button>
                 </div>
 
@@ -540,7 +536,7 @@ export default function EditCategoryPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
                         <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Name (English) *
+                          {t('nameEn')} *
                         </label>
                         <input
                           type="text"
@@ -558,7 +554,7 @@ export default function EditCategoryPage() {
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Name (Swedish) *
+                          {t('nameSv')} *
                         </label>
                         <input
                           type="text"
@@ -569,7 +565,7 @@ export default function EditCategoryPage() {
                       </div>
                       <div>
                         <label className="block text-xs font-medium text-neutral-300 mb-1">
-                          Slug *
+                          {t('slug')} *
                         </label>
                         <input
                           type="text"
@@ -586,17 +582,17 @@ export default function EditCategoryPage() {
                         disabled={addingChild}
                         className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                       >
-                        {addingChild ? 'Creating...' : 'Create Subcategory'}
+                        {addingChild ? t('creating') : t('createSubcategory')}
                       </button>
                     </div>
                   </div>
                 )}
 
                 {childCategories.length === 0 ? (
-                  <p className="text-neutral-400 text-sm">No subcategories yet. Click "Add Subcategory" to create one.</p>
+                  <p className="text-neutral-400 text-sm">{t('noSubcategoriesYet')}</p>
                 ) : (
                   <div className="space-y-2">
-                    <p className="text-xs text-neutral-500 mb-2">Drag and drop to reorder subcategories</p>
+                    <p className="text-xs text-neutral-500 mb-2">{t('dragToReorderSubcategories')}</p>
                     {childCategories.map((child) => {
                       const name = locale === 'sv' ? child.name_sv : child.name_en;
                       const isDragging = draggedChildId === child.id;
@@ -609,13 +605,13 @@ export default function EditCategoryPage() {
                           onDragOver={(e) => handleChildDragOver(e, child.id)}
                           onDragLeave={handleChildDragLeave}
                           onDrop={(e) => handleChildDrop(e, child.id)}
-                          className={`flex items-center justify-between p-3 rounded-lg border border-white/10 bg-black/30 cursor-move transition-all ${
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border border-white/10 bg-black/30 cursor-move transition-all gap-3 ${
                             isDragging ? 'opacity-50' : ''
                           } ${isDraggedOver ? 'bg-white/10 border-white/30' : ''}`}
                         >
                           <div className="flex items-center gap-3 flex-1">
                             <svg
-                              className="w-4 h-4 text-neutral-500"
+                              className="w-4 h-4 text-neutral-500 hidden sm:block"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -637,13 +633,13 @@ export default function EditCategoryPage() {
                               href={`/admin/categories/${child.id}/edit`}
                               className="px-3 py-1 text-xs font-medium text-white hover:text-neutral-300 transition-colors"
                             >
-                              Edit
+                              {t('edit')}
                             </Link>
                             <button
                               onClick={() => handleDeleteChild(child.id, name)}
                               className="px-3 py-1 text-xs font-medium text-red-400 hover:text-red-300 transition-colors"
                             >
-                              Delete
+                              {t('delete')}
                             </button>
                           </div>
                         </div>
@@ -654,19 +650,19 @@ export default function EditCategoryPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-4 pt-6 border-t border-white/10">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 pt-6 border-t border-white/10">
               <Link
                 href="/admin/categories"
-                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors text-center"
               >
-                Cancel
+                {t('cancel')}
               </Link>
               <button
                 type="submit"
                 disabled={saving}
                 className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? t('saving') : t('saveChanges')}
               </button>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 
 interface Order {
@@ -26,6 +27,7 @@ interface Customer {
 }
 
 export default function AdminCustomerDetailsPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const params = useParams();
   const customerId = decodeURIComponent(params.id as string);
@@ -124,45 +126,45 @@ export default function AdminCustomerDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin/customers"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Customers
+            {t('backToCustomers')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Customer Details</h1>
-          <p className="text-neutral-400">View customer information and order history</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('customerDetails')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('viewCustomerInfoAndHistory')}</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Customer Information */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Customer Information</h2>
+            <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('customerInfo')}</h2>
               <div className="space-y-3 text-sm">
                 <div>
-                  <p className="text-neutral-400">Name</p>
-                  <p className="text-white font-medium">{customer.name || 'Not provided'}</p>
+                  <p className="text-neutral-400">{t('name')}</p>
+                  <p className="text-white font-medium">{customer.name || t('notProvided')}</p>
                 </div>
                 <div>
-                  <p className="text-neutral-400">Email</p>
-                  <p className="text-white font-medium">{customer.email}</p>
+                  <p className="text-neutral-400">{t('email')}</p>
+                  <p className="text-white font-medium break-all">{customer.email}</p>
                 </div>
                 {customer.phone && (
                   <div>
-                    <p className="text-neutral-400">Phone</p>
+                    <p className="text-neutral-400">{t('phone')}</p>
                     <p className="text-white font-medium">{customer.phone}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-neutral-400">Account Type</p>
+                  <p className="text-neutral-400">{t('accountType')}</p>
                   <span
                     className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
                       customer.is_registered
@@ -170,13 +172,13 @@ export default function AdminCustomerDetailsPage() {
                         : 'bg-gray-500/20 text-gray-300'
                     }`}
                   >
-                    {customer.is_registered ? 'Registered User' : 'Guest Customer'}
+                    {customer.is_registered ? t('registeredUser') : t('guestCustomer')}
                   </span>
                 </div>
                 <div>
-                  <p className="text-neutral-400">Member Since</p>
+                  <p className="text-neutral-400">{t('memberSince')}</p>
                   <p className="text-white font-medium">
-                    {new Date(customer.created_at * 1000).toLocaleDateString('en-US', {
+                    {new Date(customer.created_at * 1000).toLocaleDateString('sv-SE', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
@@ -187,19 +189,19 @@ export default function AdminCustomerDetailsPage() {
             </div>
 
             {/* Customer Stats */}
-            <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Statistics</h2>
+            <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('statistics')}</h2>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-neutral-400">Total Orders</span>
+                  <span className="text-neutral-400">{t('totalOrders')}</span>
                   <span className="text-white font-medium">{customer.order_count}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-400">Total Spent</span>
+                  <span className="text-neutral-400">{t('totalSpent')}</span>
                   <span className="text-white font-medium">{formatCurrency(customer.total_spent)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-neutral-400">Average Order</span>
+                  <span className="text-neutral-400">{t('averageOrder')}</span>
                   <span className="text-white font-medium">
                     {customer.order_count > 0
                       ? formatCurrency(customer.total_spent / customer.order_count)
@@ -208,9 +210,9 @@ export default function AdminCustomerDetailsPage() {
                 </div>
                 {customer.last_order_date && (
                   <div className="flex justify-between">
-                    <span className="text-neutral-400">Last Order</span>
+                    <span className="text-neutral-400">{t('lastOrder')}</span>
                     <span className="text-white font-medium">
-                      {new Date(customer.last_order_date * 1000).toLocaleDateString('en-US', {
+                      {new Date(customer.last_order_date * 1000).toLocaleDateString('sv-SE', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
@@ -223,65 +225,71 @@ export default function AdminCustomerDetailsPage() {
           </div>
 
           {/* Order History */}
-          <div className="lg:col-span-2 bg-black/50 border border-white/10 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-white mb-4">Order History</h2>
+          <div className="lg:col-span-2 bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('orderHistory')}</h2>
             {customer.orders.length === 0 ? (
               <div className="text-center py-12 text-neutral-400">
-                <p>No orders yet.</p>
+                <p>{t('noOrdersYet')}</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-white/10">
                   <thead className="bg-black/70">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Order #
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('orderNumber')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Date
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden sm:table-cell">
+                        {t('date')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Status
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('status')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Total
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden md:table-cell">
+                        {t('total')}
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Actions
+                      <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('actions')}
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/10">
                     {customer.orders.map((order) => (
                       <tr key={order.id} className="hover:bg-black/30 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-white">{order.order_number}</div>
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                          <div className="text-xs sm:text-sm font-medium text-white">{order.order_number}</div>
+                          <div className="text-xs text-neutral-500 sm:hidden">
+                            {new Date(order.created_at * 1000).toLocaleDateString('sv-SE', {
+                              month: 'short',
+                              day: 'numeric',
+                            })}
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                           <div className="text-sm text-neutral-400">
-                            {new Date(order.created_at * 1000).toLocaleDateString('en-US', {
+                            {new Date(order.created_at * 1000).toLocaleDateString('sv-SE', {
                               year: 'numeric',
                               month: 'short',
                               day: 'numeric',
                             })}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.status)}`}
                           >
-                            {order.status}
+                            {order.status === 'pending' ? t('pending') : order.status === 'paid' ? t('paid') : order.status === 'processing' ? t('processing') : order.status === 'shipped' ? t('shipped') : order.status === 'delivered' ? t('delivered') : order.status === 'cancelled' ? t('cancelled') : t('refunded')}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                           <div className="text-sm font-medium text-white">{formatCurrency(order.total)}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Link
                             href={`/admin/orders/${order.id}`}
-                            className="text-white hover:text-neutral-300"
+                            className="text-white hover:text-neutral-300 text-xs sm:text-sm"
                           >
-                            View
+                            {t('view')}
                           </Link>
                         </td>
                       </tr>

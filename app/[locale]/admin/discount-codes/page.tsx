@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { DiscountCode } from '@/types/database';
 
 export default function AdminDiscountCodesPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const [allCodes, setAllCodes] = useState<DiscountCode[]>([]);
   const [codes, setCodes] = useState<DiscountCode[]>([]);
@@ -120,8 +122,8 @@ export default function AdminDiscountCodesPage() {
   };
 
   const formatDate = (timestamp: number | null) => {
-    if (!timestamp) return 'No expiry';
-    return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+    if (!timestamp) return t('noExpiry');
+    return new Date(timestamp * 1000).toLocaleDateString('sv-SE', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -144,28 +146,28 @@ export default function AdminDiscountCodesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <Link
               href="/admin"
               className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
             >
-              ← Back to Dashboard
+              {t('backToDashboard')}
             </Link>
-            <h1 className="text-4xl font-semibold text-white mb-2">Discount Codes</h1>
-            <p className="text-neutral-400">Manage discount codes and coupons</p>
+            <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('discountCodes')}</h1>
+            <p className="text-sm sm:text-base text-neutral-400">{t('manageDiscountCodes')}</p>
           </div>
           <Link
             href="/admin/discount-codes/new"
-            className="rounded-lg bg-white px-6 py-3 text-sm font-medium text-black hover:bg-neutral-100 transition-colors"
+            className="rounded-lg bg-white px-4 sm:px-6 py-2 sm:py-3 text-sm font-medium text-black hover:bg-neutral-100 transition-colors self-start sm:self-auto"
           >
-            Create Discount Code
+            {t('createDiscountCode')}
           </Link>
         </div>
 
@@ -175,7 +177,7 @@ export default function AdminDiscountCodesPage() {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search discount codes by code or description..."
+              placeholder={t('searchDiscountCodesPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full px-4 py-3 pl-10 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
@@ -201,20 +203,20 @@ export default function AdminDiscountCodesPage() {
           </div>
 
           {/* Status Filter */}
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-neutral-400">Filter by status:</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <span className="text-sm text-neutral-400">{t('filterByStatus')}:</span>
             <div className="flex gap-2 flex-wrap">
               {(['all', 'active', 'inactive'] as const).map((status) => (
                 <button
                   key={status}
                   onClick={() => setActiveFilter(status)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors ${
                     activeFilter === status
                       ? 'bg-white text-black'
                       : 'bg-black/50 text-neutral-300 hover:bg-black/70 border border-white/10'
                   }`}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === 'all' ? t('all') : status === 'active' ? t('active') : t('inactive')}
                 </button>
               ))}
             </div>
@@ -223,16 +225,16 @@ export default function AdminDiscountCodesPage() {
 
         <div className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
           {codes.length === 0 && !loading ? (
-            <div className="p-12 text-center">
+            <div className="p-8 sm:p-12 text-center">
               <div className="flex flex-col items-center justify-center">
-                <svg className="w-16 h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-12 sm:w-16 h-12 sm:h-16 text-neutral-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-neutral-400 text-lg font-medium mb-2">No discount codes found</p>
-                <p className="text-neutral-500 text-sm mb-4">
+                <p className="text-neutral-400 text-base sm:text-lg font-medium mb-2">{t('noDiscountCodesFound')}</p>
+                <p className="text-neutral-500 text-xs sm:text-sm mb-4">
                   {searchQuery || activeFilter !== 'all' 
-                    ? 'Try adjusting your search or filters'
-                    : 'Create discount codes to offer promotions to your customers'
+                    ? t('tryAdjustingSearchOrFilters')
+                    : t('createDiscountCodesDesc')
                   }
                 </p>
                 {!searchQuery && activeFilter === 'all' && (
@@ -243,64 +245,65 @@ export default function AdminDiscountCodesPage() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    Create Your First Discount Code
+                    {t('createFirstDiscountCode')}
                   </Link>
                 )}
               </div>
             </div>
           ) : (
+            <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-white/10">
               <thead className="bg-black/70">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Code
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                    {t('code')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Discount
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                    {t('discount')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Usage
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden sm:table-cell">
+                    {t('usage')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Valid Until
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider hidden md:table-cell">
+                    {t('validUntil')}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Status
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                    {t('status')}
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                    Actions
+                  <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                    {t('actions')}
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/10">
                 {codes.map((code) => (
                   <tr key={code.id} className="hover:bg-black/30 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-white">{code.code}</div>
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm font-medium text-white">{code.code}</div>
                       {code.description && (
-                        <div className="text-sm text-neutral-400">{code.description}</div>
+                        <div className="text-xs sm:text-sm text-neutral-400">{code.description}</div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-white">{formatDiscount(code)}</div>
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-white">{formatDiscount(code)}</div>
                       {code.minimum_purchase > 0 && (
                         <div className="text-xs text-neutral-400">
                           Min: {code.minimum_purchase} SEK
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
                       <div className="text-sm text-neutral-400">
                         {code.usage_count}
                         {code.usage_limit !== null ? ` / ${code.usage_limit}` : ' / ∞'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                       <div className="text-sm text-neutral-400">
                         {formatDate(code.valid_until)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 py-1 text-xs font-medium rounded-full ${
                           code.active
@@ -308,7 +311,7 @@ export default function AdminDiscountCodesPage() {
                             : 'bg-gray-500/20 text-gray-300'
                         }`}
                       >
-                        {code.active ? 'Active' : 'Inactive'}
+                        {code.active ? t('active') : t('inactive')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -356,6 +359,7 @@ export default function AdminDiscountCodesPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 
@@ -391,7 +395,7 @@ export default function AdminDiscountCodesPage() {
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors block"
                   >
-                    Edit
+                    {t('edit')}
                   </Link>
                   <button
                     onClick={(e) => {
@@ -402,7 +406,7 @@ export default function AdminDiscountCodesPage() {
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-red-400/10 transition-colors"
                   >
-                    Delete
+                    {t('delete')}
                   </button>
                 </div>
               </div>
