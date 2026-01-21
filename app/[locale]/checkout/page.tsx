@@ -1655,43 +1655,43 @@ export default function CheckoutPage() {
                 </div>
                 <div className="p-10">
 
-                {/* Order Items */}
-                <div className="border-b border-neutral-200 pb-6 mb-6">
-                  {cartItems.map((item) => {
-                    const price = item.variant?.price ?? item.product?.price ?? 0;
-                    const name = locale === 'sv'
-                      ? item.product?.name_sv || item.product?.name_en || ''
-                      : item.product?.name_en || '';
-                    const variantName = locale === 'sv'
-                      ? item.variant?.name_sv || item.variant?.name_en
-                      : item.variant?.name_en;
-                    const productImage = item.product?.images?.[0]?.url;
+                  {/* Order Items */}
+                  <div className="border-b border-neutral-200 pb-6 mb-6">
+                    {cartItems.map((item) => {
+                      const price = item.variant?.price ?? item.product?.price ?? 0;
+                      const name = locale === 'sv'
+                        ? item.product?.name_sv || item.product?.name_en || ''
+                        : item.product?.name_en || '';
+                      const variantName = locale === 'sv'
+                        ? item.variant?.name_sv || item.variant?.name_en
+                        : item.variant?.name_en;
+                      const productImage = item.product?.images?.[0]?.url;
 
-                    return (
-                      <div key={item.id} className="flex gap-5 mb-6 last:mb-0 pb-6 last:pb-0 border-b border-neutral-200/30 last:border-0">
-                        {productImage && (
-                          <div className="w-20 h-20 overflow-hidden bg-neutral-50 flex-shrink-0">
-                            <img
-                              src={productImage}
-                              alt={name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-light text-neutral-900 text-sm tracking-wide">{name}</p>
-                          {variantName && (
-                            <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">{variantName}</p>
+                      return (
+                        <div key={item.id} className="flex gap-5 mb-6 last:mb-0 pb-6 last:pb-0 border-b border-neutral-200/30 last:border-0">
+                          {productImage && (
+                            <div className="w-20 h-20 overflow-hidden bg-neutral-50 flex-shrink-0">
+                              <img
+                                src={productImage}
+                                alt={name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
                           )}
-                          <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">{t('quantity')}: {item.quantity}</p>
-                          <p className="text-neutral-900 font-light text-sm mt-3 tracking-wide">
-                            {formatPrice(price * item.quantity, 'SEK')}
-                          </p>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-light text-neutral-900 text-sm tracking-wide">{name}</p>
+                            {variantName && (
+                              <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">{variantName}</p>
+                            )}
+                            <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">{t('quantity')}: {item.quantity}</p>
+                            <p className="text-neutral-900 font-light text-sm mt-3 tracking-wide">
+                              {formatPrice(price * item.quantity, 'SEK')}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
 
                   {/* Discount Code - Moved to order summary for better visibility */}
                   <div className="border-b border-neutral-200/30 pb-8 mb-8">
