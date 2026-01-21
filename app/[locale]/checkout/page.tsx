@@ -1646,14 +1646,14 @@ export default function CheckoutPage() {
 
             {/* Right Column - Order Summary */}
             <div className="mt-8 lg:mt-0 flex-1 min-w-0">
-              {/* Slightly lower sticky offset so it never hides behind the main header */}
-              <div className="bg-white border border-neutral-200/30 shadow-sm lg:sticky lg:top-28">
-                <div className="px-10 lg:px-12 py-8 border-b border-neutral-200/30">
+              {/* Sticky offset to ensure it never hides behind the main header */}
+              <div className="bg-white border border-neutral-200/30 shadow-sm lg:sticky lg:top-32">
+                <div className="px-10 py-8 border-b border-neutral-200/30">
                   <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
                     {t('orderSummary')}
                   </h2>
                 </div>
-                <div className="px-10 lg:px-12 py-8">
+                <div className="p-10">
 
                 {/* Order Items */}
                 <div className="border-b border-neutral-200 pb-6 mb-6">
@@ -1758,14 +1758,14 @@ export default function CheckoutPage() {
                   <dl className="space-y-5 text-sm">
                     <div className="flex items-baseline justify-between gap-4">
                       <dt className="text-neutral-600 font-light tracking-wide">{t('subtotalInclVat')}</dt>
-                      <dd className="text-neutral-900 font-light tracking-wide text-right min-w-[120px]">
+                      <dd className="text-neutral-900 font-light tracking-wide text-right min-w-[140px] pr-2">
                         {formatPrice(subtotal, 'SEK')}
                       </dd>
                     </div>
                     {appliedDiscount && (
                       <div className="flex items-baseline justify-between gap-4 text-green-600">
                         <dt className="font-light tracking-wide">{t('discount')} ({appliedDiscount.code})</dt>
-                        <dd className="font-light tracking-wide text-right min-w-[120px]">
+                        <dd className="font-light tracking-wide text-right min-w-[140px] pr-2">
                           -{formatPrice(appliedDiscount.amount, 'SEK')}
                         </dd>
                       </div>
@@ -1773,7 +1773,7 @@ export default function CheckoutPage() {
                     {shippingCost !== null ? (
                       <div className="flex items-baseline justify-between gap-4">
                         <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
-                        <dd className="text-neutral-900 font-light tracking-wide text-right min-w-[120px]">
+                        <dd className="text-neutral-900 font-light tracking-wide text-right min-w-[140px] pr-2">
                           {shippingCost === 0 ? (
                             <span className="text-green-600">{t('free')}</span>
                           ) : (
@@ -1784,7 +1784,7 @@ export default function CheckoutPage() {
                     ) : (
                       <div className="flex items-baseline justify-between gap-4">
                         <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
-                        <dd className="text-neutral-500 text-xs italic font-light tracking-wide text-right min-w-[120px]">
+                        <dd className="text-neutral-500 text-xs italic font-light tracking-wide text-right min-w-[140px] pr-2">
                           {calculatingShipping ? (
                             <span className="flex items-center gap-2">
                               <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -1802,11 +1802,11 @@ export default function CheckoutPage() {
                     )}
                     <div className="flex items-baseline justify-between gap-4 text-xs text-neutral-500 pt-3 border-t border-neutral-200/30 font-light tracking-wide">
                       <dt>{t('vatIncludedInSubtotal')}</dt>
-                      <dd className="text-right min-w-[120px]">{formatPrice(tax, 'SEK')}</dd>
+                      <dd className="text-right min-w-[140px] pr-2">{formatPrice(tax, 'SEK')}</dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-4 text-base font-light border-t border-neutral-200/30 pt-5 mt-5">
                       <dt className="text-neutral-900 tracking-wide">{tCart('total')}</dt>
-                      <dd className="text-neutral-900 tracking-wide text-right min-w-[120px]">
+                      <dd className="text-neutral-900 tracking-wide text-right min-w-[140px] pr-2">
                         {shippingCost !== null ? (
                           formatPrice(total, 'SEK')
                         ) : (
