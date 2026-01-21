@@ -1648,12 +1648,12 @@ export default function CheckoutPage() {
             <div className="mt-8 lg:mt-0 flex-1 min-w-0">
               {/* Slightly lower sticky offset so it never hides behind the main header */}
               <div className="bg-white border border-neutral-200/30 shadow-sm lg:sticky lg:top-28">
-                <div className="px-8 lg:px-10 py-8 border-b border-neutral-200/30">
+                <div className="px-10 lg:px-12 py-8 border-b border-neutral-200/30">
                   <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
                     {t('orderSummary')}
                   </h2>
                 </div>
-                <div className="px-8 lg:px-10 py-8">
+                <div className="px-10 lg:px-12 py-8">
 
                 {/* Order Items */}
                 <div className="border-b border-neutral-200 pb-6 mb-6">
@@ -1758,20 +1758,22 @@ export default function CheckoutPage() {
                   <dl className="space-y-5 text-sm">
                     <div className="flex items-baseline justify-between gap-4">
                       <dt className="text-neutral-600 font-light tracking-wide">{t('subtotalInclVat')}</dt>
-                      <dd className="text-neutral-900 font-light tracking-wide text-right min-w-[90px]">
+                      <dd className="text-neutral-900 font-light tracking-wide text-right min-w-[120px]">
                         {formatPrice(subtotal, 'SEK')}
                       </dd>
                     </div>
                     {appliedDiscount && (
-                      <div className="flex justify-between text-green-600">
+                      <div className="flex items-baseline justify-between gap-4 text-green-600">
                         <dt className="font-light tracking-wide">{t('discount')} ({appliedDiscount.code})</dt>
-                        <dd className="font-light tracking-wide">-{formatPrice(appliedDiscount.amount, 'SEK')}</dd>
+                        <dd className="font-light tracking-wide text-right min-w-[120px]">
+                          -{formatPrice(appliedDiscount.amount, 'SEK')}
+                        </dd>
                       </div>
                     )}
                     {shippingCost !== null ? (
                       <div className="flex items-baseline justify-between gap-4">
                         <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
-                        <dd className="text-neutral-900 font-light tracking-wide text-right min-w-[90px]">
+                        <dd className="text-neutral-900 font-light tracking-wide text-right min-w-[120px]">
                           {shippingCost === 0 ? (
                             <span className="text-green-600">{t('free')}</span>
                           ) : (
@@ -1782,7 +1784,7 @@ export default function CheckoutPage() {
                     ) : (
                       <div className="flex items-baseline justify-between gap-4">
                         <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
-                        <dd className="text-neutral-500 text-xs italic font-light tracking-wide text-right min-w-[90px]">
+                        <dd className="text-neutral-500 text-xs italic font-light tracking-wide text-right min-w-[120px]">
                           {calculatingShipping ? (
                             <span className="flex items-center gap-2">
                               <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
@@ -1800,11 +1802,11 @@ export default function CheckoutPage() {
                     )}
                     <div className="flex items-baseline justify-between gap-4 text-xs text-neutral-500 pt-3 border-t border-neutral-200/30 font-light tracking-wide">
                       <dt>{t('vatIncludedInSubtotal')}</dt>
-                      <dd className="text-right min-w-[90px]">{formatPrice(tax, 'SEK')}</dd>
+                      <dd className="text-right min-w-[120px]">{formatPrice(tax, 'SEK')}</dd>
                     </div>
                     <div className="flex items-baseline justify-between gap-4 text-base font-light border-t border-neutral-200/30 pt-5 mt-5">
                       <dt className="text-neutral-900 tracking-wide">{tCart('total')}</dt>
-                      <dd className="text-neutral-900 tracking-wide text-right min-w-[90px]">
+                      <dd className="text-neutral-900 tracking-wide text-right min-w-[120px]">
                         {shippingCost !== null ? (
                           formatPrice(total, 'SEK')
                         ) : (
@@ -1840,29 +1842,6 @@ export default function CheckoutPage() {
                     </div>
                   </div>
 
-                  {/* Continue to Payment Button - Bottom of Order Summary */}
-                  {expandedSections.shipping && !isShippingComplete() && (
-                    <div className="mt-10 pt-10 border-t border-neutral-200/30">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (isShippingComplete()) {
-                            setExpandedSections(prev => ({ ...prev, payment: true }));
-                            setTimeout(() => {
-                              document.querySelector('[data-section="payment"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            }, 100);
-                          }
-                        }}
-                        disabled={!isShippingComplete()}
-                        className="w-full py-5 px-6 border border-transparent text-sm font-light uppercase tracking-[0.15em] text-white bg-neutral-900 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-neutral-900/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
-                      >
-                        {t('continueToPayment')}
-                        <svg className="w-4 h-4 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
