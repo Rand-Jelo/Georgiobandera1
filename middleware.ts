@@ -8,25 +8,43 @@ import { getGeneralSettings } from './lib/db/queries/settings';
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  // Always try to get default language from database first
+  // For root path, manually redirect based on database setting
+  if (pathname === '/') {
+    let defaultLocale: 'en' | 'sv' = 'en';
+    
+    try {
+      const db = getDB();
+      const settings = await getGeneralSettings(db);
+      console.log('[Middleware] Root path - Fetched settings:', JSON.stringify(settings));
+      
+      if (settings?.default_language && (settings.default_language === 'en' || settings.default_language === 'sv')) {
+        defaultLocale = settings.default_language as 'en' | 'sv';
+        console.log(`[Middleware] Root path - Redirecting to: /${defaultLocale}`);
+      } else {
+        console.log(`[Middleware] Root path - No valid default_language (got: ${settings?.default_language}), using fallback: /${defaultLocale}`);
+      }
+    } catch (error: any) {
+      console.error('[Middleware] Root path - Error fetching default language:', error?.message || error);
+    }
+    
+    // Manually redirect to the default locale
+    const url = request.nextUrl.clone();
+    url.pathname = `/${defaultLocale}`;
+    return NextResponse.redirect(url);
+  }
+
+  // For all other paths, use next-intl middleware with dynamic default
   let defaultLocale: 'en' | 'sv' = 'en';
   
   try {
     const db = getDB();
     const settings = await getGeneralSettings(db);
-    console.log('[Middleware] Fetched settings:', JSON.stringify(settings));
-    
     if (settings?.default_language && (settings.default_language === 'en' || settings.default_language === 'sv')) {
       defaultLocale = settings.default_language as 'en' | 'sv';
-      console.log(`[Middleware] Using default locale from database: ${defaultLocale} for path: ${pathname}`);
-    } else {
-      console.log(`[Middleware] No valid default_language in settings (got: ${settings?.default_language}), using fallback: ${defaultLocale}`);
     }
   } catch (error: any) {
-    // If database access fails, fallback to 'en'
-    console.error('[Middleware] Error fetching default language:', error?.message || error);
-    if (error?.stack) {
-      console.error('[Middleware] Error stack:', error.stack);
+    if (!error?.message?.includes('getCloudflareContext')) {
+      console.error('[Middleware] Error fetching default language:', error);
     }
   }
 
@@ -36,15 +54,9 @@ export default async function middleware(request: NextRequest) {
     defaultLocale: defaultLocale,
   });
 
-  console.log(`[Middleware] Created routing with defaultLocale: ${defaultLocale} for path: ${pathname}`);
-
   // Create and use middleware with dynamic default locale
   const intlMiddleware = createMiddleware(routing);
-  const response = await intlMiddleware(request);
-  
-  console.log(`[Middleware] Response status: ${response?.status}, redirecting to: ${response?.headers.get('location') || 'none'}`);
-  
-  return response;
+  return intlMiddleware(request);
 }
 
 export const config = {
