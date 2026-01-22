@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 
 interface HomepageContent {
@@ -32,6 +33,7 @@ interface Collection {
 }
 
 export default function AdminHomepageContentPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const [content, setContent] = useState<HomepageContent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -270,7 +272,7 @@ export default function AdminHomepageContentPage() {
   };
 
   const handleDeleteCollection = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this collection?')) {
+    if (!confirm(t('confirmDeleteCollection'))) {
       return;
     }
 
@@ -341,40 +343,40 @@ export default function AdminHomepageContentPage() {
   const collectionsContent = getContentForSection('collections');
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Dashboard
+            {t('backToDashboard')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Homepage Content</h1>
-          <p className="text-neutral-400">Manage text content displayed on the homepage</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('homepageContent')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('manageHomepageText')}</p>
         </div>
 
         {/* Collections Section */}
         <div className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
-          <div className="p-6">
-            <div className="flex items-start justify-between mb-6">
+          <div className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
               <div>
-                <h2 className="text-xl font-semibold text-white">Collections Section</h2>
-                <p className="text-sm text-neutral-400 mt-1">
-                  "Discover Our Range" section on homepage
+                <h2 className="text-lg sm:text-xl font-semibold text-white">{t('collectionsSection')}</h2>
+                <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+                  {t('discoverOurRangeSection')}
                 </p>
               </div>
               {!editingSection && (
                 <button
                   onClick={() => handleEdit('collections')}
-                  className="px-4 py-2 bg-white text-black text-sm font-medium hover:bg-neutral-100 transition-colors rounded-lg"
+                  className="px-4 py-2 bg-white text-black text-sm font-medium hover:bg-neutral-100 transition-colors rounded-lg self-start"
                 >
-                  Edit
+                  {t('edit')}
                 </button>
               )}
             </div>
@@ -391,11 +393,11 @@ export default function AdminHomepageContentPage() {
                   {/* English */}
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">
-                      English
+                      {t('english')}
                     </h3>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Subtitle
+                        {t('subtitle')}
                       </label>
                       <input
                         type="text"
@@ -407,7 +409,7 @@ export default function AdminHomepageContentPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Title
+                        {t('title')}
                       </label>
                       <input
                         type="text"
@@ -419,14 +421,14 @@ export default function AdminHomepageContentPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Description (optional)
+                        {t('descriptionOptional')}
                       </label>
                       <textarea
                         value={formData.description_en}
                         onChange={(e) => setFormData({ ...formData, description_en: e.target.value })}
                         rows={3}
                         className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        placeholder="Optional description text"
+                        placeholder={t('optionalDescriptionText')}
                       />
                     </div>
                   </div>
@@ -434,11 +436,11 @@ export default function AdminHomepageContentPage() {
                   {/* Swedish */}
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">
-                      Swedish
+                      {t('swedish')}
                     </h3>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Subtitle
+                        {t('subtitle')}
                       </label>
                       <input
                         type="text"
@@ -450,7 +452,7 @@ export default function AdminHomepageContentPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Title
+                        {t('title')}
                       </label>
                       <input
                         type="text"
@@ -462,14 +464,14 @@ export default function AdminHomepageContentPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Description (optional)
+                        {t('descriptionOptional')}
                       </label>
                       <textarea
                         value={formData.description_sv}
                         onChange={(e) => setFormData({ ...formData, description_sv: e.target.value })}
                         rows={3}
                         className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        placeholder="Valfri beskrivningstext"
+                        placeholder={t('optionalDescriptionTextSv')}
                       />
                     </div>
                   </div>
@@ -477,9 +479,9 @@ export default function AdminHomepageContentPage() {
 
                 {/* Collection Cards Management */}
                 <div className="pt-6 border-t border-white/10">
-                  <h3 className="text-lg font-semibold text-white mb-4">Collection Cards</h3>
-                  <p className="text-sm text-neutral-400 mb-6">
-                    Manage the individual collection cards displayed in this section
+                  <h3 className="text-base sm:text-lg font-semibold text-white mb-4">{t('collectionCards')}</h3>
+                  <p className="text-xs sm:text-sm text-neutral-400 mb-6">
+                    {t('manageCollectionCards')}
                   </p>
 
                   {!showNewCollectionForm && !editingCollection && (
@@ -499,14 +501,14 @@ export default function AdminHomepageContentPage() {
                       }}
                       className="mb-6 px-4 py-2 bg-white text-black text-sm font-medium hover:bg-neutral-100 transition-colors rounded-lg"
                     >
-                      Add Collection
+                      {t('addCollection')}
                     </button>
                   )}
 
                   {showNewCollectionForm && (
-                    <div className="bg-black/30 border border-white/5 rounded-lg overflow-hidden mb-6 p-6">
+                    <div className="bg-black/30 border border-white/5 rounded-lg overflow-hidden mb-6 p-4 sm:p-6">
                       <div className="flex items-center justify-between mb-6">
-                        <h4 className="text-base font-semibold text-white">New Collection</h4>
+                        <h4 className="text-sm sm:text-base font-semibold text-white">{t('newCollection')}</h4>
                         <button
                           type="button"
                           onClick={() => {
@@ -534,9 +536,9 @@ export default function AdminHomepageContentPage() {
                         )}
                         <div className="grid gap-6 sm:grid-cols-2">
                           <div className="space-y-4">
-                            <h4 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">English</h4>
+                            <h4 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">{t('english')}</h4>
                             <div>
-                              <label className="block text-sm font-medium text-neutral-300 mb-2">Name *</label>
+                              <label className="block text-sm font-medium text-neutral-300 mb-2">{t('name')} *</label>
                               <input
                                 type="text"
                                 required
@@ -546,7 +548,7 @@ export default function AdminHomepageContentPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-neutral-300 mb-2">Description</label>
+                              <label className="block text-sm font-medium text-neutral-300 mb-2">{t('description')}</label>
                               <input
                                 type="text"
                                 value={collectionFormData.description_en}
@@ -556,9 +558,9 @@ export default function AdminHomepageContentPage() {
                             </div>
                           </div>
                           <div className="space-y-4">
-                            <h4 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">Swedish</h4>
+                            <h4 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">{t('swedish')}</h4>
                             <div>
-                              <label className="block text-sm font-medium text-neutral-300 mb-2">Name *</label>
+                              <label className="block text-sm font-medium text-neutral-300 mb-2">{t('name')} *</label>
                               <input
                                 type="text"
                                 required
@@ -568,7 +570,7 @@ export default function AdminHomepageContentPage() {
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-neutral-300 mb-2">Description</label>
+                              <label className="block text-sm font-medium text-neutral-300 mb-2">{t('description')}</label>
                               <input
                                 type="text"
                                 value={collectionFormData.description_sv}
@@ -578,14 +580,14 @@ export default function AdminHomepageContentPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-4 pt-4 border-t border-white/10">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-4 border-t border-white/10">
                           <button
                             type="button"
                             onClick={handleCreateCollection}
                             disabled={saving || !collectionFormData.name_en || !collectionFormData.name_sv}
                             className="px-6 py-2.5 bg-white text-black text-sm font-medium hover:bg-neutral-100 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {saving ? 'Creating...' : 'Create Collection'}
+                            {saving ? t('creating') : t('createCollection')}
                           </button>
                           <button
                             type="button"
@@ -604,7 +606,7 @@ export default function AdminHomepageContentPage() {
                             disabled={saving}
                             className="px-6 py-2.5 border border-white/20 text-neutral-300 text-sm font-medium hover:bg-white/10 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            Cancel
+                            {t('cancel')}
                           </button>
                         </div>
                       </div>
@@ -614,7 +616,7 @@ export default function AdminHomepageContentPage() {
                   <div className="space-y-4">
                     {collections.map((collection) => (
                       <div key={collection.id} className="bg-black/30 border border-white/5 rounded-lg overflow-hidden">
-                        <div className="p-6">
+                        <div className="p-4 sm:p-6">
                           {editingCollection === collection.id ? (
                             <div className="space-y-6">
                               {error && (
@@ -624,9 +626,9 @@ export default function AdminHomepageContentPage() {
                               )}
                               <div className="grid gap-6 sm:grid-cols-2">
                                 <div className="space-y-4">
-                                  <h4 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">English</h4>
+                                  <h4 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">{t('english')}</h4>
                                   <div>
-                                    <label className="block text-sm font-medium text-neutral-300 mb-2">Name *</label>
+                                    <label className="block text-sm font-medium text-neutral-300 mb-2">{t('name')} *</label>
                                     <input
                                       type="text"
                                       required
@@ -636,7 +638,7 @@ export default function AdminHomepageContentPage() {
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-sm font-medium text-neutral-300 mb-2">Description</label>
+                                    <label className="block text-sm font-medium text-neutral-300 mb-2">{t('description')}</label>
                                     <input
                                       type="text"
                                       value={collectionFormData.description_en}
@@ -646,9 +648,9 @@ export default function AdminHomepageContentPage() {
                                   </div>
                                 </div>
                                 <div className="space-y-4">
-                                  <h4 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">Swedish</h4>
+                                  <h4 className="text-sm font-medium text-neutral-300 uppercase tracking-wide">{t('swedish')}</h4>
                                   <div>
-                                    <label className="block text-sm font-medium text-neutral-300 mb-2">Name *</label>
+                                    <label className="block text-sm font-medium text-neutral-300 mb-2">{t('name')} *</label>
                                     <input
                                       type="text"
                                       required
@@ -658,7 +660,7 @@ export default function AdminHomepageContentPage() {
                                     />
                                   </div>
                                   <div>
-                                    <label className="block text-sm font-medium text-neutral-300 mb-2">Description</label>
+                                    <label className="block text-sm font-medium text-neutral-300 mb-2">{t('description')}</label>
                                     <input
                                       type="text"
                                       value={collectionFormData.description_sv}
@@ -669,11 +671,11 @@ export default function AdminHomepageContentPage() {
                                 </div>
                               </div>
                               <div>
-                                <label className="block text-sm font-medium text-neutral-300 mb-2">Image</label>
+                                <label className="block text-sm font-medium text-neutral-300 mb-2">{t('image')}</label>
                                 {collection.image_url && (
                                   <div className="mb-3">
-                                    <p className="text-xs text-neutral-500 mb-2">Current Image:</p>
-                                    <div className="relative w-32 h-32 bg-neutral-900 rounded-lg overflow-hidden">
+                                    <p className="text-xs text-neutral-500 mb-2">{t('currentImage')}:</p>
+                                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 bg-neutral-900 rounded-lg overflow-hidden">
                                       <img
                                         src={collection.image_url}
                                         alt={collection.name_en}
@@ -690,7 +692,7 @@ export default function AdminHomepageContentPage() {
                                   className="w-full px-4 py-2 bg-black/50 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/30 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-white file:text-black hover:file:bg-neutral-100 disabled:opacity-50"
                                 />
                                 {uploadingImage === collection.id && (
-                                  <p className="mt-2 text-xs text-neutral-400">Uploading image...</p>
+                                  <p className="mt-2 text-xs text-neutral-400">{t('uploadingImage')}</p>
                                 )}
                               </div>
                               <div className="flex items-center gap-4">
@@ -701,17 +703,17 @@ export default function AdminHomepageContentPage() {
                                     onChange={(e) => setCollectionFormData({ ...collectionFormData, active: e.target.checked ? 1 : 0 })}
                                     className="w-4 h-4 border border-white/20 bg-black/50 text-white rounded focus:ring-2 focus:ring-white/30"
                                   />
-                                  <span className="text-sm text-neutral-300">Active</span>
+                                  <span className="text-sm text-neutral-300">{t('active')}</span>
                                 </label>
                               </div>
-                              <div className="flex items-center gap-4 pt-4 border-t border-white/10">
+                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-4 border-t border-white/10">
                                 <button
                                   type="button"
                                   onClick={handleSaveCollection}
                                   disabled={saving}
                                   className="px-6 py-2.5 bg-white text-black text-sm font-medium hover:bg-neutral-100 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                  {saving ? 'Saving...' : 'Save Changes'}
+                                  {saving ? t('saving') : t('saveChanges')}
                                 </button>
                                 <button
                                   type="button"
@@ -722,16 +724,16 @@ export default function AdminHomepageContentPage() {
                                   disabled={saving}
                                   className="px-6 py-2.5 border border-white/20 text-neutral-300 text-sm font-medium hover:bg-white/10 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                  Cancel
+                                  {t('cancel')}
                                 </button>
                               </div>
                             </div>
                           ) : (
                             <>
-                              <div className="flex items-start justify-between mb-4">
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
                                 <div className="flex-1">
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <h4 className="text-base font-semibold text-white">{collection.name_en}</h4>
+                                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                                    <h4 className="text-sm sm:text-base font-semibold text-white">{collection.name_en}</h4>
                                     <span
                                       className={`px-2 py-1 text-xs font-medium rounded-full ${
                                         collection.active === 1
@@ -739,11 +741,11 @@ export default function AdminHomepageContentPage() {
                                           : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
                                       }`}
                                     >
-                                      {collection.active === 1 ? 'Active' : 'Inactive'}
+                                      {collection.active === 1 ? t('active') : t('inactive')}
                                     </span>
                                   </div>
-                                  <p className="text-sm text-neutral-400 mb-2">{collection.description_en || 'No description'}</p>
-                                  <p className="text-xs text-neutral-500">Link: <span className="text-neutral-300">/shop?collection={collection.id}</span></p>
+                                  <p className="text-xs sm:text-sm text-neutral-400 mb-2">{collection.description_en || t('noDescription')}</p>
+                                  <p className="text-xs text-neutral-500">{t('link')}: <span className="text-neutral-300">/shop?collection={collection.id}</span></p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <button
@@ -751,25 +753,25 @@ export default function AdminHomepageContentPage() {
                                     onClick={() => handleEditCollection(collection)}
                                     className="px-3 py-1.5 bg-white text-black text-xs font-medium hover:bg-neutral-100 transition-colors rounded-lg"
                                   >
-                                    Edit
+                                    {t('edit')}
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => handleDeleteCollection(collection.id)}
                                     className="px-3 py-1.5 border border-red-500/50 text-red-300 text-xs font-medium hover:bg-red-500/10 transition-colors rounded-lg"
                                   >
-                                    Delete
+                                    {t('delete')}
                                   </button>
                                 </div>
                               </div>
-                              <div className="pt-4 border-t border-white/10 grid grid-cols-2 gap-4 text-xs">
+                              <div className="pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                                 <div>
-                                  <p className="text-neutral-500 mb-1">Swedish Name</p>
+                                  <p className="text-neutral-500 mb-1">{t('swedishName')}</p>
                                   <p className="text-neutral-300">{collection.name_sv}</p>
                                 </div>
                                 <div>
-                                  <p className="text-neutral-500 mb-1">Swedish Description</p>
-                                  <p className="text-neutral-300">{collection.description_sv || 'No description'}</p>
+                                  <p className="text-neutral-500 mb-1">{t('swedishDescription')}</p>
+                                  <p className="text-neutral-300">{collection.description_sv || t('noDescription')}</p>
                                 </div>
                               </div>
                             </>
@@ -780,13 +782,13 @@ export default function AdminHomepageContentPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 pt-4 border-t border-white/10">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-4 border-t border-white/10">
                   <button
                     type="submit"
                     disabled={saving}
                     className="px-6 py-2.5 bg-white text-black text-sm font-medium hover:bg-neutral-100 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {saving ? 'Saving...' : 'Save Changes'}
+                    {saving ? t('saving') : t('saveChanges')}
                   </button>
                   <button
                     type="button"
@@ -794,7 +796,7 @@ export default function AdminHomepageContentPage() {
                     disabled={saving}
                     className="px-6 py-2.5 border border-white/20 text-neutral-300 text-sm font-medium hover:bg-white/10 transition-colors rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </div>
               </form>
@@ -803,20 +805,20 @@ export default function AdminHomepageContentPage() {
                 <div className="grid gap-6 sm:grid-cols-2">
                   <div>
                     <p className="text-sm font-medium text-neutral-400 uppercase tracking-wide mb-3">
-                      English
+                      {t('english')}
                     </p>
                     <div className="space-y-2">
                       <div>
-                        <p className="text-xs text-neutral-500 mb-1">Subtitle</p>
-                        <p className="text-sm text-neutral-300">{collectionsContent?.subtitle_en || 'Not set'}</p>
+                        <p className="text-xs text-neutral-500 mb-1">{t('subtitle')}</p>
+                        <p className="text-sm text-neutral-300">{collectionsContent?.subtitle_en || t('notSet')}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-neutral-500 mb-1">Title</p>
-                        <p className="text-sm text-white font-medium">{collectionsContent?.title_en || 'Not set'}</p>
+                        <p className="text-xs text-neutral-500 mb-1">{t('title')}</p>
+                        <p className="text-sm text-white font-medium">{collectionsContent?.title_en || t('notSet')}</p>
                       </div>
                       {collectionsContent?.description_en && (
                         <div>
-                          <p className="text-xs text-neutral-500 mb-1">Description</p>
+                          <p className="text-xs text-neutral-500 mb-1">{t('description')}</p>
                           <p className="text-sm text-neutral-300">{collectionsContent.description_en}</p>
                         </div>
                       )}
@@ -824,20 +826,20 @@ export default function AdminHomepageContentPage() {
                   </div>
                   <div>
                     <p className="text-sm font-medium text-neutral-400 uppercase tracking-wide mb-3">
-                      Swedish
+                      {t('swedish')}
                     </p>
                     <div className="space-y-2">
                       <div>
-                        <p className="text-xs text-neutral-500 mb-1">Subtitle</p>
-                        <p className="text-sm text-neutral-300">{collectionsContent?.subtitle_sv || 'Not set'}</p>
+                        <p className="text-xs text-neutral-500 mb-1">{t('subtitle')}</p>
+                        <p className="text-sm text-neutral-300">{collectionsContent?.subtitle_sv || t('notSet')}</p>
                       </div>
                       <div>
-                        <p className="text-xs text-neutral-500 mb-1">Title</p>
-                        <p className="text-sm text-white font-medium">{collectionsContent?.title_sv || 'Not set'}</p>
+                        <p className="text-xs text-neutral-500 mb-1">{t('title')}</p>
+                        <p className="text-sm text-white font-medium">{collectionsContent?.title_sv || t('notSet')}</p>
                       </div>
                       {collectionsContent?.description_sv && (
                         <div>
-                          <p className="text-xs text-neutral-500 mb-1">Description</p>
+                          <p className="text-xs text-neutral-500 mb-1">{t('description')}</p>
                           <p className="text-sm text-neutral-300">{collectionsContent.description_sv}</p>
                         </div>
                       )}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { ShippingRegion } from '@/types/database';
 
@@ -82,6 +83,7 @@ interface GeneralSettings {
 }
 
 export default function AdminSettingsPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'store' | 'shipping' | 'general'>('store');
   const [isAdmin, setIsAdmin] = useState(false);
@@ -308,7 +310,7 @@ export default function AdminSettingsPage() {
   };
 
   const handleDeleteRegion = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this shipping region?')) {
+    if (!confirm(t('confirmDeleteShippingRegion'))) {
       return;
     }
 
@@ -338,37 +340,37 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Dashboard
+            {t('backToDashboard')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Settings</h1>
-          <p className="text-neutral-400">Manage store settings and configuration</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('settings')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('manageStoreSettings')}</p>
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 border-b border-white/10">
-          <div className="flex gap-4">
+        <div className="mb-6 border-b border-white/10 overflow-x-auto">
+          <div className="flex gap-2 sm:gap-4 min-w-max">
             {(['store', 'shipping', 'general'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                   activeTab === tab
                     ? 'text-white border-b-2 border-white'
                     : 'text-neutral-400 hover:text-white'
                 }`}
               >
-                {tab === 'store' ? 'Store Information' : tab === 'shipping' ? 'Shipping Regions' : 'General Settings'}
+                {tab === 'store' ? t('storeInfo') : tab === 'shipping' ? t('shippingRegions') : t('generalSettings')}
               </button>
             ))}
           </div>
@@ -376,13 +378,13 @@ export default function AdminSettingsPage() {
 
         {/* Store Information Tab */}
         {activeTab === 'store' && (
-          <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-            <h2 className="text-2xl font-semibold text-white mb-6">Store Information</h2>
+          <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4 sm:mb-6">{t('storeInformation')}</h2>
             <form onSubmit={handleSaveStoreSettings} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Store Name *
+                    {t('storeName')} *
                   </label>
                   <input
                     type="text"
@@ -394,7 +396,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Store Email *
+                    {t('storeEmail')} *
                   </label>
                   <input
                     type="email"
@@ -406,7 +408,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Store Phone
+                    {t('storePhone')}
                   </label>
                   <input
                     type="tel"
@@ -417,7 +419,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Currency *
+                    {t('currency')} *
                   </label>
                   <select
                     value={storeSettings.currency}
@@ -432,7 +434,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Tax Rate (%)
+                    {t('taxRate')} (%)
                   </label>
                   <input
                     type="number"
@@ -445,7 +447,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Address
+                    {t('address')}
                   </label>
                   <input
                     type="text"
@@ -456,7 +458,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    City
+                    {t('city')}
                   </label>
                   <input
                     type="text"
@@ -467,7 +469,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Postal Code
+                    {t('postalCode')}
                   </label>
                   <input
                     type="text"
@@ -478,7 +480,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Country
+                    {t('country')}
                   </label>
                   <input
                     type="text"
@@ -494,7 +496,7 @@ export default function AdminSettingsPage() {
                   disabled={savingStore}
                   className="px-6 py-3 bg-white text-black rounded-lg hover:bg-neutral-100 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {savingStore ? 'Saving...' : 'Save Store Settings'}
+                  {savingStore ? t('saving') : t('saveStoreSettings')}
                 </button>
               </div>
             </form>
@@ -503,9 +505,9 @@ export default function AdminSettingsPage() {
 
         {/* Shipping Regions Tab */}
         {activeTab === 'shipping' && (
-          <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-white">Shipping Regions</h2>
+          <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+              <h2 className="text-xl sm:text-2xl font-semibold text-white">{t('shippingRegions')}</h2>
               <button
                 onClick={() => {
                   setEditingRegion(null);
@@ -520,22 +522,22 @@ export default function AdminSettingsPage() {
                   });
                   setShowRegionForm(true);
                 }}
-                className="px-4 py-2 bg-white text-black rounded-lg hover:bg-neutral-100 font-medium transition-colors"
+                className="px-4 py-2 bg-white text-black rounded-lg hover:bg-neutral-100 font-medium transition-colors text-sm self-start sm:self-auto"
               >
-                + Add Shipping Region
+                + {t('addShippingRegion')}
               </button>
             </div>
 
             {showRegionForm && (
-              <div className="mb-6 p-6 bg-black/30 border border-white/10 rounded-lg">
-                <h3 className="text-lg font-semibold text-white mb-4">
-                  {editingRegion ? 'Edit Shipping Region' : 'New Shipping Region'}
+              <div className="mb-6 p-4 sm:p-6 bg-black/30 border border-white/10 rounded-lg">
+                <h3 className="text-base sm:text-lg font-semibold text-white mb-4">
+                  {editingRegion ? t('editShippingRegion') : t('newShippingRegion')}
                 </h3>
                 <form onSubmit={handleSaveRegion} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Name (English) *
+                        {t('nameEn')} *
                       </label>
                       <input
                         type="text"
@@ -547,7 +549,7 @@ export default function AdminSettingsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Name (Swedish) *
+                        {t('nameSv')} *
                       </label>
                       <input
                         type="text"
@@ -559,7 +561,7 @@ export default function AdminSettingsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Code (e.g., SE, EU, WORLD) *
+                        {t('regionCode')} *
                       </label>
                       <input
                         type="text"
@@ -571,7 +573,7 @@ export default function AdminSettingsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Base Price (SEK) *
+                        {t('basePrice')} (SEK) *
                       </label>
                       <input
                         type="number"
@@ -585,7 +587,7 @@ export default function AdminSettingsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Free Shipping Threshold (SEK)
+                        {t('freeShippingThreshold')} (SEK)
                       </label>
                       <input
                         type="number"
@@ -594,7 +596,7 @@ export default function AdminSettingsPage() {
                         value={regionForm.free_shipping_threshold}
                         onChange={(e) => setRegionForm({ ...regionForm, free_shipping_threshold: e.target.value })}
                         className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        placeholder="Leave empty for no free shipping"
+                        placeholder={t('leaveEmptyNoFreeShipping')}
                       />
                     </div>
                     <div className="flex items-end">
@@ -605,19 +607,19 @@ export default function AdminSettingsPage() {
                           onChange={(e) => setRegionForm({ ...regionForm, active: e.target.checked })}
                           className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
                         />
-                        <span className="text-sm text-neutral-300">Active</span>
+                        <span className="text-sm text-neutral-300">{t('active')}</span>
                       </label>
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-neutral-300 mb-2">
-                      Countries (ISO codes) *
-                      <span className="text-xs text-neutral-500 ml-2">
-                        Select countries that should use this shipping region. Leave empty for "Rest of World" region.
+                      {t('countriesIso')} *
+                      <span className="text-xs text-neutral-500 ml-2 block sm:inline">
+                        {t('selectCountriesHint')}
                       </span>
                     </label>
                     <div className="border border-white/20 bg-black/50 rounded-lg p-3 max-h-60 overflow-y-auto">
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                         {COUNTRY_CODES.map((country) => (
                           <label
                             key={country.code}
@@ -641,7 +643,7 @@ export default function AdminSettingsPage() {
                               }}
                               className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
                             />
-                            <span className="text-sm text-neutral-300">
+                            <span className="text-xs sm:text-sm text-neutral-300">
                               {country.code} - {country.name}
                             </span>
                           </label>
@@ -650,11 +652,11 @@ export default function AdminSettingsPage() {
                     </div>
                     {regionForm.countries.length > 0 && (
                       <p className="mt-2 text-xs text-neutral-400">
-                        Selected: {regionForm.countries.join(', ')}
+                        {t('selected')}: {regionForm.countries.join(', ')}
                       </p>
                     )}
                   </div>
-                  <div className="flex justify-end gap-2">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -663,13 +665,13 @@ export default function AdminSettingsPage() {
                       }}
                       className="px-4 py-2 text-neutral-300 hover:text-white transition-colors"
                     >
-                      Cancel
+                      {t('cancel')}
                     </button>
                     <button
                       type="submit"
                       className="px-4 py-2 bg-white text-black rounded-lg hover:bg-neutral-100 font-medium transition-colors"
                     >
-                      {editingRegion ? 'Update' : 'Create'} Region
+                      {editingRegion ? t('updateRegion') : t('createRegion')}
                     </button>
                   </div>
                 </form>
@@ -681,48 +683,48 @@ export default function AdminSettingsPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/30 mx-auto"></div>
               </div>
             ) : shippingRegions.length === 0 ? (
-              <div className="text-center py-8 text-neutral-400">
-                No shipping regions found. Click "Add Shipping Region" to create one.
+              <div className="text-center py-8 text-neutral-400 text-sm">
+                {t('noShippingRegionsFound')}
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-white/10">
                   <thead className="bg-black/70">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Name
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('name')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Code
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('code')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Countries
+                      <th className="hidden md:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('countries')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Base Price
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('basePrice')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Free Shipping
+                      <th className="hidden sm:table-cell px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('freeShipping')}
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Status
+                      <th className="px-4 sm:px-6 py-3 text-left text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('status')}
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
-                        Actions
+                      <th className="px-4 sm:px-6 py-3 text-right text-xs font-medium text-neutral-300 uppercase tracking-wider">
+                        {t('actions')}
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/10">
                     {shippingRegions.map((region) => (
                       <tr key={region.id} className="hover:bg-black/30 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-white">{region.name_en}</div>
                           <div className="text-xs text-neutral-400">{region.name_sv}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-neutral-300">{region.code}</div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="hidden md:table-cell px-4 sm:px-6 py-4">
                           <div className="text-sm text-neutral-300">
                             {region.countries && region.countries.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
@@ -736,24 +738,24 @@ export default function AdminSettingsPage() {
                                 ))}
                                 {region.countries.length > 5 && (
                                   <span className="px-2 py-1 bg-white/10 rounded text-xs">
-                                    +{region.countries.length - 5} more
+                                    +{region.countries.length - 5} {t('more')}
                                   </span>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-neutral-500 italic">All other countries</span>
+                              <span className="text-neutral-500 italic">{t('allOtherCountries')}</span>
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-white">{region.base_price} SEK</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-neutral-300">
                             {region.free_shipping_threshold ? `${region.free_shipping_threshold} SEK` : '-'}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 py-1 text-xs font-medium rounded-full ${
                               region.active
@@ -761,21 +763,21 @@ export default function AdminSettingsPage() {
                                 : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
                             }`}
                           >
-                            {region.active ? 'Active' : 'Inactive'}
+                            {region.active ? t('active') : t('inactive')}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
                             onClick={() => handleEditRegion(region)}
-                            className="text-white hover:text-neutral-300 mr-4"
+                            className="text-white hover:text-neutral-300 mr-2 sm:mr-4"
                           >
-                            Edit
+                            {t('edit')}
                           </button>
                           <button
                             onClick={() => handleDeleteRegion(region.id)}
                             className="text-red-400 hover:text-red-300"
                           >
-                            Delete
+                            {t('delete')}
                           </button>
                         </td>
                       </tr>
@@ -789,47 +791,47 @@ export default function AdminSettingsPage() {
 
         {/* General Settings Tab */}
         {activeTab === 'general' && (
-          <div className="bg-black/50 border border-white/10 rounded-lg p-6">
-            <h2 className="text-2xl font-semibold text-white mb-6">General Settings</h2>
+          <div className="bg-black/50 border border-white/10 rounded-lg p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4 sm:mb-6">{t('generalSettings')}</h2>
             <form onSubmit={handleSaveGeneralSettings} className="space-y-6">
               <div className="space-y-4">
-                <label className="flex items-center space-x-3 cursor-pointer">
+                <label className="flex items-start space-x-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={generalSettings.maintenance_mode}
                     onChange={(e) => setGeneralSettings({ ...generalSettings, maintenance_mode: e.target.checked })}
-                    className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                    className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30 mt-0.5"
                   />
                   <div>
-                    <span className="text-sm font-medium text-white">Maintenance Mode</span>
-                    <p className="text-xs text-neutral-400">Enable to put the store in maintenance mode</p>
+                    <span className="text-sm font-medium text-white">{t('maintenanceMode')}</span>
+                    <p className="text-xs text-neutral-400">{t('maintenanceModeHint')}</p>
                   </div>
                 </label>
 
-                <label className="flex items-center space-x-3 cursor-pointer">
+                <label className="flex items-start space-x-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={generalSettings.allow_registrations}
                     onChange={(e) => setGeneralSettings({ ...generalSettings, allow_registrations: e.target.checked })}
-                    className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                    className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30 mt-0.5"
                   />
                   <div>
-                    <span className="text-sm font-medium text-white">Allow User Registrations</span>
-                    <p className="text-xs text-neutral-400">Allow new users to register accounts</p>
+                    <span className="text-sm font-medium text-white">{t('allowUserRegistrations')}</span>
+                    <p className="text-xs text-neutral-400">{t('allowUserRegistrationsHint')}</p>
                   </div>
                 </label>
 
                 <div>
                   <label className="block text-sm font-medium text-neutral-300 mb-2">
-                    Default Language *
+                    {t('defaultLanguage')} *
                   </label>
                   <select
                     value={generalSettings.default_language}
                     onChange={(e) => setGeneralSettings({ ...generalSettings, default_language: e.target.value })}
                     className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                   >
-                    <option value="en">English</option>
-                    <option value="sv">Swedish</option>
+                    <option value="en">{t('english')}</option>
+                    <option value="sv">{t('swedish')}</option>
                   </select>
                 </div>
               </div>
@@ -839,7 +841,7 @@ export default function AdminSettingsPage() {
                   disabled={savingGeneral}
                   className="px-6 py-3 bg-white text-black rounded-lg hover:bg-neutral-100 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {savingGeneral ? 'Saving...' : 'Save General Settings'}
+                  {savingGeneral ? t('saving') : t('saveGeneralSettings')}
                 </button>
               </div>
             </form>

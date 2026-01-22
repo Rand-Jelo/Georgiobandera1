@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { HeroImage } from '@/types/database';
 import { optimizeImage, formatFileSize } from '@/lib/utils/imageOptimization';
 
 export default function AdminHeroImagesPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const locale = useLocale();
   const [images, setImages] = useState<HeroImage[]>([]);
@@ -90,7 +91,7 @@ export default function AdminHeroImagesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this hero image?')) {
+    if (!confirm(t('confirmDeleteHeroImage'))) {
       return;
     }
 
@@ -298,7 +299,7 @@ export default function AdminHeroImagesPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-neutral-950 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-white">{t('loading')}</div>
       </div>
     );
   }
@@ -308,44 +309,44 @@ export default function AdminHeroImagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin/site-images"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Site Images
+            {t('backToSiteImages')}
           </Link>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-semibold text-white mb-2">Hero Images</h1>
-              <p className="text-neutral-400">Manage homepage hero carousel images</p>
+              <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('heroImages')}</h1>
+              <p className="text-sm sm:text-base text-neutral-400">{t('manageHeroImages')}</p>
             </div>
             <button
               onClick={handleAdd}
-              className="px-4 py-2 bg-white text-black rounded-sm hover:bg-neutral-100 transition-colors text-sm font-medium"
+              className="px-4 py-2 bg-white text-black rounded-sm hover:bg-neutral-100 transition-colors text-sm font-medium self-start sm:self-auto"
             >
-              Add Image
+              {t('addImage')}
             </button>
           </div>
         </div>
 
         {/* Add/Edit Form */}
         {showAddForm && (
-          <div className="mb-8 p-6 border border-white/10 bg-black/50 rounded-lg">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              {editingImage ? 'Edit Image' : 'Add New Image'}
+          <div className="mb-8 p-4 sm:p-6 border border-white/10 bg-black/50 rounded-lg">
+            <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
+              {editingImage ? t('editImage') : t('addNewImage')}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* File upload - available for both add and edit */}
               <div>
                 <label className="block text-sm font-medium text-white mb-2">
-                  {editingImage ? 'Replace Image (optional)' : 'Upload Image *'}
+                  {editingImage ? t('replaceImageOptional') : t('uploadImageRequired')}
                 </label>
                 <input
                   type="file"
@@ -355,11 +356,11 @@ export default function AdminHeroImagesPage() {
                   className="w-full px-4 py-2 bg-neutral-900 border border-white/10 rounded-sm text-white focus:outline-none focus:border-white/30 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-medium file:bg-white file:text-black hover:file:bg-neutral-100 disabled:opacity-50"
                 />
                 {uploadingImage && (
-                  <p className="mt-2 text-sm text-neutral-400">Uploading and optimizing image...</p>
+                  <p className="mt-2 text-sm text-neutral-400">{t('uploadingAndOptimizing')}</p>
                 )}
                 {editingImage && (
                   <p className="mt-2 text-xs text-neutral-500">
-                    Leave empty to keep current image, or upload a new file to replace it
+                    {t('leaveEmptyToKeepImage')}
                   </p>
                 )}
               </div>
@@ -368,7 +369,7 @@ export default function AdminHeroImagesPage() {
               {editingImage && !uploadingImage && (
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">
-                    Current Image URL
+                    {t('currentImageUrl')}
                   </label>
                   <input
                     type="url"
@@ -379,7 +380,7 @@ export default function AdminHeroImagesPage() {
                     readOnly
                   />
                   <p className="mt-1 text-xs text-neutral-500">
-                    To change the image, upload a new file above
+                    {t('toChangeImageUploadAbove')}
                   </p>
                 </div>
               )}
@@ -387,27 +388,27 @@ export default function AdminHeroImagesPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">
-                    Alt Text (English)
+                    {t('altTextEn')}
                   </label>
                   <input
                     type="text"
                     value={formData.alt_text_en}
                     onChange={(e) => setFormData({ ...formData, alt_text_en: e.target.value })}
                     className="w-full px-4 py-2 bg-neutral-900 border border-white/10 rounded-sm text-white focus:outline-none focus:border-white/30"
-                    placeholder="Description for screen readers"
+                    placeholder={t('descriptionForScreenReaders')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-white mb-2">
-                    Alt Text (Swedish)
+                    {t('altTextSv')}
                   </label>
                   <input
                     type="text"
                     value={formData.alt_text_sv}
                     onChange={(e) => setFormData({ ...formData, alt_text_sv: e.target.value })}
                     className="w-full px-4 py-2 bg-neutral-900 border border-white/10 rounded-sm text-white focus:outline-none focus:border-white/30"
-                    placeholder="Beskrivning för skärmläsare"
+                    placeholder={t('descriptionForScreenReadersSv')}
                   />
                 </div>
               </div>
@@ -420,7 +421,7 @@ export default function AdminHeroImagesPage() {
                     onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                     className="w-4 h-4"
                   />
-                  <span className="text-sm text-white">Active (visible on homepage)</span>
+                  <span className="text-sm text-white">{t('activeVisibleOnHomepage')}</span>
                 </label>
               </div>
 
@@ -431,13 +432,13 @@ export default function AdminHeroImagesPage() {
               )}
 
               {editingImage && (
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     type="submit"
                     disabled={saving}
                     className="px-6 py-2 bg-white text-black rounded-sm hover:bg-neutral-100 transition-colors text-sm font-medium disabled:opacity-50"
                   >
-                    {saving ? 'Saving...' : 'Update'}
+                    {saving ? t('saving') : t('update')}
                   </button>
                   <button
                     type="button"
@@ -448,7 +449,7 @@ export default function AdminHeroImagesPage() {
                     }}
                     className="px-6 py-2 border border-white/20 text-white rounded-sm hover:bg-white/10 transition-colors text-sm font-medium"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </div>
               )}
@@ -463,7 +464,7 @@ export default function AdminHeroImagesPage() {
                     }}
                     className="px-6 py-2 border border-white/20 text-white rounded-sm hover:bg-white/10 transition-colors text-sm font-medium"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </div>
               )}
@@ -473,9 +474,9 @@ export default function AdminHeroImagesPage() {
 
         {/* Images List */}
         {images.length === 0 ? (
-          <div className="text-center py-16 border border-white/10 bg-black/50 rounded-lg">
+          <div className="text-center py-12 sm:py-16 border border-white/10 bg-black/50 rounded-lg px-4">
             <svg
-              className="w-16 h-16 text-neutral-600 mx-auto mb-4"
+              className="w-12 h-12 sm:w-16 sm:h-16 text-neutral-600 mx-auto mb-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -487,25 +488,25 @@ export default function AdminHeroImagesPage() {
                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
-            <h3 className="text-xl font-semibold text-white mb-2">No hero images</h3>
-            <p className="text-neutral-400 mb-6">
-              Get started by adding your first hero image to display on the homepage.
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">{t('noHeroImages')}</h3>
+            <p className="text-sm sm:text-base text-neutral-400 mb-6">
+              {t('noHeroImagesDesc')}
             </p>
             <button
               onClick={handleAdd}
               className="px-6 py-2 bg-white text-black rounded-sm hover:bg-neutral-100 transition-colors text-sm font-medium"
             >
-              Add First Image
+              {t('addFirstImage')}
             </button>
           </div>
         ) : (
           <>
             {images.length > 1 && (
               <p className="text-sm text-neutral-400 mb-4">
-                Drag and drop images to reorder them
+                {t('dragDropToReorder')}
               </p>
             )}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {images.map((image, index) => (
                 <div
                   key={image.id}
@@ -530,7 +531,7 @@ export default function AdminHeroImagesPage() {
                     />
                     {image.active === 0 && (
                       <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                        <span className="text-white text-sm font-medium">Inactive</span>
+                        <span className="text-white text-sm font-medium">{t('inactive')}</span>
                       </div>
                     )}
                     <div className="absolute top-2 left-2">
@@ -548,25 +549,25 @@ export default function AdminHeroImagesPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="p-4">
+                  <div className="p-3 sm:p-4">
                     <div className="mb-3">
-                      <p className="text-sm text-neutral-400 mb-1">Alt Text (EN)</p>
-                      <p className="text-white text-sm">
-                        {image.alt_text_en || <span className="text-neutral-500">Not set</span>}
+                      <p className="text-xs sm:text-sm text-neutral-400 mb-1">{t('altTextEn')}</p>
+                      <p className="text-white text-xs sm:text-sm">
+                        {image.alt_text_en || <span className="text-neutral-500">{t('notSet')}</span>}
                       </p>
                     </div>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(image)}
-                        className="flex-1 px-3 py-2 border border-white/20 text-white rounded-sm hover:bg-white/10 transition-colors text-sm"
+                        className="flex-1 px-3 py-2 border border-white/20 text-white rounded-sm hover:bg-white/10 transition-colors text-xs sm:text-sm"
                       >
-                        Edit
+                        {t('edit')}
                       </button>
                       <button
                         onClick={() => handleDelete(image.id)}
-                        className="px-3 py-2 border border-red-500/50 text-red-400 rounded-sm hover:bg-red-500/10 transition-colors text-sm"
+                        className="px-3 py-2 border border-red-500/50 text-red-400 rounded-sm hover:bg-red-500/10 transition-colors text-xs sm:text-sm"
                       >
-                        Delete
+                        {t('delete')}
                       </button>
                     </div>
                   </div>
