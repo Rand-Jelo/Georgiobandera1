@@ -1042,12 +1042,12 @@ export default function AdminAnalyticsPage() {
                           return [formatCurrency(value), t('revenue')];
                         }
                         if (name === 'Orders') {
-                          return [`${value} ${t('orders').toLowerCase()}`, t('orders')];
+                          return [`${value} ${t('orders')}`, t('orders')];
                         }
                         return [value, name];
                       }}
                       labelFormatter={(label) => (
-                        new Date(label).toLocaleDateString('sv-SE', { 
+                        new Date(label).toLocaleDateString(locale === 'sv' ? 'sv-SE' : 'en-US', { 
                           weekday: 'long', 
                           year: 'numeric', 
                           month: 'long', 
