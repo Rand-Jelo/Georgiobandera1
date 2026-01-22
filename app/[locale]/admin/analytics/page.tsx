@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import {
   LineChart,
@@ -46,6 +46,7 @@ type TabType = 'overview' | 'sales' | 'products' | 'settings';
 
 export default function AdminAnalyticsPage() {
   const t = useTranslations('admin');
+  const locale = useLocale();
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -211,7 +212,7 @@ export default function AdminAnalyticsPage() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString(locale === 'sv' ? 'sv-SE' : 'en-US', { month: 'short', day: 'numeric' });
   };
 
   const formatPercent = (value: number) => {
@@ -220,7 +221,7 @@ export default function AdminAnalyticsPage() {
   };
 
   const handleDeleteSampleData = async () => {
-    if (!confirm('Are you sure you want to delete all sample sales data? This will only delete orders with customer*@example.com emails.')) {
+    if (!confirm(t('confirmDeleteSampleData'))) {
       return;
     }
 
@@ -230,22 +231,22 @@ export default function AdminAnalyticsPage() {
       const data = await response.json() as { error?: string; message?: string; deletedOrders?: number };
 
       if (!response.ok) {
-        alert(data.error || 'Failed to delete sample sales data');
+        alert(data.error || t('failedToDeleteSampleData'));
         return;
       }
 
-      alert(data.message || `Deleted ${data.deletedOrders || 0} sample orders successfully!`);
+      alert(data.message || t('deletedOrdersSuccess', { count: data.deletedOrders || 0 }));
       await fetchAnalytics();
     } catch (error) {
       console.error('Error deleting sample sales:', error);
-      alert('An error occurred while deleting sample sales data.');
+      alert(t('errorDeletingSampleData'));
     } finally {
       setDeleting(false);
     }
   };
 
   const handleSeedSales = async () => {
-    if (!confirm('This will create 100 random orders for testing. Continue?')) {
+    if (!confirm(t('confirmGenerateData'))) {
       return;
     }
 
@@ -261,25 +262,25 @@ export default function AdminAnalyticsPage() {
 
       if (!response.ok) {
         const errorMsg = data.details 
-          ? `${data.error || 'Failed to generate sales data'}: ${data.details}`
-          : data.error || 'Failed to generate sales data';
+          ? `${data.error || t('failedToGenerateSalesData')}: ${data.details}`
+          : data.error || t('failedToGenerateSalesData');
         console.error('Seed sales error:', data);
         alert(errorMsg);
         return;
       }
 
-      alert(data.message || 'Sales data generated successfully!');
+      alert(data.message || t('salesDataGenerated'));
       await fetchAnalytics();
     } catch (error) {
       console.error('Error seeding sales:', error);
-      alert('An error occurred while generating sales data.');
+      alert(t('errorGeneratingSalesData'));
     } finally {
       setSeeding(false);
     }
   };
 
   const handleDeleteAndRegenerate = async () => {
-    if (!confirm('This will delete all sample sales data and generate new data. Continue?')) {
+    if (!confirm(t('confirmDeleteAndRegenerate'))) {
       return;
     }
 
@@ -289,7 +290,7 @@ export default function AdminAnalyticsPage() {
       const deleteData = await deleteResponse.json() as { error?: string; message?: string };
 
       if (!deleteResponse.ok) {
-        alert(deleteData.error || 'Failed to delete sample sales data');
+        alert(deleteData.error || t('failedToDeleteSampleData'));
         setDeleting(false);
         return;
       }
@@ -304,18 +305,18 @@ export default function AdminAnalyticsPage() {
 
       if (!seedResponse.ok) {
         const errorMsg = seedData.details 
-          ? `${seedData.error || 'Failed to generate sales data'}: ${seedData.details}`
-          : seedData.error || 'Failed to generate sales data';
+          ? `${seedData.error || t('failedToGenerateSalesData')}: ${seedData.details}`
+          : seedData.error || t('failedToGenerateSalesData');
         console.error('Seed sales error:', seedData);
         alert(errorMsg);
         return;
       }
 
-      alert('Sample sales data deleted and regenerated successfully!');
+      alert(t('sampleDataDeletedRegenerated'));
       await fetchAnalytics();
     } catch (error) {
       console.error('Error deleting and regenerating sales:', error);
-      alert('An error occurred while processing sales data.');
+      alert(t('errorProcessingSalesData'));
     } finally {
       setDeleting(false);
       setSeeding(false);
@@ -324,9 +325,9 @@ export default function AdminAnalyticsPage() {
 
   // Pie chart data for revenue status
   const pieChartData = [
-    { name: 'Paid', value: revenueByStatus.paid, color: '#10b981' },
-    { name: 'Pending', value: revenueByStatus.pending, color: '#f59e0b' },
-    { name: 'Refunded', value: revenueByStatus.refunded, color: '#ef4444' },
+    { name: t('paid'), value: revenueByStatus.paid, color: '#10b981' },
+    { name: t('pending'), value: revenueByStatus.pending, color: '#f59e0b' },
+    { name: t('refunded'), value: revenueByStatus.refunded, color: '#ef4444' },
   ].filter(d => d.value > 0);
 
   if (!isAdmin || (loading && salesData.length === 0)) {
@@ -443,7 +444,7 @@ export default function AdminAnalyticsPage() {
                     onChange={(e) => setCustomStartDate(e.target.value)}
                     className="px-3 py-2 text-sm border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                   />
-                  <span className="text-neutral-400 text-sm">to</span>
+                  <span className="text-neutral-400 text-sm">{t('to')}</span>
                   <input
                     type="date"
                     value={customEndDate}
@@ -676,7 +677,7 @@ export default function AdminAnalyticsPage() {
                           color: '#ffffff',
                           padding: '12px',
                         }}
-                        formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                        formatter={(value: number) => [formatCurrency(value), t('revenue')]}
                         labelFormatter={(label) => new Date(label).toLocaleDateString('sv-SE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                         itemStyle={{ color: '#ffffff' }}
                         labelStyle={{ color: '#ffffff', marginBottom: '4px' }}
@@ -1038,10 +1039,10 @@ export default function AdminAnalyticsPage() {
                       }}
                       formatter={(value: number, name: string) => {
                         if (name === 'Revenue') {
-                          return [formatCurrency(value), 'Revenue'];
+                          return [formatCurrency(value), t('revenue')];
                         }
                         if (name === 'Orders') {
-                          return [`${value} orders`, 'Orders'];
+                          return [`${value} ${t('orders').toLowerCase()}`, t('orders')];
                         }
                         return [value, name];
                       }}
@@ -1274,10 +1275,10 @@ export default function AdminAnalyticsPage() {
                       }}
                       formatter={(value: number, name: string) => {
                         if (name === 'Revenue') {
-                          return [formatCurrency(value), 'Revenue'];
+                          return [formatCurrency(value), t('revenue')];
                         }
                         if (name === 'Units Sold') {
-                          return [`${value} units`, 'Units Sold'];
+                          return [`${value} ${t('units').toLowerCase()}`, t('unitsSold')];
                         }
                         return [value, name];
                       }}
@@ -1289,14 +1290,14 @@ export default function AdminAnalyticsPage() {
                       yAxisId="left"
                       dataKey="total_quantity"
                       fill="url(#quantityGradient)"
-                      name="Units Sold"
+                      name={t('unitsSold')}
                       radius={[4, 4, 0, 0]}
                     />
                     <Bar
                       yAxisId="right"
                       dataKey="total_revenue"
                       fill="url(#revenueBarGradient)"
-                      name="Revenue"
+                      name={t('revenue')}
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
