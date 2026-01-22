@@ -73,7 +73,7 @@ export default function ContactPage() {
       setSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError(t('errorOccurred') || 'An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -110,7 +110,7 @@ export default function ContactPage() {
             {/* Elegant subtitle */}
             <div className="inline-block mb-6">
               <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
-                Get in Touch
+                {t('subtitleLabel') || 'Get in Touch'}
               </p>
               <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent" />
             </div>
@@ -135,10 +135,10 @@ export default function ContactPage() {
           <div>
             <div className="mb-8">
               <h2 className="text-2xl font-light tracking-wide text-neutral-900 mb-2">
-                Send us a message
+                {t('sendMessageTitle')}
               </h2>
               <p className="text-sm text-neutral-500 font-light">
-                Fill out the form below and we'll get back to you as soon as possible.
+                {t('sendMessageDescription')}
               </p>
             </div>
 
@@ -259,10 +259,10 @@ export default function ContactPage() {
           <div>
             <div className="mb-8">
               <h2 className="text-2xl font-light tracking-wide text-neutral-900 mb-2">
-                Store Information
+                {t('storeInformationTitle')}
               </h2>
               <p className="text-sm text-neutral-500 font-light">
-                Visit us or reach out through the details below.
+                {t('storeInformationDescription')}
               </p>
             </div>
 
@@ -272,7 +272,7 @@ export default function ContactPage() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span className="text-sm">Loading...</span>
+                <span className="text-sm">{t('loading') || 'Loading...'}</span>
               </div>
             ) : storeSettings ? (
               <div className="space-y-6">
@@ -280,7 +280,7 @@ export default function ContactPage() {
                 {storeSettings.store_name && (
                   <div>
                     <p className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">
-                      Store Name
+                      {t('storeName')}
                     </p>
                     <p className="text-base font-light text-neutral-900">
                       {storeSettings.store_name}
@@ -292,7 +292,7 @@ export default function ContactPage() {
                 {formatAddress() && (
                   <div>
                     <p className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">
-                      Address
+                      {t('address')}
                     </p>
                     <p className="text-base font-light text-neutral-900 leading-relaxed">
                       {formatAddress()}
@@ -304,7 +304,7 @@ export default function ContactPage() {
                 {storeSettings.store_phone && (
                   <div>
                     <p className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">
-                      Phone
+                      {t('phone')}
                     </p>
                     <a
                       href={`tel:${storeSettings.store_phone}`}
@@ -319,7 +319,7 @@ export default function ContactPage() {
                 {storeSettings.store_email && (
                   <div>
                     <p className="text-xs font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">
-                      Email
+                      {t('email')}
                     </p>
                     <a
                       href={`mailto:${storeSettings.store_email}`}
@@ -334,14 +334,14 @@ export default function ContactPage() {
                 {(formatAddress() || storeSettings.store_phone || storeSettings.store_email) && (
                   <div className="pt-6 border-t border-neutral-200">
                     <p className="text-xs font-light text-neutral-400 leading-relaxed">
-                      We're here to help. Whether you have a question about our products, need assistance with an order, or just want to say hello, don't hesitate to reach out.
+                      {t('helpText')}
                     </p>
                   </div>
                 )}
               </div>
             ) : (
               <div className="text-sm text-neutral-400 font-light">
-                Store information will be displayed here once configured in admin settings.
+                {t('storeInformationNotConfigured')}
               </div>
             )}
           </div>

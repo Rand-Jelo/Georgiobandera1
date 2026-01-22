@@ -403,6 +403,7 @@
   "contact": {
     "title": "Kontakta oss",
     "subtitle": "Vi vill gärna höra från dig. Skicka ett meddelande så svarar vi så snart som möjligt.",
+    "subtitleLabel": "Kontakta oss",
     "name": "Namn",
     "namePlaceholder": "Ditt namn",
     "email": "E-post",
@@ -413,7 +414,18 @@
     "messagePlaceholder": "Ditt meddelande...",
     "send": "Skicka meddelande",
     "sending": "Skickar...",
-    "success": "Ditt meddelande har skickats! Vi återkommer så snart som möjligt."
+    "success": "Ditt meddelande har skickats! Vi återkommer så snart som möjligt.",
+    "sendMessageTitle": "Skicka oss ett meddelande",
+    "sendMessageDescription": "Fyll i formuläret nedan så återkommer vi så snart som möjligt.",
+    "storeInformationTitle": "Butiksinformation",
+    "storeInformationDescription": "Besök oss eller kontakta oss via uppgifterna nedan.",
+    "storeName": "Butiksnamn",
+    "address": "Adress",
+    "phone": "Telefon",
+    "helpText": "Vi finns här för att hjälpa. Oavsett om du har en fråga om våra produkter, behöver hjälp med en beställning eller bara vill säga hej, tveka inte att kontakta oss.",
+    "storeInformationNotConfigured": "Butiksinformation kommer att visas här när den har konfigurerats i admin-inställningarna.",
+    "loading": "Laddar...",
+    "errorOccurred": "Ett fel uppstod. Försök igen."
   },
   "wishlist": {
     "title": "Min önskelista",
