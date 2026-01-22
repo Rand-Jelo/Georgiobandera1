@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Order, OrderItem } from '@/types/database';
 
 export default function AdminOrderDetailsPage() {
   const t = useTranslations('admin');
+  const locale = useLocale();
   const router = useRouter();
   const params = useParams();
   const orderId = params.id as string;
@@ -47,7 +48,11 @@ export default function AdminOrderDetailsPage() {
   const fetchOrder = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/orders/${orderId}`);
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        headers: {
+          'Accept-Language': locale,
+        },
+      });
       if (!response.ok) {
         alert('Order not found');
         router.push('/admin/orders');
@@ -303,7 +308,13 @@ export default function AdminOrderDetailsPage() {
                 {order.payment_status && (
                   <div>
                     <span className="text-neutral-400">{t('paymentStatus')}:</span>
-                    <p className="text-white capitalize">{order.payment_status}</p>
+                    <p className="text-white">
+                      {order.payment_status === 'pending' ? t('pending') : 
+                       order.payment_status === 'paid' ? t('paid') : 
+                       order.payment_status === 'failed' ? t('failed') : 
+                       order.payment_status === 'refunded' ? t('refunded') : 
+                       order.payment_status}
+                    </p>
                   </div>
                 )}
               </div>

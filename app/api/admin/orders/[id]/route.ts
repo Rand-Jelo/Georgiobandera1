@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth/session';
 import { getDB } from '@/lib/db/client';
 import { getUserById } from '@/lib/db/queries/users';
 import { getOrderById, getOrderItems, updateOrderStatus, updateTrackingNumber, markOrderAsDelivered } from '@/lib/db/queries/orders';
+import { getProductById, getProductVariant } from '@/lib/db/queries/products';
 import { sendDeliveryNotificationEmail } from '@/lib/email';
 import type { Order } from '@/types/database';
 
@@ -43,9 +44,48 @@ export async function GET(
       );
     }
 
+    // Get locale from Accept-Language header or default to 'en'
+    const acceptLanguage = request.headers.get('accept-language') || '';
+    const locale = acceptLanguage.includes('sv') ? 'sv' : 'en';
+    const isSwedish = locale === 'sv';
+
     const items = await getOrderItems(db, id);
 
-    return NextResponse.json({ order, items });
+    // Update product names based on locale if products still exist
+    const itemsWithLocalizedNames = await Promise.all(
+      items.map(async (item) => {
+        try {
+          const product = await getProductById(db, item.product_id);
+          if (product) {
+            // Product exists - use locale-specific name
+            const productName = isSwedish ? product.name_sv : product.name_en;
+            
+            let variantName = item.variant_name;
+            if (item.variant_id) {
+              const variant = await getProductVariant(db, item.variant_id);
+              if (variant) {
+                variantName = isSwedish 
+                  ? (variant.name_sv || variant.name_en || item.variant_name)
+                  : (variant.name_en || item.variant_name);
+              }
+            }
+
+            return {
+              ...item,
+              product_name: productName,
+              variant_name: variantName,
+            };
+          }
+        } catch (err) {
+          // If product lookup fails, use stored name
+          console.error('Error fetching product for order item:', err);
+        }
+        // Fallback to stored name if product doesn't exist or lookup fails
+        return item;
+      })
+    );
+
+    return NextResponse.json({ order, items: itemsWithLocalizedNames });
   } catch (error) {
     console.error('Get order error:', error);
     return NextResponse.json(
