@@ -77,7 +77,7 @@ export default function NewDiscountCodePage() {
 
       // Validate percentage discount
       if (formData.discount_type === 'percentage' && parseFloat(formData.discount_value) > 100) {
-        setError('Percentage discount cannot exceed 100%');
+        setError(t('percentageExceeds100'));
         setSaving(false);
         return;
       }
@@ -92,9 +92,9 @@ export default function NewDiscountCodePage() {
 
       if (!response.ok) {
         if (data.needsMigration) {
-          setError('Discount codes table not found. Please run database migrations from the admin dashboard first.');
+          setError(t('discountCodesTableNotFound'));
         } else {
-          setError(data.error || 'Failed to create discount code');
+          setError(data.error || t('failedToCreateDiscountCode'));
         }
         setSaving(false);
         return;
@@ -103,7 +103,7 @@ export default function NewDiscountCodePage() {
       router.push('/admin/discount-codes');
     } catch (error) {
       console.error('Error creating discount code:', error);
-      setError('An error occurred while creating the discount code');
+      setError(t('errorCreatingDiscountCode'));
       setSaving(false);
     }
   };
@@ -195,11 +195,11 @@ export default function NewDiscountCodePage() {
             {activeTab === 'basic' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Discount Information</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('discountInfo')}</h2>
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Code <span className="text-red-400">*</span>
+                        {t('code')} <span className="text-red-400">*</span>
                       </label>
                       <input
                         type="text"
@@ -209,12 +209,12 @@ export default function NewDiscountCodePage() {
                         className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         placeholder="SUMMER2024"
                       />
-                      <p className="mt-1 text-xs text-neutral-400">Code will be automatically converted to uppercase</p>
+                      <p className="mt-1 text-xs text-neutral-400">{t('codeUppercaseHint')}</p>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Description
+                        {t('description')}
                       </label>
                       <textarea
                         value={formData.description}
@@ -228,7 +228,7 @@ export default function NewDiscountCodePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Discount Type <span className="text-red-400">*</span>
+                          {t('discountType')} <span className="text-red-400">*</span>
                         </label>
                         <select
                           required
@@ -236,14 +236,14 @@ export default function NewDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, discount_type: e.target.value as 'percentage' | 'fixed' })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         >
-                          <option value="percentage">Percentage</option>
-                          <option value="fixed">Fixed Amount</option>
+                          <option value="percentage">{t('percentage')}</option>
+                          <option value="fixed">{t('fixedAmount')}</option>
                         </select>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Discount Value <span className="text-red-400">*</span>
+                          {t('discountValue')} <span className="text-red-400">*</span>
                         </label>
                         <input
                           type="number"
@@ -257,7 +257,7 @@ export default function NewDiscountCodePage() {
                           placeholder={formData.discount_type === 'percentage' ? '25' : '100'}
                         />
                         <p className="mt-1 text-xs text-neutral-400">
-                          {formData.discount_type === 'percentage' ? 'Percentage (0-100)' : 'Amount in SEK'}
+                          {formData.discount_type === 'percentage' ? t('percentageHint') : t('amountInSekHint')}
                         </p>
                       </div>
                     </div>
@@ -270,9 +270,9 @@ export default function NewDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                           className="w-5 h-5 text-white bg-black/50 border-white/20 rounded focus:ring-white/30"
                         />
-                        <span className="text-sm font-medium text-white">Active</span>
+                        <span className="text-sm font-medium text-white">{t('active')}</span>
                       </label>
-                      <p className="mt-1 text-xs text-neutral-400 ml-8">Inactive codes cannot be used</p>
+                      <p className="mt-1 text-xs text-neutral-400 ml-8">{t('inactiveCodesHint')}</p>
                     </div>
                   </div>
                 </div>
@@ -283,11 +283,11 @@ export default function NewDiscountCodePage() {
             {activeTab === 'limits' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Usage Limits</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('usageLimits')}</h2>
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Minimum Purchase (SEK)
+                        {t('minimumPurchase')} (SEK)
                       </label>
                       <input
                         type="number"
@@ -298,13 +298,13 @@ export default function NewDiscountCodePage() {
                         className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         placeholder="0"
                       />
-                      <p className="mt-1 text-xs text-neutral-400">Minimum cart value required to use this code</p>
+                      <p className="mt-1 text-xs text-neutral-400">{t('minimumPurchaseHint')}</p>
                     </div>
 
                     {formData.discount_type === 'percentage' && (
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Maximum Discount (SEK)
+                          {t('maximumDiscount')} (SEK)
                         </label>
                         <input
                           type="number"
@@ -315,14 +315,14 @@ export default function NewDiscountCodePage() {
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                           placeholder="500"
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Maximum discount amount for percentage codes</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('maximumDiscountHint')}</p>
                       </div>
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Total Usage Limit
+                          {t('totalUsageLimit')}
                         </label>
                         <input
                           type="number"
@@ -330,14 +330,14 @@ export default function NewDiscountCodePage() {
                           value={formData.usage_limit}
                           onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-                          placeholder="Leave empty for unlimited"
+                          placeholder={t('unlimited')}
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Total number of times code can be used</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('totalUsageLimitHint')}</p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Per User Limit
+                          {t('perUserLimit')}
                         </label>
                         <input
                           type="number"
@@ -347,7 +347,7 @@ export default function NewDiscountCodePage() {
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                           placeholder="1"
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Times a single user can use this code</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('perUserLimitHint')}</p>
                       </div>
                     </div>
                   </div>
@@ -359,12 +359,12 @@ export default function NewDiscountCodePage() {
             {activeTab === 'schedule' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Validity Period</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('validityPeriod')}</h2>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Valid From
+                          {t('validFrom')}
                         </label>
                         <input
                           type="datetime-local"
@@ -372,12 +372,12 @@ export default function NewDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, valid_from: e.target.value })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Leave empty for no start date</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('noStartDateHint')}</p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Valid Until
+                          {t('validUntil')}
                         </label>
                         <input
                           type="datetime-local"
@@ -385,7 +385,7 @@ export default function NewDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Leave empty for no expiry</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('noExpiryHint')}</p>
                       </div>
                     </div>
                   </div>

@@ -2,12 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { DiscountCode } from '@/types/database';
 
 type TabType = 'basic' | 'limits' | 'schedule';
 
 export default function EditDiscountCodePage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const params = useParams();
   const codeId = params.id as string;
@@ -61,7 +63,7 @@ export default function EditDiscountCodePage() {
       setLoading(true);
       const response = await fetch(`/api/admin/discount-codes/${codeId}`);
       if (!response.ok) {
-        setError('Discount code not found');
+        setError(t('discountCodeNotFound'));
         setLoading(false);
         return;
       }
@@ -88,7 +90,7 @@ export default function EditDiscountCodePage() {
       }
     } catch (error) {
       console.error('Error fetching discount code:', error);
-      setError('Failed to load discount code');
+      setError(t('failedToLoadDiscountCode'));
     } finally {
       setLoading(false);
     }
@@ -116,7 +118,7 @@ export default function EditDiscountCodePage() {
 
       // Validate percentage discount
       if (formData.discount_type === 'percentage' && parseFloat(formData.discount_value) > 100) {
-        setError('Percentage discount cannot exceed 100%');
+        setError(t('percentageExceeds100'));
         setSaving(false);
         return;
       }
@@ -130,7 +132,7 @@ export default function EditDiscountCodePage() {
       const data = await response.json() as { discountCode?: DiscountCode; error?: string; details?: any };
 
       if (!response.ok) {
-        const errorMsg = data.error || 'Failed to update discount code';
+        const errorMsg = data.error || t('failedToUpdateDiscountCode');
         const detailsMsg = data.details ? ` Details: ${JSON.stringify(data.details)}` : '';
         setError(errorMsg + detailsMsg);
         setSaving(false);
@@ -140,7 +142,7 @@ export default function EditDiscountCodePage() {
       router.push('/admin/discount-codes');
     } catch (error) {
       console.error('Error updating discount code:', error);
-      const errorMsg = error instanceof Error ? error.message : 'An error occurred while updating the discount code';
+      const errorMsg = error instanceof Error ? error.message : t('errorUpdatingDiscountCode');
       setError(errorMsg);
       setSaving(false);
     }
@@ -163,37 +165,37 @@ export default function EditDiscountCodePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin/discount-codes"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Discount Codes
+            {t('backToDiscountCodes')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Edit Discount Code</h1>
-          <p className="text-neutral-400">Update discount code settings</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('editDiscountCode')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('editDiscountCodeDesc')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">
           {/* Tabs Navigation */}
           <div className="border-b border-white/10 bg-black/30">
-            <div className="flex space-x-1 px-6">
+            <div className="flex space-x-1 px-4 sm:px-6 overflow-x-auto">
               <button
                 type="button"
                 onClick={() => setActiveTab('basic')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-all relative whitespace-nowrap ${
                   activeTab === 'basic'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Basic Info</span>
+                <span>{t('basicInfo')}</span>
                 {activeTab === 'basic' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -201,13 +203,13 @@ export default function EditDiscountCodePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('limits')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-all relative whitespace-nowrap ${
                   activeTab === 'limits'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Limits</span>
+                <span>{t('limits')}</span>
                 {activeTab === 'limits' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -215,13 +217,13 @@ export default function EditDiscountCodePage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('schedule')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-3 sm:py-4 text-sm font-medium transition-all relative whitespace-nowrap ${
                   activeTab === 'schedule'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Schedule</span>
+                <span>{t('schedule')}</span>
                 {activeTab === 'schedule' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -230,7 +232,7 @@ export default function EditDiscountCodePage() {
           </div>
 
           {/* Tab Content */}
-          <div className="p-8">
+          <div className="p-4 sm:p-8">
             {error && (
               <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 mb-6">
                 {error}
@@ -241,8 +243,8 @@ export default function EditDiscountCodePage() {
             {discountCode && (
               <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg mb-6">
                 <p className="text-sm text-blue-300">
-                  <strong>Usage:</strong> {discountCode.usage_count}
-                  {discountCode.usage_limit !== null ? ` / ${discountCode.usage_limit}` : ' / ∞'}
+                  <strong>{t('usage')}:</strong> {discountCode.usage_count}
+                  {discountCode.usage_limit !== null ? ` / ${discountCode.usage_limit}` : ` / ${t('unlimited')}`}
                 </p>
               </div>
             )}
@@ -251,11 +253,11 @@ export default function EditDiscountCodePage() {
             {activeTab === 'basic' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Discount Information</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('discountInfo')}</h2>
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Code <span className="text-red-400">*</span>
+                        {t('code')} <span className="text-red-400">*</span>
                       </label>
                       <input
                         type="text"
@@ -264,11 +266,12 @@ export default function EditDiscountCodePage() {
                         onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                         className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                       />
+                      <p className="mt-1 text-xs text-neutral-400">{t('codeUppercaseHint')}</p>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Description
+                        {t('description')}
                       </label>
                       <textarea
                         value={formData.description}
@@ -281,7 +284,7 @@ export default function EditDiscountCodePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Discount Type <span className="text-red-400">*</span>
+                          {t('discountType')} <span className="text-red-400">*</span>
                         </label>
                         <select
                           required
@@ -289,14 +292,14 @@ export default function EditDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, discount_type: e.target.value as 'percentage' | 'fixed' })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         >
-                          <option value="percentage">Percentage</option>
-                          <option value="fixed">Fixed Amount</option>
+                          <option value="percentage">{t('percentage')}</option>
+                          <option value="fixed">{t('fixedAmount')}</option>
                         </select>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Discount Value <span className="text-red-400">*</span>
+                          {t('discountValue')} <span className="text-red-400">*</span>
                         </label>
                         <input
                           type="number"
@@ -308,6 +311,9 @@ export default function EditDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, discount_value: e.target.value })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
+                        <p className="mt-1 text-xs text-neutral-400">
+                          {formData.discount_type === 'percentage' ? t('percentageHint') : t('amountInSekHint')}
+                        </p>
                       </div>
                     </div>
 
@@ -319,9 +325,9 @@ export default function EditDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                           className="w-5 h-5 text-white bg-black/50 border-white/20 rounded focus:ring-white/30"
                         />
-                        <span className="text-sm font-medium text-white">Active</span>
+                        <span className="text-sm font-medium text-white">{t('active')}</span>
                       </label>
-                      <p className="mt-1 text-xs text-neutral-400 ml-8">Inactive codes cannot be used</p>
+                      <p className="mt-1 text-xs text-neutral-400 ml-8">{t('inactiveCodesHint')}</p>
                     </div>
                   </div>
                 </div>
@@ -332,11 +338,11 @@ export default function EditDiscountCodePage() {
             {activeTab === 'limits' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Usage Limits</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('usageLimits')}</h2>
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Minimum Purchase (SEK)
+                        {t('minimumPurchase')} (SEK)
                       </label>
                       <input
                         type="number"
@@ -346,13 +352,13 @@ export default function EditDiscountCodePage() {
                         onChange={(e) => setFormData({ ...formData, minimum_purchase: e.target.value })}
                         className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                       />
-                      <p className="mt-1 text-xs text-neutral-400">Minimum cart value required to use this code</p>
+                      <p className="mt-1 text-xs text-neutral-400">{t('minimumPurchaseHint')}</p>
                     </div>
 
                     {formData.discount_type === 'percentage' && (
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Maximum Discount (SEK)
+                          {t('maximumDiscount')} (SEK)
                         </label>
                         <input
                           type="number"
@@ -362,14 +368,14 @@ export default function EditDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, maximum_discount: e.target.value })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Maximum discount amount for percentage codes</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('maximumDiscountHint')}</p>
                       </div>
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Total Usage Limit
+                          {t('totalUsageLimit')}
                         </label>
                         <input
                           type="number"
@@ -377,14 +383,14 @@ export default function EditDiscountCodePage() {
                           value={formData.usage_limit}
                           onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-                          placeholder="Unlimited"
+                          placeholder={t('unlimited')}
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Total number of times code can be used</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('totalUsageLimitHint')}</p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Per User Limit
+                          {t('perUserLimit')}
                         </label>
                         <input
                           type="number"
@@ -393,7 +399,7 @@ export default function EditDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, user_usage_limit: e.target.value })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Times a single user can use this code</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('perUserLimitHint')}</p>
                       </div>
                     </div>
                   </div>
@@ -405,12 +411,12 @@ export default function EditDiscountCodePage() {
             {activeTab === 'schedule' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Validity Period</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('validityPeriod')}</h2>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Valid From
+                          {t('validFrom')}
                         </label>
                         <input
                           type="datetime-local"
@@ -418,12 +424,12 @@ export default function EditDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, valid_from: e.target.value })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Leave empty for no start date</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('noStartDateHint')}</p>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-neutral-300 mb-2">
-                          Valid Until
+                          {t('validUntil')}
                         </label>
                         <input
                           type="datetime-local"
@@ -431,7 +437,7 @@ export default function EditDiscountCodePage() {
                           onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
-                        <p className="mt-1 text-xs text-neutral-400">Leave empty for no expiry</p>
+                        <p className="mt-1 text-xs text-neutral-400">{t('noExpiryHint')}</p>
                       </div>
                     </div>
                   </div>
@@ -439,19 +445,19 @@ export default function EditDiscountCodePage() {
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-4 pt-6 border-t border-white/10 mt-6">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 pt-6 border-t border-white/10 mt-6">
               <Link
                 href="/admin/discount-codes"
-                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+                className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors text-center"
               >
-                Cancel
+                {t('cancel')}
               </Link>
               <button
                 type="submit"
                 disabled={saving}
                 className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? t('saving') : t('saveChanges')}
               </button>
             </div>
           </div>
