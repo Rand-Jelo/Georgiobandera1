@@ -87,6 +87,7 @@
     "clearAll": "Clear all filters",
     "color": "Color",
     "size": "Size",
+    "selectSize": "Select Size",
     "sortNewest": "Newest",
     "sortOldest": "Oldest",
     "sortPriceLow": "Price: Low to High",
