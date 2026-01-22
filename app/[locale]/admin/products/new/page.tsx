@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Category, ProductImage } from '@/types/database';
 import { optimizeImage, formatFileSize } from '@/lib/utils/imageOptimization';
@@ -15,6 +15,7 @@ interface CategoryWithChildren extends Category {
 type TabType = 'basic' | 'pricing' | 'variants' | 'images';
 
 export default function NewProductPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const locale = useLocale();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -382,21 +383,21 @@ export default function NewProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 py-12 relative">
+    <div className="min-h-screen bg-neutral-950 py-6 sm:py-12 relative">
       <div className="absolute inset-0 opacity-30">
         <div className="h-full w-full bg-[radial-gradient(circle_at_top,_#ffffff08,_transparent_60%),repeating-linear-gradient(120deg,_#ffffff05,_#ffffff05_1px,_transparent_1px,_transparent_8px)]" />
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin/products"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Products
+            {t('backToProducts')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">New Product</h1>
-          <p className="text-neutral-400">Create a new product</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('newProduct')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('createNewProduct')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">

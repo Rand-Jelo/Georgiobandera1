@@ -1605,7 +1605,12 @@
     "allowUserRegistrations": "Tillåt användarregistreringar",
     "allowUserRegistrationsHint": "Tillåt nya användare att registrera konton",
     "defaultLanguage": "Standardspråk",
-    "saveGeneralSettings": "Spara allmänna inställningar"
+    "saveGeneralSettings": "Spara allmänna inställningar",
+    "backToProducts": "← Tillbaka till produkter",
+    "newProduct": "Ny produkt",
+    "createNewProduct": "Skapa en ny produkt",
+    "editProduct": "Redigera produkt",
+    "updateProductInfo": "Uppdatera produktinformation"
   }
 }
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import type { Category, Product, ProductImage } from '@/types/database';
 import { optimizeImage, formatFileSize } from '@/lib/utils/imageOptimization';
@@ -15,6 +15,7 @@ interface CategoryWithChildren extends Category {
 type TabType = 'basic' | 'pricing' | 'variants' | 'images';
 
 export default function EditProductPage() {
+  const t = useTranslations('admin');
   const router = useRouter();
   const locale = useLocale();
   const params = useParams();
@@ -442,15 +443,15 @@ export default function EditProductPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin/products"
             className="text-neutral-400 hover:text-white mb-4 inline-block text-sm"
           >
-            ← Back to Products
+            {t('backToProducts')}
           </Link>
-          <h1 className="text-4xl font-semibold text-white mb-2">Edit Product</h1>
-          <p className="text-neutral-400">Update product information</p>
+          <h1 className="text-2xl sm:text-4xl font-semibold text-white mb-1 sm:mb-2">{t('editProduct')}</h1>
+          <p className="text-sm sm:text-base text-neutral-400">{t('updateProductInfo')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-black/50 border border-white/10 rounded-lg overflow-hidden">

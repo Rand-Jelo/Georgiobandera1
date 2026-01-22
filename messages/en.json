@@ -1605,7 +1605,12 @@
     "allowUserRegistrations": "Allow User Registrations",
     "allowUserRegistrationsHint": "Allow new users to register accounts",
     "defaultLanguage": "Default Language",
-    "saveGeneralSettings": "Save General Settings"
+    "saveGeneralSettings": "Save General Settings",
+    "backToProducts": "← Back to Products",
+    "newProduct": "New Product",
+    "createNewProduct": "Create a new product",
+    "editProduct": "Edit Product",
+    "updateProductInfo": "Update product information"
   }
 }
 
