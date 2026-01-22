@@ -742,6 +742,8 @@
     "categories": "Categories",
     "collections": "Collections",
     "users": "Users",
+    "admin": "Admin",
+    "user": "User",
     "quickActions": "Quick Actions",
     "manageProducts": "Manage products, variants, and images",
     "viewManageOrders": "View and manage orders",
