@@ -255,7 +255,7 @@ export default function EditProductPage() {
       const data = await response.json() as { error?: string; image?: ProductImage };
 
       if (!response.ok) {
-        alert(data.error || 'Failed to upload image');
+        alert(data.error || t('failedToUploadImage'));
         setUploadingImage(false);
         return;
       }
@@ -272,7 +272,7 @@ export default function EditProductPage() {
   };
 
   const handleDeleteImage = async (imageId: string) => {
-    if (!confirm('Are you sure you want to delete this image?')) {
+    if (!confirm(t('confirmDeleteImage'))) {
       return;
     }
 
@@ -284,7 +284,7 @@ export default function EditProductPage() {
       const data = await response.json() as { error?: string; success?: boolean };
 
       if (!response.ok) {
-        alert(data.error || 'Failed to delete image');
+        alert(data.error || t('failedToDeleteImage'));
         return;
       }
 
@@ -412,7 +412,7 @@ export default function EditProductPage() {
       const data = await response.json() as { error?: string; details?: any; product?: any };
 
       if (!response.ok) {
-        let errorMessage = data.error || 'Failed to update product';
+        let errorMessage = data.error || t('failedToUpdateProduct');
         if (data.details && Array.isArray(data.details)) {
           errorMessage += '\n\nValidation errors:\n' + data.details.map((d: any) => `${d.path.join('.')}: ${d.message}`).join('\n');
         }
@@ -461,13 +461,13 @@ export default function EditProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('basic')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
                   activeTab === 'basic'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Basic Info</span>
+                <span>{t('basicInfo')}</span>
                 {activeTab === 'basic' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -475,13 +475,13 @@ export default function EditProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('pricing')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
                   activeTab === 'pricing'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Pricing & Inventory</span>
+                <span>{t('pricingInventory')}</span>
                 {activeTab === 'pricing' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -489,13 +489,13 @@ export default function EditProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('variants')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
                   activeTab === 'variants'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Variants</span>
+                <span>{t('variants')}</span>
                 {activeTab === 'variants' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -503,13 +503,13 @@ export default function EditProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('images')}
-                className={`px-6 py-4 text-sm font-medium transition-all relative ${
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
                   activeTab === 'images'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
                 }`}
               >
-                <span>Images</span>
+                <span>{t('images')}</span>
                 {activeTab === 'images' && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white" />
                 )}
@@ -529,12 +529,12 @@ export default function EditProductPage() {
             {activeTab === 'basic' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Product Information</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productInformation')}</h2>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                Product Name (English) *
+                {t('productNameEn')} *
               </label>
               <input
                 type="text"
@@ -549,7 +549,7 @@ export default function EditProductPage() {
 
             <div>
               <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                Product Name (Swedish) *
+                {t('productNameSv')} *
               </label>
               <input
                 type="text"
@@ -565,7 +565,7 @@ export default function EditProductPage() {
 
           <div>
             <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
-              Slug *
+              {t('slug')} *
             </label>
             <input
               type="text"
@@ -576,12 +576,13 @@ export default function EditProductPage() {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
             />
+            <p className="mt-1 text-xs text-neutral-500">{t('slugHint')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                Description (English)
+                {t('descriptionEn')}
               </label>
               <textarea
                 id="description_en"
@@ -595,7 +596,7 @@ export default function EditProductPage() {
 
             <div>
               <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                Description (Swedish)
+                {t('descriptionSv')}
               </label>
               <textarea
                 id="description_sv"
@@ -611,7 +612,7 @@ export default function EditProductPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="category_id" className="block text-sm font-medium text-neutral-300 mb-2">
-                Category
+                {t('category')}
               </label>
               <select
                 id="category_id"
@@ -620,7 +621,7 @@ export default function EditProductPage() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
               >
-                <option value="">No category</option>
+                <option value="">{t('noCategory')}</option>
                 {categories.map((cat) => {
                   const name = locale === 'sv' ? cat.name_sv : cat.name_en;
                   return (
@@ -634,7 +635,7 @@ export default function EditProductPage() {
 
             <div>
               <label htmlFor="sku" className="block text-sm font-medium text-neutral-300 mb-2">
-                SKU
+                {t('sku')}
               </label>
               <input
                 type="text"
@@ -649,11 +650,11 @@ export default function EditProductPage() {
 
           <div>
             <label className="block text-sm font-medium text-neutral-300 mb-2">
-              Collections
+              {t('collections')}
             </label>
             <div className="space-y-2 max-h-48 overflow-y-auto border border-white/20 bg-black/50 rounded-lg p-4">
               {collections.length === 0 ? (
-                <p className="text-sm text-neutral-500">No collections available</p>
+                <p className="text-sm text-neutral-500">{t('noCollectionsAvailable')}</p>
               ) : (
                 collections.map((collection) => {
                   const name = locale === 'sv' ? collection.name_sv : collection.name_en;
@@ -677,7 +678,7 @@ export default function EditProductPage() {
                 })
               )}
             </div>
-            <p className="mt-2 text-xs text-neutral-500">Select which collections this product should appear in</p>
+            <p className="mt-2 text-xs text-neutral-500">{t('selectCollectionsHint')}</p>
           </div>
 
           <div>
@@ -689,7 +690,7 @@ export default function EditProductPage() {
                           onChange={handleChange}
                           className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
                         />
-                        <span className="text-sm text-neutral-300">Featured product</span>
+                        <span className="text-sm text-neutral-300">{t('featuredProduct')}</span>
                       </label>
                     </div>
                   </div>
@@ -701,12 +702,12 @@ export default function EditProductPage() {
             {activeTab === 'pricing' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Pricing & Inventory</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('pricingInventory')}</h2>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div>
                         <label htmlFor="price" className="block text-sm font-medium text-neutral-300 mb-2">
-                          Price (SEK) *
+                          {t('priceSek')} *
                         </label>
                         <input
                           type="number"
@@ -723,7 +724,7 @@ export default function EditProductPage() {
 
                       <div>
                         <label htmlFor="compare_at_price" className="block text-sm font-medium text-neutral-300 mb-2">
-                          Compare at Price (SEK)
+                          {t('compareAtPriceSek')}
                         </label>
                         <input
                           type="number"
@@ -739,7 +740,7 @@ export default function EditProductPage() {
 
                       <div>
                         <label htmlFor="status" className="block text-sm font-medium text-neutral-300 mb-2">
-                          Status *
+                          {t('status')} *
                         </label>
                         <select
                           id="status"
@@ -749,9 +750,9 @@ export default function EditProductPage() {
                           onChange={handleChange}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         >
-                          <option value="draft">Draft</option>
-                          <option value="active">Active</option>
-                          <option value="archived">Archived</option>
+                          <option value="draft">{t('draft')}</option>
+                          <option value="active">{t('active')}</option>
+                          <option value="archived">{t('archived')}</option>
                         </select>
                       </div>
                     </div>
@@ -759,7 +760,7 @@ export default function EditProductPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label htmlFor="stock_quantity" className="block text-sm font-medium text-neutral-300 mb-2">
-                          Stock Quantity
+                          {t('stockQuantity')}
                         </label>
                         <input
                           type="number"
@@ -781,7 +782,7 @@ export default function EditProductPage() {
                             onChange={handleChange}
                             className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
                           />
-                          <span className="text-sm text-neutral-300">Track inventory</span>
+                          <span className="text-sm text-neutral-300">{t('trackInventory')}</span>
                         </label>
                       </div>
                     </div>
@@ -794,27 +795,27 @@ export default function EditProductPage() {
             {activeTab === 'variants' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Product Variants</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productVariants')}</h2>
                   
                   {/* Size Variants */}
                   <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                       <div>
-                        <h3 className="text-lg font-medium text-white mb-1">Size Variants</h3>
-                        <p className="text-sm text-neutral-400">Add independent size options (S, M, L, etc.)</p>
+                        <h3 className="text-base sm:text-lg font-medium text-white mb-1">{t('sizeVariants')}</h3>
+                        <p className="text-xs sm:text-sm text-neutral-400">{t('addSizeOptionsHint')}</p>
                       </div>
                       <button
                         type="button"
                         onClick={addSizeVariant}
-                        className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
+                        className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors self-start sm:self-auto"
                       >
-                        + Add Size
+                        + {t('addSize')}
                       </button>
                     </div>
 
                     {sizeVariants.length === 0 ? (
                       <div className="p-6 border border-white/10 rounded-lg bg-black/30 text-center">
-                        <p className="text-neutral-400 text-sm">No size variants added. Click "Add Size" to add size options.</p>
+                        <p className="text-neutral-400 text-sm">{t('noSizeVariantsAdded')}</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -824,20 +825,20 @@ export default function EditProductPage() {
                             className="p-5 rounded-lg border border-white/10 bg-black/30"
                           >
                             <div className="flex items-center justify-between mb-4">
-                              <h4 className="text-sm font-medium text-white">Size Variant {index + 1}</h4>
+                              <h4 className="text-sm font-medium text-white">{t('sizeVariant')} {index + 1}</h4>
                               <button
                                 type="button"
                                 onClick={() => removeSizeVariant(index)}
                                 className="text-red-400 hover:text-red-300 text-sm"
                               >
-                                Remove
+                                {t('remove')}
                               </button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  Size Value *
+                                  {t('sizeValue')} *
                                 </label>
                                 <input
                                   type="text"
@@ -850,32 +851,32 @@ export default function EditProductPage() {
                               </div>
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  SKU
+                                  {t('sku')}
                                 </label>
                                 <input
                                   type="text"
                                   value={variant.sku}
                                   onChange={(e) => updateSizeVariant(index, 'sku', e.target.value)}
-                                  placeholder="Variant SKU"
+                                  placeholder={t('variantSku')}
                                   className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                                 />
                               </div>
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  Price (SEK) - Optional
+                                  {t('priceSekOptional')}
                                 </label>
                                 <input
                                   type="number"
                                   step="0.01"
                                   value={variant.price}
                                   onChange={(e) => updateSizeVariant(index, 'price', e.target.value)}
-                                  placeholder="Override base price"
+                                  placeholder={t('overrideBasePrice')}
                                   className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                                 />
                               </div>
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  Stock Quantity
+                                  {t('stockQuantity')}
                                 </label>
                                 <input
                                   type="number"
@@ -895,7 +896,7 @@ export default function EditProductPage() {
                                   onChange={(e) => updateSizeVariant(index, 'track_inventory', e.target.checked)}
                                   className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
                                 />
-                                <span className="text-xs text-neutral-300">Track inventory for this size</span>
+                                <span className="text-xs text-neutral-300">{t('trackInventoryForSize')}</span>
                               </label>
                             </div>
                           </div>
@@ -906,23 +907,23 @@ export default function EditProductPage() {
 
                   {/* Color Variants */}
                   <div>
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                       <div>
-                        <h3 className="text-lg font-medium text-white mb-1">Color Variants</h3>
-                        <p className="text-sm text-neutral-400">Add independent color options with color picker</p>
+                        <h3 className="text-base sm:text-lg font-medium text-white mb-1">{t('colorVariants')}</h3>
+                        <p className="text-xs sm:text-sm text-neutral-400">{t('addColorOptionsHint')}</p>
                       </div>
                       <button
                         type="button"
                         onClick={addColorVariant}
-                        className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors"
+                        className="px-4 py-2 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 transition-colors self-start sm:self-auto"
                       >
-                        + Add Color
+                        + {t('addColor')}
                       </button>
                     </div>
 
                     {colorVariants.length === 0 ? (
                       <div className="p-6 border border-white/10 rounded-lg bg-black/30 text-center">
-                        <p className="text-neutral-400 text-sm">No color variants added. Click "Add Color" to add color options.</p>
+                        <p className="text-neutral-400 text-sm">{t('noColorVariantsAdded')}</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -932,26 +933,26 @@ export default function EditProductPage() {
                             className="p-5 rounded-lg border border-white/10 bg-black/30"
                           >
                             <div className="flex items-center justify-between mb-4">
-                              <h4 className="text-sm font-medium text-white">Color Variant {index + 1}</h4>
+                              <h4 className="text-sm font-medium text-white">{t('colorVariant')} {index + 1}</h4>
                               <button
                                 type="button"
                                 onClick={() => removeColorVariant(index)}
                                 className="text-red-400 hover:text-red-300 text-sm"
                               >
-                                Remove
+                                {t('remove')}
                               </button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  Color Name *
+                                  {t('colorName')} *
                                 </label>
                                 <input
                                   type="text"
                                   value={variant.name}
                                   onChange={(e) => updateColorVariant(index, 'name', e.target.value)}
-                                  placeholder="Red, Blue, Black"
+                                  placeholder={t('colorNamePlaceholder')}
                                   required
                                   className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                                 />
@@ -960,7 +961,7 @@ export default function EditProductPage() {
                                 <ColorPicker
                                   value={variant.hex}
                                   onChange={(color) => updateColorVariant(index, 'hex', color)}
-                                  label="Color"
+                                  label={t('color')}
                                 />
                               </div>
                             </div>
@@ -968,32 +969,32 @@ export default function EditProductPage() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  SKU
+                                  {t('sku')}
                                 </label>
                                 <input
                                   type="text"
                                   value={variant.sku}
                                   onChange={(e) => updateColorVariant(index, 'sku', e.target.value)}
-                                  placeholder="Variant SKU"
+                                  placeholder={t('variantSku')}
                                   className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                                 />
                               </div>
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  Price (SEK) - Optional
+                                  {t('priceSekOptional')}
                                 </label>
                                 <input
                                   type="number"
                                   step="0.01"
                                   value={variant.price}
                                   onChange={(e) => updateColorVariant(index, 'price', e.target.value)}
-                                  placeholder="Override base price"
+                                  placeholder={t('overrideBasePrice')}
                                   className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                                 />
                               </div>
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  Stock Quantity
+                                  {t('stockQuantity')}
                                 </label>
                                 <input
                                   type="number"
@@ -1013,7 +1014,7 @@ export default function EditProductPage() {
                                   onChange={(e) => updateColorVariant(index, 'track_inventory', e.target.checked)}
                                   className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
                                 />
-                                <span className="text-xs text-neutral-300">Track inventory for this color</span>
+                                <span className="text-xs text-neutral-300">{t('trackInventoryForColor')}</span>
                               </label>
                             </div>
                           </div>
@@ -1029,12 +1030,12 @@ export default function EditProductPage() {
             {activeTab === 'images' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Product Images</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productImages')}</h2>
                   
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        Upload Image
+                        {t('uploadImage')}
                       </label>
                       <input
                         type="file"
@@ -1044,13 +1045,13 @@ export default function EditProductPage() {
                         className="block w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-white file:text-black hover:file:bg-neutral-100 file:cursor-pointer disabled:opacity-50"
                       />
                       {uploadingImage && (
-                        <p className="mt-2 text-sm text-neutral-400">Uploading and optimizing image...</p>
+                        <p className="mt-2 text-sm text-neutral-400">{t('uploadingAndOptimizing')}</p>
                       )}
                     </div>
 
                     {images.length === 0 ? (
                       <div className="p-8 border border-white/10 rounded-lg bg-black/30 text-center">
-                        <p className="text-neutral-400 text-sm">No images uploaded yet.</p>
+                        <p className="text-neutral-400 text-sm">{t('noImagesUploadedYet')}</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -1059,7 +1060,7 @@ export default function EditProductPage() {
                             <div className="aspect-square bg-black/30 rounded-lg overflow-hidden border border-white/10">
                               <img
                                 src={image.url.startsWith('/api/images/') ? image.url : `/api${image.url}`}
-                                alt={image.alt_text_en || 'Product image'}
+                                alt={image.alt_text_en || t('productImage')}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).src = '/placeholder-image.png';
@@ -1070,11 +1071,11 @@ export default function EditProductPage() {
                               onClick={() => handleDeleteImage(image.id)}
                               className="absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded bg-red-500/80 text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
-                              Delete
-                            </button>
-                            <div className="mt-1 text-xs text-neutral-400 text-center">
-                              Sort: {image.sort_order}
-                            </div>
+                              {t('delete')}
+                              </button>
+                              <div className="mt-1 text-xs text-neutral-400 text-center">
+                                {t('sort')}: {image.sort_order}
+                              </div>
                           </div>
                         ))}
                       </div>
@@ -1086,19 +1087,19 @@ export default function EditProductPage() {
           </div>
 
           {/* Form Actions */}
-          <div className="flex items-center justify-between px-8 py-6 border-t border-white/10 bg-black/30">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-8 py-6 border-t border-white/10 bg-black/30">
             <Link
               href="/admin/products"
-              className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+              className="px-6 py-3 text-sm font-medium text-neutral-300 hover:text-white transition-colors text-center sm:text-left"
             >
-              Cancel
+              {t('cancel')}
             </Link>
             <button
               type="submit"
               disabled={saving}
               className="px-6 py-3 text-sm font-medium rounded-lg text-black bg-white hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-black focus:ring-white/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('saving') : t('saveChanges')}
             </button>
           </div>
         </form>
