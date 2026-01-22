@@ -648,7 +648,20 @@ export default function EditProductPage() {
             </div>
           </div>
 
-          <div>
+          <div className="mt-6">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                name="featured"
+                checked={formData.featured}
+                onChange={handleChange}
+                className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+              />
+              <span className="text-sm text-neutral-300">{t('featuredProduct')}</span>
+            </label>
+          </div>
+
+          <div className="mt-6">
             <label className="block text-sm font-medium text-neutral-300 mb-2">
               {t('collections')}
             </label>
@@ -680,19 +693,6 @@ export default function EditProductPage() {
             </div>
             <p className="mt-2 text-xs text-neutral-500">{t('selectCollectionsHint')}</p>
           </div>
-
-          <div>
-            <label className="flex items-center space-x-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          name="featured"
-                          checked={formData.featured}
-                          onChange={handleChange}
-                          className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
-                        />
-                        <span className="text-sm text-neutral-300">{t('featuredProduct')}</span>
-                      </label>
-                    </div>
                   </div>
                 </div>
               </div>

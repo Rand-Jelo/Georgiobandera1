@@ -475,12 +475,12 @@ export default function NewProductPage() {
             {activeTab === 'basic' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-xl font-semibold text-white mb-4">Product Information</h2>
+                  <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productInformation')}</h2>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                Product Name (English) *
+                {t('productNameEn')} *
               </label>
               <input
                 type="text"
@@ -495,7 +495,7 @@ export default function NewProductPage() {
 
             <div>
               <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                Product Name (Swedish) *
+                {t('productNameSv')} *
               </label>
               <input
                 type="text"
@@ -511,7 +511,7 @@ export default function NewProductPage() {
 
           <div>
             <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
-              Slug *
+              {t('slug')} *
             </label>
             <input
               type="text"
@@ -522,13 +522,13 @@ export default function NewProductPage() {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
             />
-            <p className="mt-1 text-xs text-neutral-500">URL-friendly identifier (auto-generated from name)</p>
+            <p className="mt-1 text-xs text-neutral-500">{t('slugHint')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                Description (English)
+                {t('descriptionEn')}
               </label>
               <textarea
                 id="description_en"
@@ -542,7 +542,7 @@ export default function NewProductPage() {
 
             <div>
               <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                Description (Swedish)
+                {t('descriptionSv')}
               </label>
               <textarea
                 id="description_sv"
@@ -558,7 +558,7 @@ export default function NewProductPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="category_id" className="block text-sm font-medium text-neutral-300 mb-2">
-                Category
+                {t('category')}
               </label>
               <select
                 id="category_id"
@@ -567,7 +567,7 @@ export default function NewProductPage() {
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
               >
-                <option value="">No category</option>
+                <option value="">{t('noCategory')}</option>
                 {categories.map((cat) => {
                   const name = locale === 'sv' ? cat.name_sv : cat.name_en;
                   return (
@@ -581,7 +581,7 @@ export default function NewProductPage() {
 
             <div>
               <label htmlFor="sku" className="block text-sm font-medium text-neutral-300 mb-2">
-                SKU
+                {t('sku')}
               </label>
               <input
                 type="text"
@@ -594,7 +594,7 @@ export default function NewProductPage() {
             </div>
                     </div>
 
-                    <div>
+                    <div className="mt-6">
                       <label className="flex items-center space-x-3 cursor-pointer">
                         <input
                           type="checkbox"
@@ -608,7 +608,7 @@ export default function NewProductPage() {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="mt-6">
                     <label className="block text-sm font-medium text-neutral-300 mb-2">
                       {t('collections')}
                     </label>
