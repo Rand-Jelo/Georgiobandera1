@@ -179,7 +179,11 @@ export default function AdminAnalyticsPage() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/analytics?days=${days}&limit=10`);
+      const response = await fetch(`/api/admin/analytics?days=${days}&limit=10`, {
+        headers: {
+          'Accept-Language': locale,
+        },
+      });
       if (!response.ok) {
         console.error('Failed to fetch analytics');
         return;
