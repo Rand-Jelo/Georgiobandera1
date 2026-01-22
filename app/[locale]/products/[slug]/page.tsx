@@ -947,7 +947,7 @@ export default function ProductPage() {
                   {reviewSuccess ? (
                     <div className="text-center py-4">
                       <p className="text-green-600 font-medium mb-4">
-                        Thank you for your review! It will be reviewed before being published.
+                        {t('thankYouForReview')}
                       </p>
                       <button
                         onClick={() => {
@@ -956,7 +956,7 @@ export default function ProductPage() {
                         }}
                         className="text-neutral-900 hover:text-neutral-700 font-medium underline"
                       >
-                        Close
+                        {t('close')}
                       </button>
                     </div>
                   ) : (

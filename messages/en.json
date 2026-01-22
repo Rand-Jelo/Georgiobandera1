@@ -110,6 +110,9 @@
     "submitReview": "Submit Review",
     "noReviewsYet": "No reviews yet. Be the first to review this product!",
     "reviewHelpful": "Helpful",
+    "optional": "Optional",
+    "thankYouForReview": "Thank you for your review! It will be reviewed before being published.",
+    "close": "Close",
     "ratingDistribution": "Rating Distribution",
     "addToWishlist": "Add to wishlist",
     "removeFromWishlist": "Remove from wishlist"

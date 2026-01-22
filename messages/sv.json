@@ -112,7 +112,10 @@
     "reviewHelpful": "Hjälpsam",
     "ratingDistribution": "Fördelning av betyg",
     "addToWishlist": "Lägg till i önskelista",
-    "removeFromWishlist": "Ta bort från önskelista"
+    "removeFromWishlist": "Ta bort från önskelista",
+    "optional": "Valfritt",
+    "thankYouForReview": "Tack för din recension! Den kommer att granskas innan den publiceras.",
+    "close": "Stäng"
   },
   "cart": {
     "title": "Varukorg",
