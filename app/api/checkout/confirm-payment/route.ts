@@ -5,7 +5,10 @@ import { createOrder, updatePaymentStatus } from '@/lib/db/queries/orders';
 import { getCartItems, clearCart } from '@/lib/db/queries/cart';
 import { getSession } from '@/lib/auth/session';
 import { getProductById, getProductVariant } from '@/lib/db/queries/products';
+import { sendOrderConfirmationEmail, sendOrderNotificationEmail } from '@/lib/email';
+import { getOrderItems } from '@/lib/db/queries/orders';
 import { z } from 'zod';
+import { OrderItem } from '@/types/database';
 
 const confirmPaymentSchema = z.object({
     paymentIntentId: z.string(),
@@ -150,6 +153,80 @@ export async function POST(request: NextRequest) {
 
         // 6. Clear Cart
         await clearCart(db, session?.userId, sessionId);
+
+        // 7. Send Emails
+        try {
+            // Prepare data for emails
+            const orderItemsForEmail = await getOrderItems(db, order.id);
+            // Default to English if locale not provided/detected, or extract from somewhere if possible. 
+            // For now, hardcode 'en' or attempt to detect? 
+            // We don't have locale in the body request for confirm, maybe we should've?
+            // But we can default to 'en' or 'sv' based on currency (SEK -> sv)?
+            const locale = order.currency === 'SEK' ? 'sv' : 'en';
+
+            const orderDate = new Date(order.created_at * 1000).toLocaleDateString(locale === 'sv' ? 'sv-SE' : 'en-SE');
+
+            const orderItemsForEmailFormatted = orderItemsForEmail.map((item: OrderItem) => ({
+                name: item.product_name,
+                variant: item.variant_name || undefined,
+                quantity: item.quantity,
+                price: item.price,
+            }));
+
+            const shippingAddressForEmail = {
+                street: order.shipping_address_line1 + (order.shipping_address_line2 ? `, ${order.shipping_address_line2}` : ''),
+                city: order.shipping_city,
+                postalCode: order.shipping_postal_code,
+                country: order.shipping_country,
+            };
+
+            const requestUrl = new URL(request.url);
+            const baseUrl = requestUrl.origin;
+
+            // Send Customer Confirmation
+            const confirmResult = await sendOrderConfirmationEmail({
+                to: order.email,
+                name: order.shipping_name,
+                orderNumber: order.order_number,
+                orderDate,
+                items: orderItemsForEmailFormatted,
+                subtotal: order.subtotal,
+                shipping: order.shipping_cost,
+                total: order.total,
+                shippingAddress: shippingAddressForEmail,
+                locale: locale as 'sv' | 'en',
+                baseUrl,
+            });
+
+            if (!confirmResult.success) {
+                console.error('Failed to send order confirmation email:', confirmResult.error);
+            } else {
+                console.log('Order confirmation email sent successfully to:', order.email);
+            }
+
+            // Send Admin Notification
+            const notificationResult = await sendOrderNotificationEmail({
+                orderNumber: order.order_number,
+                customerName: order.shipping_name,
+                customerEmail: order.email,
+                orderDate,
+                items: orderItemsForEmailFormatted,
+                subtotal: order.subtotal,
+                shipping: order.shipping_cost,
+                total: order.total,
+                shippingAddress: shippingAddressForEmail,
+            });
+
+            if (!notificationResult.success) {
+                console.error('Failed to send order notification email:', notificationResult.error);
+            } else {
+                console.log('Order notification email sent successfully to admin');
+            }
+
+        } catch (err) {
+            console.error('Error sending order emails:', err);
+            // Don't fail the response if email sending fails, the order is already created
+        }
 
         return NextResponse.json({
             success: true,
