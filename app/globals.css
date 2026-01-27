@@ -15,6 +15,18 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --animate-scroll: scroll 40s linear infinite;
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -35,9 +47,27 @@ body {
   .gold-glow {
     text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
   }
-  
+
   .gold-glow-sm {
     text-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
   }
 }
 
+/* Manual Fallback for Infinite Scroll Animation */
+@keyframes scroll-marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll-marquee 40s linear infinite !important;
+}
+
+.hover\:pause:hover {
+  animation-play-state: paused !important;
+}

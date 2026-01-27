@@ -5,6 +5,7 @@ import { useLocale } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
 import { formatPrice } from '@/lib/utils';
 import Image from 'next/image';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface Product {
   id: string;
@@ -30,6 +31,34 @@ interface FeaturedProductsProps {
 export default function FeaturedProducts({ products, loading }: FeaturedProductsProps) {
   const t = useTranslations('home');
   const locale = useLocale();
+
+  // Step-based carousel state
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Card dimensions: 320px width + 32px margin = 352px per card
+  const cardWidth = 352;
+
+  // Auto-advance carousel every 3 seconds
+  const advanceCarousel = useCallback(() => {
+    if (products.length === 0) return;
+    setCurrentIndex((prev) => {
+      const nextIndex = prev + 1;
+      // Reset to 0 when we've gone through all products (for seamless loop)
+      if (nextIndex >= products.length) {
+        return 0;
+      }
+      return nextIndex;
+    });
+  }, [products.length]);
+
+  useEffect(() => {
+    if (isPaused || products.length === 0) return;
+
+    const interval = setInterval(advanceCarousel, 3000);
+    return () => clearInterval(interval);
+  }, [isPaused, advanceCarousel, products.length]);
 
   if (loading) {
     return (
@@ -71,8 +100,8 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
     );
   }
 
-  // Double the products for the infinite loop effect on desktop
-  const carouselProducts = [...products, ...products];
+  // Triple the products for seamless infinite loop
+  const carouselProducts = [...products, ...products, ...products];
 
   return (
     <section className="relative bg-white py-12 sm:py-16 md:py-20 lg:py-24 overflow-hidden">
@@ -93,9 +122,7 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
           </h2>
         </div>
 
-        {/* 
-            MOBILE LAYOUT: Vertical Stack (First 3 items only) 
-        */}
+        {/* MOBILE LAYOUT: Vertical Stack (First 3 items only) */}
         <div className="flex flex-col gap-6 md:hidden">
           {products.slice(0, 3).map((product) => {
             const name = locale === 'sv' ? product.name_sv : product.name_en;
@@ -111,7 +138,6 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
                 href={`/products/${product.slug}`}
                 className="group relative flex flex-col bg-white border border-neutral-200/50 transition-all duration-500 ease-out hover:border-amber-500/30 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]"
               >
-                {/* Image container */}
                 <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 w-full">
                   {imageUrl ? (
                     <Image
@@ -132,8 +158,6 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
                     </div>
                   )}
                 </div>
-
-                {/* Product info */}
                 <div className="flex flex-1 flex-col p-4 text-center">
                   <p className="text-[9px] font-light uppercase tracking-[0.3em] text-neutral-400 mb-2">
                     {categoryName}
@@ -163,18 +187,21 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
           })}
         </div>
 
-
-        {/* 
-            DESKTOP LAYOUT: Infinite Scrolling Carousel 
-            - We duplicate the list to allow for a seamless loop.
-            - The animation translates X by -50% (the width of the first set).
-        */}
-        <div className="hidden md:flex w-full max-w-[1056px] mx-auto overflow-hidden">
-          <div className="flex animate-scroll hover:pause w-max">
+        {/* DESKTOP LAYOUT: Step-Based Carousel (jumps one card at a time) */}
+        <div
+          className="hidden md:flex w-full max-w-[1056px] mx-auto overflow-hidden"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div
+            ref={carouselRef}
+            className="flex transition-transform duration-500 ease-out"
+            style={{
+              transform: `translateX(-${(currentIndex + products.length) * cardWidth}px)`
+            }}
+          >
             {carouselProducts.map((product, index) => {
-              // Create a unique key for duplicated items to avoid React warnings
               const uniqueKey = `${product.id}-${index}`;
-
               const name = locale === 'sv' ? product.name_sv : product.name_en;
               const categoryName = product.category
                 ? (locale === 'sv' ? product.category.name_sv : product.category.name_en)
@@ -186,15 +213,8 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
                 <Link
                   key={uniqueKey}
                   href={`/products/${product.slug}`}
-                  className="
-                       group relative flex flex-col bg-white border border-neutral-200/50 
-                       transition-all duration-500 ease-out 
-                       hover:border-amber-500/30 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]
-                       min-w-[320px] w-[320px] flex-shrink-0
-                       mr-8
-                     "
+                  className="group relative flex flex-col bg-white border border-neutral-200/50 transition-all duration-500 ease-out hover:border-amber-500/30 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] min-w-[320px] w-[320px] flex-shrink-0 mr-8"
                 >
-                  {/* Image container */}
                   <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 w-full">
                     {imageUrl ? (
                       <Image
@@ -207,10 +227,7 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
                     ) : (
                       <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 to-neutral-300" />
                     )}
-
-                    {/* Overlay on hover */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
                     {hasDiscount && (
                       <div className="absolute top-4 right-4 z-10">
                         <div className="bg-amber-500/95 backdrop-blur-sm px-3 py-1.5">
@@ -219,8 +236,6 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
                       </div>
                     )}
                   </div>
-
-                  {/* Product info */}
                   <div className="flex flex-1 flex-col p-6 text-center">
                     <p className="text-[9px] font-light uppercase tracking-[0.3em] text-neutral-400 mb-2">
                       {categoryName}
@@ -228,7 +243,6 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
                     <h3 className="mb-3 text-base font-light tracking-wide text-neutral-900 group-hover:text-amber-600 transition-colors duration-300">
                       {name}
                     </h3>
-
                     <div className="mt-auto flex items-baseline justify-center gap-2">
                       {hasDiscount ? (
                         <>
@@ -245,7 +259,6 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
                         </span>
                       )}
                     </div>
-
                     <div className="mt-4 h-px w-0 bg-gradient-to-r from-transparent via-amber-500 to-transparent transition-all duration-500 group-hover:w-full mx-auto opacity-50" />
                   </div>
                 </Link>
