@@ -173,8 +173,8 @@ export default function CheckoutPage() {
     try {
       const response = await fetch('/api/auth/me');
       if (response.ok) {
-        const userData = await response.json() as User;
-        setUser(userData);
+        const data = await response.json() as { user: User };
+        setUser(data.user);
         setIsLoggedIn(true);
       } else {
         setIsLoggedIn(false);
@@ -1030,6 +1030,69 @@ export default function CheckoutPage() {
                   </Link>
                 )}
               </div>
+              {isLoggedIn && savedAddresses.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">{t('useSavedAddress')}</h3>
+                  <div className="grid grid-cols-1 gap-3">
+                    {savedAddresses.map((address) => (
+                      <button
+                        key={address.id}
+                        type="button"
+                        onClick={() => handleSelectSavedAddress(address)}
+                        className={`text-left p-4 border rounded-lg transition-all ${selectedAddressId === address.id
+                            ? 'border-black bg-gray-50 ring-1 ring-black'
+                            : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <p className="font-medium text-sm">
+                              {address.first_name} {address.last_name}
+                              {address.is_default === 1 && (
+                                <span className="ml-2 text-[10px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">
+                                  Default
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {address.address_line1}
+                              {address.address_line2 && `, ${address.address_line2}`}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {address.postal_code} {address.city}, {address.country}
+                            </p>
+                          </div>
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${selectedAddressId === address.id ? 'border-black bg-black' : 'border-gray-300'
+                            }`}>
+                            {selectedAddressId === address.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedAddressId(null);
+                        setFormData({
+                          ...formData,
+                          shippingName: '',
+                          shippingAddressLine1: '',
+                          shippingAddressLine2: '',
+                          shippingCity: '',
+                          shippingPostalCode: '',
+                          shippingPhone: '',
+                        });
+                      }}
+                      className={`text-left p-3 border rounded-lg text-xs font-medium transition-all ${!selectedAddressId
+                          ? 'border-black bg-gray-50 ring-1 ring-black'
+                          : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                    >
+                      + {t('useDifferentAddress')}
+                    </button>
+                  </div>
+                </div>
+              )}
               <p className="text-[10px] text-gray-400 mb-6 italic">{t('requiredFields')}</p>
 
               {/* Reuse Existing Contact Inputs Structure but with new styling */}
