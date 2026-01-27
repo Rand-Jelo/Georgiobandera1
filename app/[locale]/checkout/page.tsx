@@ -1018,10 +1018,16 @@ export default function CheckoutPage() {
             </div>
           )}
 
-          <form className="mt-8 space-y-8" onSubmit={(e) => e.preventDefault()}>
+          <div className="mt-8 space-y-8">
 
             {/* Step 1: Contact & Address */}
-            <div className={!expandedSections.shipping && !expandedSections.payment ? 'block animate-fade-in' : 'hidden'}>
+            <form
+              className={!expandedSections.shipping && !expandedSections.payment ? 'block animate-fade-in' : 'hidden'}
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleShippingSubmit();
+              }}
+            >
               <div className="flex justify-between items-center mb-2">
                 <h2 className="text-xl font-medium">{t('contactInformation')}</h2>
                 {!isLoggedIn && (
@@ -1040,8 +1046,8 @@ export default function CheckoutPage() {
                         type="button"
                         onClick={() => handleSelectSavedAddress(address)}
                         className={`text-left p-4 border rounded-lg transition-all ${selectedAddressId === address.id
-                            ? 'border-black bg-gray-50 ring-1 ring-black'
-                            : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-black bg-gray-50 ring-1 ring-black'
+                          : 'border-gray-200 hover:border-gray-300'
                           }`}
                       >
                         <div className="flex justify-between items-start">
@@ -1049,8 +1055,8 @@ export default function CheckoutPage() {
                             <p className="font-medium text-sm">
                               {address.first_name} {address.last_name}
                               {address.is_default === 1 && (
-                                <span className="ml-2 text-[10px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">
-                                  Default
+                                <span className="ml-2 text-[10px] bg-neutral-100 text-neutral-600 px-1.5 py-0.5 rounded uppercase tracking-wider font-bold border border-neutral-200">
+                                  {t('defaultBadge')}
                                 </span>
                               )}
                             </p>
@@ -1084,8 +1090,8 @@ export default function CheckoutPage() {
                         });
                       }}
                       className={`text-left p-3 border rounded-lg text-xs font-medium transition-all ${!selectedAddressId
-                          ? 'border-black bg-gray-50 ring-1 ring-black'
-                          : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-black bg-gray-50 ring-1 ring-black'
+                        : 'border-gray-200 hover:border-gray-300'
                         }`}
                     >
                       + {t('useDifferentAddress')}
@@ -1205,14 +1211,14 @@ export default function CheckoutPage() {
 
               <div className="mt-8 flex justify-end">
                 <button
-                  type="button"
+                  type="submit"
                   onClick={() => handleShippingSubmit()}
                   className="px-8 py-4 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition-colors w-full sm:w-auto shadow-lg"
                 >
                   {t('continueToShipping') || 'Continue to Shipping'}
                 </button>
               </div>
-            </div>
+            </form>
 
 
             {/* Step 2: Shipping Method */}
@@ -1390,7 +1396,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
             )}
-          </form>
+          </div>
 
           {/* Footer Links */}
           <div className="mt-16 pt-6 border-t border-gray-200 flex gap-4 text-xs text-gray-500 flex-wrap">
@@ -1422,7 +1428,7 @@ export default function CheckoutPage() {
         </div>
       </div>
 
-    </div>
+    </div >
 
   );
 }

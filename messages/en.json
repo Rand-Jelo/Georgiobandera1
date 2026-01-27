@@ -18,6 +18,9 @@
     "language": "Language",
     "english": "English",
     "swedish": "Swedish",
+    "navigation": {
+      "home": "Home"
+    },
     "searchPlaceholder": "Search products...",
     "viewAllResults": "View all results"
   },
@@ -220,6 +223,7 @@
     "useSavedAddress": "Use Saved Address",
     "selectSavedAddress": "Select a saved address...",
     "useDifferentAddress": "Use different address",
+    "defaultBadge": "Default",
     "validationNameMinLength": "Name must be at least 2 characters",
     "validationAddressMinLength": "Address must be at least 5 characters",
     "validationCityMinLength": "City must be at least 2 characters",

@@ -15,9 +15,12 @@
     "contact": "Kontakt",
     "about": "Om oss",
     "search": "Sök",
-    "language": "Språk",
+    "language": "Language",
     "english": "Engelska",
     "swedish": "Svenska",
+    "navigation": {
+      "home": "Hem"
+    },
     "searchPlaceholder": "Sök produkter...",
     "viewAllResults": "Visa alla resultat"
   },
@@ -220,6 +223,7 @@
     "useSavedAddress": "Använd sparad adress",
     "selectSavedAddress": "Välj en sparad adress...",
     "useDifferentAddress": "Använd annan adress",
+    "defaultBadge": "Standard",
     "validationNameMinLength": "Namnet måste vara minst 2 tecken",
     "validationAddressMinLength": "Adressen måste vara minst 5 tecken",
     "validationCityMinLength": "Staden måste vara minst 2 tecken",
