@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
@@ -12,6 +13,8 @@ import { validateAddressFormat, validatePostalCode, formatPostalCode } from '@/l
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import StripePayment from '@/components/payment/StripePayment';
+import CheckoutSummary from '@/components/checkout/CheckoutSummary';
+import CheckoutSteps from '@/components/checkout/CheckoutSteps';
 import visaLogo from '@/assets/images/visa-official.svg';
 import mastercardLogo from '@/assets/images/mastercard-official.svg';
 import klarnaLogo from '@/assets/images/klarna-official.svg';
@@ -54,6 +57,16 @@ interface CartItem {
   } | null;
 }
 
+interface User {
+  email: string;
+}
+
+interface ShippingMethod {
+  id: string;
+  name: string;
+  price: number;
+}
+
 interface SavedAddress {
   id: string;
   user_id: string;
@@ -93,7 +106,7 @@ export default function CheckoutPage() {
     shippingCountry: 'SE',
     shippingPhone: '',
     shippingRegionId: '',
-    paymentMethod: '' as 'stripe' | 'paypal' | '',
+    paymentMethod: 'stripe' as 'stripe' | 'paypal' | '',
   });
 
   const [phoneCountryCode, setPhoneCountryCode] = useState('+46'); // Default to Sweden
@@ -113,6 +126,13 @@ export default function CheckoutPage() {
   // Payment state
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+  // Missing state variables
+  const [user, setUser] = useState<User | null>(null); // Placeholder for user state
+  const [loadingShipping, setLoadingShipping] = useState(false);
+  const [shippingRates, setShippingRates] = useState<ShippingMethod[]>([]);
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState<ShippingMethod | null>(null);
 
   // Saved addresses
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
@@ -125,7 +145,7 @@ export default function CheckoutPage() {
 
   // Single-page checkout with collapsible sections
   const [expandedSections, setExpandedSections] = useState({
-    shipping: true,
+    shipping: false,
     payment: false,
     review: false,
   });
@@ -134,11 +154,11 @@ export default function CheckoutPage() {
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
 
   // Success/error notifications
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
   // Guest checkout
   const [createAccount, setCreateAccount] = useState(false);
   const [guestEmail, setGuestEmail] = useState('');
+  const [showMobileSummary, setShowMobileSummary] = useState(false);
+
   // ... (rest of state)
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
@@ -152,7 +172,13 @@ export default function CheckoutPage() {
   const checkAuth = async () => {
     try {
       const response = await fetch('/api/auth/me');
-      setIsLoggedIn(response.ok);
+      if (response.ok) {
+        const userData = await response.json() as User;
+        setUser(userData);
+        setIsLoggedIn(true);
+      } else {
+        setIsLoggedIn(false);
+      }
     } catch (err) {
       setIsLoggedIn(false);
     }
@@ -271,7 +297,6 @@ export default function CheckoutPage() {
     if (isAddressComplete && subtotal > 0) {
       calculateShipping();
     } else {
-      // Hide shipping cost if address is incomplete
       setShippingCost(null);
     }
   }, [formData.shippingRegionId, formData.shippingName, formData.shippingAddressLine1, formData.shippingCity, formData.shippingPostalCode, formData.shippingCountry, subtotal]);
@@ -291,7 +316,7 @@ export default function CheckoutPage() {
       // Don't set default region - let it be auto-matched when country is selected
     } catch (err) {
       console.error('Error fetching checkout data:', err);
-      setError('Failed to load checkout data');
+      setError(t('failedToLoadCheckout'));
     } finally {
       setLoading(false);
     }
@@ -374,7 +399,7 @@ export default function CheckoutPage() {
           body: JSON.stringify({
             shippingRegionId: formData.shippingRegionId,
             discountCode: appliedDiscount?.code || null,
-            email: guestEmail || undefined, // Send guest email if available
+            email: guestEmail || user?.email || undefined, // Send guest email if available
           }),
         });
 
@@ -386,7 +411,7 @@ export default function CheckoutPage() {
         };
 
         if (data.error) {
-          const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
+          const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || t('failedToInitPayment'));
           setError(errorMsg);
           console.error('Stripe payment intent error:', data);
           return;
@@ -397,7 +422,7 @@ export default function CheckoutPage() {
         }
       } catch (err) {
         console.error('Error initializing payment:', err);
-        setError('Failed to initialize payment');
+        setError(t('failedToInitPayment'));
       }
     };
 
@@ -407,7 +432,8 @@ export default function CheckoutPage() {
     formData.shippingRegionId,
     shippingCost,
     total,
-    guestEmail
+    guestEmail,
+    user?.email
     // removed formData.paymentMethod dependence
   ]);
 
@@ -466,7 +492,7 @@ export default function CheckoutPage() {
       };
 
       if (data.error || !data.success) {
-        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to confirm payment');
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || t('failedToConfirmPayment'));
         setError(errorMsg);
         console.error('Confirm payment error:', data);
         setPaymentProcessing(false);
@@ -481,7 +507,7 @@ export default function CheckoutPage() {
 
     } catch (err) {
       console.error('Payment success handler error:', err);
-      setError('An unexpected error occurred processing your order');
+      setError(t('unexpectedError'));
       setPaymentProcessing(false);
     }
   };
@@ -604,6 +630,28 @@ export default function CheckoutPage() {
       }
     }
 
+    // Validate phone number (allow only digits, spaces, dashes, parentheses, and plus sign)
+    if (name === 'shippingPhone') {
+      // Remove everything except digits, spaces, dashes, parentheses, and plus sign
+      const cleanedValue = value.replace(/[^\d\s\-\(\)\+]/g, '');
+
+      // Update the value if it changed (to enforce restriction)
+      if (cleanedValue !== value) {
+        setFormData(prev => ({ ...prev, [name]: cleanedValue }));
+        return;
+      }
+
+      // Check minimum length for phone (at least 6 digits)
+      const digitsOnly = cleanedValue.replace(/\D/g, '');
+      if (cleanedValue && digitsOnly.length < 6) {
+        newErrors.shippingPhone = t('validationPhoneMinLength');
+      } else if (cleanedValue && digitsOnly.length > 15) {
+        newErrors.shippingPhone = t('validationPhoneMaxLength');
+      } else {
+        delete newErrors.shippingPhone;
+      }
+    }
+
     // Validate postal code when it changes (Numeric only, max 5 digits)
     if (name === 'shippingPostalCode') {
       // Remove any non-numeric characters
@@ -658,10 +706,15 @@ export default function CheckoutPage() {
     }
   }, [formData.shippingCountry]);
 
-  const handleApplyDiscount = async () => {
-    if (!discountCode.trim()) {
+  const handleApplyDiscount = async (codeToApply?: string) => {
+    const targetCode = (codeToApply || discountCode).trim();
+    if (!targetCode) {
       setDiscountError(t('pleaseEnterDiscountCode'));
       return;
+    }
+
+    if (codeToApply) {
+      setDiscountCode(codeToApply);
     }
 
     setValidatingDiscount(true);
@@ -672,7 +725,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          code: discountCode.trim(),
+          code: targetCode,
           subtotal,
         }),
       });
@@ -685,7 +738,24 @@ export default function CheckoutPage() {
       };
 
       if (!response.ok || !data.valid) {
-        setDiscountError(data.error || t('invalidDiscountCode'));
+        let errorKey = 'invalidDiscountCode';
+        const apiError = data.error || '';
+
+        if (apiError.includes('Discount code not found')) errorKey = 'discountNotFound';
+        else if (apiError.includes('Discount code is inactive')) errorKey = 'discountInactive';
+        else if (apiError.includes('Discount code is not yet valid')) errorKey = 'discountNotYetValid';
+        else if (apiError.includes('Discount code has expired')) errorKey = 'discountExpired';
+        else if (apiError.includes('usage limit')) errorKey = 'discountUsageLimit';
+        else if (apiError.includes('already used')) errorKey = 'discountUserUsageLimit';
+        else if (apiError.includes('Minimum purchase')) {
+          const match = apiError.match(/\d+/);
+          const amount = match ? match[0] : '';
+          setDiscountError(t('discountMinPurchase', { amount }));
+          setAppliedDiscount(null);
+          return;
+        }
+
+        setDiscountError(t(errorKey));
         setAppliedDiscount(null);
         return;
       }
@@ -729,20 +799,43 @@ export default function CheckoutPage() {
     return !!formData.paymentMethod;
   };
 
-  // Auto-expand next section when current is complete
-  useEffect(() => {
-    if (isShippingComplete() && !expandedSections.payment) {
-      // Auto-expand payment section when shipping is complete
-      setExpandedSections(prev => ({ ...prev, payment: true }));
-    }
-  }, [isShippingComplete(), expandedSections.payment]);
+  // Navigation between sections is now handled manually via button clicks only
+  // Auto-expand was removed because it caused premature section switching while typing
 
-  useEffect(() => {
-    if (isPaymentComplete() && isShippingComplete() && !expandedSections.review) {
-      // Auto-expand review section when payment is selected
-      setExpandedSections(prev => ({ ...prev, review: true }));
+  const handleShippingSubmit = () => {
+    setNotification(null);
+    setError('');
+
+    // Trigger validation for all required fields to show red borders
+    const newErrors: Record<string, string> = { ...addressErrors };
+    let hasMissingFields = false;
+
+    if (!formData.shippingName) { newErrors.shippingName = t('validationNameMinLength'); hasMissingFields = true; }
+    if (!formData.shippingAddressLine1) { newErrors.shippingAddressLine1 = t('validationAddressMinLength'); hasMissingFields = true; }
+    if (!formData.shippingCity) { newErrors.shippingCity = t('validationCityMinLength'); hasMissingFields = true; }
+    if (!formData.shippingPhone) { newErrors.shippingPhone = t('validationPhoneMinLength'); hasMissingFields = true; }
+    if (!formData.shippingPostalCode) { newErrors.shippingPostalCode = t('invalidPostalCode'); hasMissingFields = true; }
+    if (!formData.shippingCountry) { newErrors.shippingCountry = t('selectCountry'); hasMissingFields = true; }
+    if (!isLoggedIn && !guestEmail) { newErrors.guestEmail = t('validationEmailInvalid'); hasMissingFields = true; }
+
+    if (hasMissingFields) {
+      setAddressErrors(newErrors);
+      const msg = t('fillAllFields');
+      setError(msg);
+      setNotification({ type: 'error', message: msg });
+      return;
     }
-  }, [isPaymentComplete(), isShippingComplete(), expandedSections.review]);
+
+    // Check for existing validation errors (like invalid email format)
+    if (Object.keys(addressErrors).length > 0) {
+      const msg = t('pleaseCompleteShippingInfo');
+      setError(msg);
+      setNotification({ type: 'error', message: msg });
+      return;
+    }
+
+    toggleSection('shipping'); // Or logic to move to shipping method
+  };
 
   const toggleSection = (section: 'shipping' | 'payment' | 'review') => {
     setExpandedSections(prev => ({
@@ -750,6 +843,24 @@ export default function CheckoutPage() {
       [section]: !prev[section],
     }));
   };
+
+  const handleEditContact = () => {
+    // Logic to go back to contact editing (Step 1)
+    setExpandedSections({
+      shipping: false,
+      payment: false,
+      review: false
+    });
+  };
+
+  const handleEditShipping = () => {
+    setExpandedSections({
+      shipping: true,
+      payment: false,
+      review: false
+    });
+  };
+
 
   if (loading) {
     return (
@@ -817,890 +928,438 @@ export default function CheckoutPage() {
     { id: 'review' as const, label: t('review'), icon: 'check' },
   ];
 
+
+
+  // Determine current step for breadcrumbs based on expanded sections
+  const getCurrentStep = () => {
+    if (expandedSections.payment) return 'payment';
+    if (expandedSections.shipping) return 'shipping';
+    return 'information';
+  };
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Dark Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white">
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
-          <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,_transparent,_transparent_2px,_rgba(255,255,255,0.02)_2px,_rgba(255,255,255,0.02)_4px)]" />
-        </div>
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
-        <div className="relative mx-auto max-w-7xl px-6 py-16">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="inline-block mb-6">
-                <p className="text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
-                  {t('secureCheckout')}
-                </p>
-                <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent mx-auto" />
-              </div>
-              <h1 className="text-4xl font-extralight tracking-wide sm:text-5xl lg:text-6xl mb-4">
-                {t('title')}
-              </h1>
-            </div>
+    <div className="flex flex-col lg:flex-row min-h-screen bg-white font-sans text-neutral-900">
 
-            {/* Progress Indicator - Shows completion status */}
-            <div className="max-w-3xl mx-auto">
-              <div className="flex items-center justify-between">
-                {sections.map((section, index) => {
-                  const isShipping = section.id === 'shipping';
-                  const isPayment = section.id === 'payment';
-                  const isReview = section.id === 'review';
+      {/* Mobile Summary Toggle */}
+      <div className="lg:hidden border-b border-gray-200 bg-gray-50">
+        <CheckoutSummary
+          cartItems={cartItems}
+          subtotal={subtotal}
+          shippingCost={shippingCost}
+          discountAmount={appliedDiscount?.amount || 0}
+          total={total}
+          discountCode={appliedDiscount?.code || ''}
+          isApplyingDiscount={validatingDiscount}
+          onApplyDiscount={handleApplyDiscount}
+          onRemoveDiscount={handleRemoveDiscount}
+          currency="SEK"
+          locale={locale}
+          discountError={discountError}
+        />
+      </div>
 
-                  const isCompleted =
-                    (isShipping && isShippingComplete()) ||
-                    (isPayment && isPaymentComplete() && isShippingComplete()) ||
-                    (isReview && isPaymentComplete() && isShippingComplete());
+      {/* Main Content (Left) */}
+      <div className="w-full lg:w-[58%] flex flex-col border-r border-gray-200">
+        <div className="w-full max-w-[600px] mx-auto px-4 sm:px-6 pt-8 pb-12 lg:pt-14 lg:pb-24 flex-1">
 
-                  const isActive = expandedSections[section.id];
-                  const isLast = index === sections.length - 1;
-
-                  return (
-                    <div key={section.id} className="flex items-center flex-1">
-                      <div className="flex flex-col items-center flex-1">
-                        <div className={`relative flex items-center justify-center w-12 h-12 border-2 transition-all duration-300 ${isCompleted || isActive
-                          ? 'border-amber-500 bg-amber-500 text-white'
-                          : 'border-neutral-600 bg-transparent text-neutral-500'
-                          }`}>
-                          {isCompleted && !isActive ? (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          ) : section.icon === 'location' ? (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                          ) : section.icon === 'payment' ? (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                            </svg>
-                          ) : (
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                          )}
-                        </div>
-                        <span className={`mt-3 text-xs font-light uppercase tracking-wider hidden sm:block ${isActive ? 'text-amber-400' : isCompleted ? 'text-neutral-400' : 'text-neutral-600'
-                          }`}>
-                          {section.label}
-                        </span>
-                      </div>
-                      {!isLast && (
-                        <div className={`flex-1 h-px mx-4 transition-all duration-300 ${isCompleted ? 'bg-amber-500' : 'bg-neutral-700'
-                          }`} />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+          {/* Desktop Logo */}
+          <div className="hidden lg:block mb-8">
+            <Link href="/" className="text-2xl font-light tracking-widest text-neutral-900">
+              GEORGIO BANDERA
+            </Link>
           </div>
-        </div>
-      </section>
 
-      {/* Checkout Content */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-neutral-50">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="flex flex-col lg:flex-row gap-12">
-            {/* Left Column - Main Checkout Sections */}
-            <div className="flex-1 space-y-8 min-w-0">
-              {/* Section 1: Shipping Information */}
-              <div className="bg-white border border-neutral-200/30 shadow-sm w-full" data-section="shipping">
+          {/* Mobile Logo */}
+          <div className="lg:hidden mb-6 text-center">
+            <Link href="/" className="text-xl font-light tracking-widest text-neutral-900">
+              GEORGIO BANDERA
+            </Link>
+          </div>
+
+          <CheckoutSteps currentStep={getCurrentStep()} />
+
+          {/* Global Notification/Error Banner */}
+          {(notification || error) && (
+            <div data-error-section className="mt-6">
+              <div className={`rounded-xl p-4 flex items-start gap-3 transition-all duration-300 border ${notification?.type === 'success'
+                ? 'bg-green-50 border-green-100 text-green-800'
+                : 'bg-red-50 border-red-100 text-red-800'
+                }`}>
+                <div className="mt-0.5">
+                  {notification?.type === 'success' ? (
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1 text-sm font-medium">
+                  {notification?.message || error}
+                </div>
                 <button
                   type="button"
-                  onClick={() => toggleSection('shipping')}
-                  className="w-full px-10 py-8 border-b border-neutral-200/30 flex items-center justify-between hover:bg-neutral-50/50 transition-colors"
-                  aria-label={t('shippingInfo')}
-                  aria-expanded={expandedSections.shipping}
+                  onClick={() => {
+                    setNotification(null);
+                    setError('');
+                  }}
+                  className={`flex-shrink-0 ml-auto -mr-1 rounded-md p-1 transition-colors ${notification?.type === 'success'
+                    ? 'hover:bg-green-100/50'
+                    : 'hover:bg-red-100/50'
+                    }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isShippingComplete()
-                      ? 'bg-green-100 text-green-600'
-                      : expandedSections.shipping
-                        ? 'bg-amber-100 text-amber-600'
-                        : 'bg-neutral-100 text-neutral-400'
-                      }`}>
-                      {isShippingComplete() ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <span className="text-xs font-medium">1</span>
-                      )}
-                    </div>
-                    <div className="text-left">
-                      <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                        {t('shippingInfo')}
-                      </h2>
-                      {isShippingComplete() && (
-                        <p className="text-xs text-neutral-500 font-light mt-1 normal-case">
-                          {formData.shippingCity}, {formData.shippingCountry}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <svg
-                    className={`w-5 h-5 text-neutral-400 transition-transform ${expandedSections.shipping ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
-                {expandedSections.shipping && (
-                  <div>
-                    <div className="p-10">
-                      {/* Saved Addresses Selector */}
-                      {savedAddresses.length > 0 && (
-                        <div className="mb-10 pb-10 border-b border-neutral-200/30">
-                          <label className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            {t('useSavedAddress')}
-                          </label>
-                          <select
-                            value={selectedAddressId || ''}
-                            onChange={(e) => {
-                              const addressId = e.target.value;
-                              if (addressId) {
-                                const address = savedAddresses.find(a => a.id === addressId);
-                                if (address) {
-                                  handleSelectSavedAddress(address);
-                                }
-                              } else {
-                                setSelectedAddressId(null);
-                              }
-                            }}
-                            className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                            aria-label={t('useSavedAddress')}
-                          >
-                            <option value="">{t('selectSavedAddress')}</option>
-                            {savedAddresses.map((address) => (
-                              <option key={address.id} value={address.id}>
-                                {address.label || `${address.first_name} ${address.last_name}`} - {address.city}, {address.country}
-                              </option>
-                            ))}
-                          </select>
-                          {selectedAddressId && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setSelectedAddressId(null);
-                                setFormData({
-                                  shippingName: '',
-                                  shippingAddressLine1: '',
-                                  shippingAddressLine2: '',
-                                  shippingCity: '',
-                                  shippingPostalCode: '',
-                                  shippingCountry: 'SE',
-                                  shippingPhone: '',
-                                  shippingRegionId: '',
-                                  paymentMethod: '' as 'stripe' | 'paypal' | '',
-                                });
-                              }}
-                              className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
-                              aria-label={t('useDifferentAddress')}
-                            >
-                              {t('useDifferentAddress')}
-                            </button>
-                          )}
-                        </div>
-                      )}
+              </div>
+            </div>
+          )}
 
-                      <div className="space-y-8">
-                        <div>
-                          <label htmlFor="shippingName" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            {t('fullName')} <span className="text-red-500">*</span>
-                          </label>
+          <form className="mt-8 space-y-8" onSubmit={(e) => e.preventDefault()}>
+
+            {/* Step 1: Contact & Address */}
+            <div className={!expandedSections.shipping && !expandedSections.payment ? 'block animate-fade-in' : 'hidden'}>
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-xl font-medium">{t('contactInformation')}</h2>
+                {!isLoggedIn && (
+                  <Link href="/login" className="text-sm text-blue-600 hover:underline">
+                    {t('auth.login')}
+                  </Link>
+                )}
+              </div>
+              <p className="text-[10px] text-gray-400 mb-6 italic">{t('requiredFields')}</p>
+
+              {/* Reuse Existing Contact Inputs Structure but with new styling */}
+              <div className="space-y-4">
+                {/* Email */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">{t('emailAddress')} *</label>
+                  <input
+                    type="email"
+                    required
+                    value={isLoggedIn ? (user?.email || '') : guestEmail}
+                    onChange={handleChange}
+                    name={isLoggedIn ? 'email' : 'guestEmail'}
+                    id={isLoggedIn ? 'email' : 'guestEmail'}
+                    className={`block w-full h-12 px-5 rounded-lg border-gray-300 focus:ring-black focus:border-black shadow-sm ${addressErrors.guestEmail ? 'border-red-500' : ''}`}
+                    placeholder={t('emailPlaceholder')}
+                    disabled={!!isLoggedIn}
+                  />
+                  {!isLoggedIn && addressErrors.guestEmail && <p className="text-red-500 text-xs mt-1">{addressErrors.guestEmail}</p>}
+                </div>
+
+                <h2 className="text-xl font-medium pt-6 pb-2">{t('shippingAddress')}</h2>
+
+                {/* Address Fields */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <select
+                      id="shippingCountry"
+                      name="shippingCountry"
+                      value={formData.shippingCountry}
+                      onChange={handleChange}
+                      className="block w-full h-12 pl-5 pr-12 rounded-lg border-gray-300 focus:ring-black focus:border-black shadow-sm appearance-none bg-[url('data:image/svg+xml,%3csvg%20xmlns=\'http://www.w3.org/2000/svg\'%20fill=\'none\'%20viewBox=\'0%200%2024%2024\'%20stroke=\'%236B7280\'%20stroke-width=\'2\'%3e%3cpath%20stroke-linecap=\'round\'%20stroke-linejoin=\'round\'%20d=\'m19.5%208.25-7.5%207.5-7.5-7.5\'/%3e%3c/svg%3e')] bg-[length:1.25rem_1.25rem] bg-no-repeat bg-[position:right_1.25rem_center]"
+                    >
+                      <option value="">{t('selectCountry')} *</option>
+                      {COUNTRIES.map((country) => (
+                        <option key={country.code} value={country.code}>{country.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-1">
+                    <input
+                      type="text"
+                      name="shippingName"
+                      placeholder={`${t('fullName')} *`}
+                      value={formData.shippingName}
+                      onChange={handleChange}
+                      className={`block w-full h-12 px-5 rounded-lg border-gray-300 focus:ring-black focus:border-black shadow-sm ${addressErrors.shippingName ? 'border-red-500' : ''}`}
+                    />
+                    {addressErrors.shippingName && <p className="text-red-500 text-xs mt-1">{addressErrors.shippingName}</p>}
+                  </div>
+                  <div className="sm:col-span-1">
+                    {/* Phone */}
+                    <input
+                      type="tel"
+                      name="shippingPhone"
+                      placeholder={`${t('phone')} *`}
+                      value={formData.shippingPhone}
+                      onChange={handleChange}
+                      className={`block w-full h-12 px-5 rounded-lg border-gray-300 focus:ring-black focus:border-black shadow-sm ${addressErrors.shippingPhone ? 'border-red-500' : ''}`}
+                    />
+                    {addressErrors.shippingPhone && <p className="text-red-500 text-xs mt-1">{addressErrors.shippingPhone}</p>}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <input
+                      type="text"
+                      name="shippingAddressLine1"
+                      placeholder={`${t('addressLine1')} *`}
+                      value={formData.shippingAddressLine1}
+                      onChange={handleChange}
+                      className={`block w-full h-12 px-5 rounded-lg border-gray-300 focus:ring-black focus:border-black shadow-sm ${addressErrors.shippingAddressLine1 ? 'border-red-500' : ''}`}
+                    />
+                    {addressErrors.shippingAddressLine1 && <p className="text-red-500 text-xs mt-1">{addressErrors.shippingAddressLine1}</p>}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <input
+                      type="text"
+                      name="shippingAddressLine2"
+                      placeholder={`${t('addressLine2')} (${t('optional')})`}
+                      value={formData.shippingAddressLine2}
+                      onChange={handleChange}
+                      className="block w-full h-12 px-5 rounded-lg border-gray-300 focus:ring-black focus:border-black shadow-sm"
+                    />
+                  </div>
+                  <div className="sm:col-span-1">
+                    <input
+                      type="text"
+                      name="shippingPostalCode"
+                      placeholder={`${t('postalCode')} *`}
+                      value={formData.shippingPostalCode}
+                      onChange={handleChange}
+                      className={`block w-full h-12 px-5 rounded-lg border-gray-300 focus:ring-black focus:border-black shadow-sm ${addressErrors.shippingPostalCode ? 'border-red-500' : ''}`}
+                    />
+                    {addressErrors.shippingPostalCode && (
+                      <p className="text-xs text-red-500 mt-1">{addressErrors.shippingPostalCode}</p>
+                    )}
+                  </div>
+                  <div className="sm:col-span-1">
+                    <input
+                      type="text"
+                      name="shippingCity"
+                      placeholder={`${t('city')} *`}
+                      value={formData.shippingCity}
+                      onChange={handleChange}
+                      className={`block w-full h-12 px-5 rounded-lg border-gray-300 focus:ring-black focus:border-black shadow-sm ${addressErrors.shippingCity ? 'border-red-500' : ''}`}
+                    />
+                    {addressErrors.shippingCity && <p className="text-red-500 text-xs mt-1">{addressErrors.shippingCity}</p>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleShippingSubmit()}
+                  className="px-8 py-4 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition-colors w-full sm:w-auto shadow-lg"
+                >
+                  {t('continueToShipping') || 'Continue to Shipping'}
+                </button>
+              </div>
+            </div>
+
+
+            {/* Step 2: Shipping Method */}
+            {expandedSections.shipping && !expandedSections.payment && (
+              <div className="animate-fade-in space-y-8">
+                {/* Review Block */}
+                <div className="border border-gray-200 rounded-lg p-4 text-sm divide-y divide-gray-200 bg-white">
+                  <div className="flex justify-between py-3">
+                    <span className="text-gray-500 w-24">{t('contact')}</span>
+                    <span className="text-gray-900 flex-1 font-medium">{isLoggedIn ? user?.email : guestEmail}</span>
+                    <button type="button" onClick={() => {
+                      handleEditContact()
+                    }} className="text-blue-600 hover:underline text-xs font-medium">{t('change')}</button>
+                  </div>
+                  <div className="flex justify-between py-3">
+                    <span className="text-gray-500 w-24">{t('shipTo')}</span>
+                    <span className="text-gray-900 flex-1 font-medium">{formData.shippingAddressLine1}, {formData.shippingCity}</span>
+                    <button type="button" onClick={() => toggleSection('shipping')} className="text-blue-600 hover:underline text-xs font-medium">{t('change')}</button>
+                  </div>
+                </div>
+
+                <h2 className="text-xl font-medium text-neutral-900">{t('shippingMethod')}</h2>
+
+                <div className="space-y-4">
+                  {loadingShipping ? (
+                    <div className="p-4 text-center text-gray-500">{t('calculatingShipping')}</div>
+                  ) : selectedRegion ? (
+                    <div className="border border-gray-200 rounded-lg bg-white">
+                      <div className="p-4 flex items-center justify-between bg-gray-50 ring-1 ring-black">
+                        <div className="flex items-center">
                           <input
-                            type="text"
-                            id="shippingName"
-                            name="shippingName"
-                            required
-                            value={formData.shippingName}
-                            onChange={handleChange}
-                            className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.shippingName
-                              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                              : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                              }`}
-                            placeholder={t('fullNamePlaceholder')}
+                            type="radio"
+                            name="shippingMethod"
+                            checked={true}
+                            readOnly
+                            className="h-4 w-4 text-black focus:ring-black border-gray-300"
                           />
-                          {addressErrors.shippingName && (
-                            <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              {addressErrors.shippingName}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label htmlFor="shippingAddressLine1" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            {t('addressLine1')} <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            id="shippingAddressLine1"
-                            name="shippingAddressLine1"
-                            required
-                            value={formData.shippingAddressLine1}
-                            onChange={handleChange}
-                            className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.shippingAddressLine1
-                              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                              : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                              }`}
-                            placeholder={t('addressLine1Placeholder')}
-                          />
-                          {addressErrors.shippingAddressLine1 && (
-                            <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              {addressErrors.shippingAddressLine1}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label htmlFor="shippingAddressLine2" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            {t('addressLine2')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
-                          </label>
-                          <input
-                            type="text"
-                            id="shippingAddressLine2"
-                            name="shippingAddressLine2"
-                            value={formData.shippingAddressLine2}
-                            onChange={handleChange}
-                            className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                            placeholder={t('addressLine2Placeholder')}
-                          />
-                        </div>
-
-                        <div>
-                          <label htmlFor="shippingPhone" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            {t('phone')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
-                          </label>
-                          <div className="flex">
-                            <div className="relative">
-                              <select
-                                value={phoneCountryCode}
-                                onChange={(e) => setPhoneCountryCode(e.target.value)}
-                                className="appearance-none block w-[140px] pl-4 pr-10 py-4 border-y border-l border-r-0 border-neutral-200/40 bg-neutral-50 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide rounded-l-none"
-                                style={{ borderRadius: '0' }}
-                              >
-                                {COUNTRIES.map((country) => (
-                                  <option key={`${country.code}-${country.dial_code}`} value={country.dial_code}>
-                                    {country.code} ({country.dial_code})
-                                  </option>
-                                ))}
-                              </select>
-                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-neutral-500">
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                </svg>
-                              </div>
-                            </div>
-                            <input
-                              type="tel"
-                              id="shippingPhone"
-                              name="shippingPhone"
-                              value={formData.shippingPhone}
-                              onChange={handleChange}
-                              inputMode="numeric"
-                              className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide flex-1"
-                              placeholder={t('phonePlaceholder')}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-6">
-                          <div>
-                            <label htmlFor="shippingCity" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                              {t('city')} <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              id="shippingCity"
-                              name="shippingCity"
-                              required
-                              value={formData.shippingCity}
-                              onChange={handleChange}
-                              className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.shippingCity
-                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                                : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                                }`}
-                              placeholder={t('cityPlaceholder')}
-                            />
-                            {addressErrors.shippingCity && (
-                              <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                {addressErrors.shippingCity}
-                              </p>
-                            )}
-                          </div>
-
-                          <div>
-                            <label htmlFor="shippingPostalCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                              {t('postalCode')} <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              id="shippingPostalCode"
-                              name="shippingPostalCode"
-                              required
-                              value={formData.shippingPostalCode}
-                              onChange={handleChange}
-                              maxLength={5}
-                              inputMode="numeric"
-                              className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.shippingPostalCode
-                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                                : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                                }`}
-                              placeholder={t('postalCodePlaceholder')}
-                            />
-                            {addressErrors.shippingPostalCode && (
-                              <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                {addressErrors.shippingPostalCode}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label htmlFor="shippingCountry" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            {t('country')} <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            id="shippingCountry"
-                            name="shippingCountry"
-                            required
-                            value={formData.shippingCountry}
-                            onChange={handleChange}
-                            className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                          >
-                            <option value="">{t('selectCountry')}</option>
-                            {COUNTRIES.map((country) => (
-                              <option key={country.code} value={country.code}>
-                                {country.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-
-
-                        {selectedRegion && (
-                          <div className="bg-neutral-50 border border-neutral-200/30 p-6">
-                            <div className="flex items-center justify-between mb-3">
-                              <div>
-                                <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('shippingRegion')}</p>
-                                <p className="text-sm font-light text-neutral-900 tracking-wide">
-                                  {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('basePrice')}</p>
-                                <p className="text-sm font-light text-neutral-900 tracking-wide">
-                                  {formatPrice(selectedRegion.base_price, 'SEK')}
-                                </p>
-                              </div>
-                            </div>
-                            {selectedRegion.free_shipping_threshold && (
-                              <p className="text-xs text-neutral-500 font-light tracking-wide pt-3 border-t border-neutral-200/30">
+                          <div className="ml-3">
+                            <span className="text-sm font-medium text-gray-900">
+                              {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
+                            </span>
+                            {selectedRegion.free_shipping_threshold && subtotal < selectedRegion.free_shipping_threshold && (
+                              <p className="text-xs text-gray-500 mt-1">
                                 {t('freeShippingOver', { amount: formatPrice(selectedRegion.free_shipping_threshold, 'SEK') })}
                               </p>
                             )}
                           </div>
-                        )}
-
-                        {/* Save Address Option */}
-                        {!selectedAddressId && (
-                          <div className="flex items-center pt-2">
-                            <input
-                              type="checkbox"
-                              id="saveAddress"
-                              checked={showSaveAddress}
-                              onChange={(e) => setShowSaveAddress(e.target.checked)}
-                              className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
-                            />
-                            <label htmlFor="saveAddress" className="ml-3 text-sm text-neutral-700 font-light tracking-wide">
-                              {t('saveAddressForFuture')}
-                            </label>
-                          </div>
-                        )}
+                        </div>
+                        <span className="text-sm font-medium text-gray-900">
+                          {(() => {
+                            // Calculate display price - use shippingCost if available, otherwise calculate from region
+                            const displayCost = shippingCost !== null
+                              ? shippingCost
+                              : (selectedRegion.free_shipping_threshold && subtotal >= selectedRegion.free_shipping_threshold)
+                                ? 0
+                                : selectedRegion.base_price;
+                            return displayCost === 0 ? t('free') : formatPrice(displayCost, 'SEK');
+                          })()}
+                        </span>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Guest Checkout - Email & Account Creation */}
-              {expandedSections.shipping && isLoggedIn === false && (
-                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
-                  <div className="px-10 py-8 border-b border-neutral-200/30">
-                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                      {t('contactInformation')}
-                    </h2>
-                  </div>
-                  <div className="p-10 space-y-8">
-                    <div>
-                      <label htmlFor="guestEmail" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                        {t('emailAddress')} <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        id="guestEmail"
-                        name="guestEmail"
-                        required
-                        value={guestEmail}
-                        onChange={handleChange}
-                        onBlur={handleChange}
-                        placeholder={t('emailPlaceholder')}
-                        className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.guestEmail
-                          ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                          : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                          }`}
-                        aria-invalid={!!addressErrors.guestEmail}
-                        aria-describedby={addressErrors.guestEmail ? 'guestEmail-error' : undefined}
-                      />
-                      {addressErrors.guestEmail && (
-                        <p id="guestEmail-error" className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {addressErrors.guestEmail}
-                        </p>
-                      )}
-                      <p className="mt-3 text-xs text-neutral-500 font-light tracking-wide">
-                        {t('orderConfirmationEmail')}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center pt-2">
-                      <input
-                        type="checkbox"
-                        id="createAccount"
-                        checked={createAccount}
-                        onChange={(e) => setCreateAccount(e.target.checked)}
-                        className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
-                      />
-                      <label htmlFor="createAccount" className="ml-3 text-sm text-neutral-700 font-light tracking-wide">
-                        {t('createAccountForFasterCheckout')}
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Order Notes & Gift Message */}
-              {expandedSections.shipping && (
-                <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
-                  <div className="px-10 py-8 border-b border-neutral-200/30">
-                    <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                      {t('additionalInformation')}
-                    </h2>
-                  </div>
-                  <div className="p-10 space-y-8">
-                    <div>
-                      <label htmlFor="orderNotes" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                        {t('orderNotes')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
-                      </label>
-                      <textarea
-                        id="orderNotes"
-                        name="orderNotes"
-                        rows={4}
-                        value={orderNotes}
-                        onChange={(e) => setOrderNotes(e.target.value)}
-                        placeholder={t('orderNotesPlaceholder')}
-                        className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide resize-none"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="giftMessage" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                        {t('giftMessage')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
-                      </label>
-                      <textarea
-                        id="giftMessage"
-                        name="giftMessage"
-                        rows={4}
-                        value={giftMessage}
-                        onChange={(e) => setGiftMessage(e.target.value)}
-                        placeholder={t('giftMessagePlaceholder')}
-                        className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide resize-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Section 3: Payment */}
-              <div className="bg-white border border-neutral-200/30 shadow-sm w-full" data-section="payment">
-                <button
-                  type="button"
-                  onClick={() => toggleSection('payment')}
-                  disabled={!isShippingComplete()}
-                  className="w-full px-10 py-8 border-b border-neutral-200/30 flex items-center justify-between hover:bg-neutral-50/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label={t('payment')}
-                  aria-expanded={expandedSections.payment}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isPaymentComplete() && isShippingComplete()
-                      ? 'bg-green-100 text-green-600'
-                      : expandedSections.payment && isShippingComplete()
-                        ? 'bg-amber-100 text-amber-600'
-                        : 'bg-neutral-100 text-neutral-400'
-                      }`}>
-                      {isPaymentComplete() && isShippingComplete() ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <span className="text-xs font-medium">2</span>
-                      )}
-                    </div>
-                    <div className="text-left">
-                      <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                        {t('payment')}
-                      </h2>
-                      {isPaymentComplete() && (
-                        <p className="text-xs text-neutral-500 font-light mt-1 normal-case">
-                          {t('securePaymentViaStripe')}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <svg
-                    className={`w-5 h-5 text-neutral-400 transition-transform ${expandedSections.payment ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {expandedSections.payment && isShippingComplete() && (
-                  <div>
-                    <div className="p-10">
-                      {/* Stripe Payment Elements - rendered directly without selection */}
-                      {stripeClientSecret ? (
-                        <Elements
-                          stripe={loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')}
-                          options={{
-                            clientSecret: stripeClientSecret,
-                            appearance: {
-                              theme: 'stripe',
-                              variables: {
-                                colorPrimary: '#000000',
-                                colorBackground: '#ffffff',
-                                colorText: '#171717',
-                                colorDanger: '#ef4444',
-                                fontFamily: 'system-ui, sans-serif',
-                                spacingUnit: '4px',
-                                borderRadius: '0px',
-                              },
-                            },
-                          } as StripeElementsOptions}
-                        >
-                          <StripePayment
-                            clientSecret={stripeClientSecret}
-                            onSuccess={handlePaymentSuccess}
-                            onError={handlePaymentError}
-                            disabled={paymentProcessing}
-                            shippingDetails={{
-                              name: formData.shippingName,
-                              address: {
-                                line1: formData.shippingAddressLine1,
-                                line2: formData.shippingAddressLine2,
-                                city: formData.shippingCity,
-                                postal_code: formData.shippingPostalCode,
-                                country: formData.shippingCountry,
-                              },
-                              phone: formData.shippingPhone,
-                            }}
-                          />
-                        </Elements>
-                      ) : (
-                        <div className="flex items-center justify-center gap-3 text-sm text-neutral-500 font-light py-8">
-                          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          <span>{t('paymentInitializing')}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-
-            </div>
-
-            {/* Right Column - Order Summary */}
-            <div className="mt-8 lg:mt-0 flex-1">
-              {/* Sticky offset to ensure it never hides behind the main header */}
-              <div className="bg-white border border-neutral-200/30 shadow-sm lg:sticky lg:top-32">
-                <div className="px-10 py-8 border-b border-neutral-200/30">
-                  <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                    {t('orderSummary')}
-                  </h2>
-                </div>
-                <div className="p-10">
-
-                  {/* Order Items */}
-                  <div className="border-b border-neutral-200 pb-6 mb-6">
-                    {cartItems.map((item) => {
-                      const price = item.variant?.price ?? item.product?.price ?? 0;
-                      const name = locale === 'sv'
-                        ? item.product?.name_sv || item.product?.name_en || ''
-                        : item.product?.name_en || '';
-                      const variantName = locale === 'sv'
-                        ? item.variant?.name_sv || item.variant?.name_en
-                        : item.variant?.name_en;
-                      const productImage = item.product?.images?.[0]?.url;
-
-                      return (
-                        <div key={item.id} className="flex gap-5 mb-6 last:mb-0 pb-6 last:pb-0 border-b border-neutral-200/30 last:border-0">
-                          {productImage && (
-                            <div className="w-20 h-20 overflow-hidden bg-neutral-50 flex-shrink-0">
-                              <img
-                                src={productImage}
-                                alt={name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-light text-neutral-900 text-sm tracking-wide">{name}</p>
-                            {variantName && (
-                              <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">{variantName}</p>
-                            )}
-                            <p className="text-neutral-500 text-xs mt-1.5 font-light tracking-wide">{t('quantity')}: {item.quantity}</p>
-                            <p className="text-neutral-900 font-light text-sm mt-3 tracking-wide">
-                              {formatPrice(price * item.quantity, 'SEK')}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Discount Code - Moved to order summary for better visibility */}
-                  <div className="border-b border-neutral-200/30 pb-8 mb-8">
-                    {!appliedDiscount ? (
-                      <div className="space-y-4">
-                        <label htmlFor="discountCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600">
-                          {t('discountCode')}
-                        </label>
-                        <div className="flex gap-3">
-                          <input
-                            type="text"
-                            id="discountCode"
-                            value={discountCode}
-                            onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                            placeholder={t('enterCode')}
-                            className="flex-1 px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                          />
-                          <button
-                            type="button"
-                            onClick={handleApplyDiscount}
-                            disabled={validatingDiscount || !discountCode.trim()}
-                            className="px-6 py-4 border border-neutral-200/40 text-sm font-light uppercase tracking-[0.15em] text-neutral-900 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                          >
-                            {validatingDiscount ? (
-                              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                              </svg>
-                            ) : t('apply')}
-                          </button>
-                        </div>
-                        {discountError && (
-                          <p className="text-xs text-red-600 flex items-center gap-1 font-light tracking-wide">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {discountError}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between p-5 bg-green-50 border border-green-200/40">
-                        <div>
-                          <p className="text-sm font-light text-green-800 tracking-wide">
-                            {t('discountApplied')}: {appliedDiscount.code}
-                          </p>
-                          <p className="text-xs text-green-600 mt-1.5 font-light tracking-wide">
-                            -{formatPrice(appliedDiscount.amount, 'SEK')}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={handleRemoveDiscount}
-                          className="text-xs text-green-600 hover:text-green-800 font-light transition-colors tracking-wide"
-                        >
-                          {t('remove')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Totals */}
-                <dl className="space-y-8 text-sm px-10 pb-10">
-                  <div className="flex items-baseline justify-between">
-                    <dt className="text-neutral-600 font-light tracking-wide">{t('subtotalInclVat')}</dt>
-                    <dd className="text-neutral-900 font-light tracking-wide">
-                      {formatPrice(subtotal, 'SEK')}
-                    </dd>
-                  </div>
-                  {appliedDiscount && (
-                    <div className="flex items-baseline justify-between text-green-600">
-                      <dt className="font-light tracking-wide">{t('discount')} ({appliedDiscount.code})</dt>
-                      <dd className="font-light tracking-wide">
-                        -{formatPrice(appliedDiscount.amount, 'SEK')}
-                      </dd>
-                    </div>
-                  )}
-                  {shippingCost !== null ? (
-                    <div className="flex items-baseline justify-between">
-                      <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
-                      <dd className="text-neutral-900 font-light tracking-wide">
-                        {shippingCost === 0 ? (
-                          <span className="text-green-600">{t('free')}</span>
-                        ) : (
-                          formatPrice(shippingCost, 'SEK')
-                        )}
-                      </dd>
+                  ) : formData.shippingCountry ? (
+                    <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg text-sm text-yellow-700">
+                      {t('enterAddressToCalculate')}
                     </div>
                   ) : (
-                    <div className="flex items-baseline justify-between">
-                      <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
-                      <dd className="text-neutral-500 text-xs italic font-light tracking-wide">
-                        {calculatingShipping ? (
-                          <span className="flex items-center gap-2">
-                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            {t('calculatingShipping')}
-                          </span>
-                        ) : formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry
-                          ? t('calculating')
-                          : t('enterAddressToCalculate')
-                        }
-                      </dd>
+                    <div className="p-4 border border-gray-200 bg-gray-50 rounded-lg text-sm text-gray-600">
+                      {t('enterAddressToCalculate')}
                     </div>
                   )}
-                  <div className="flex items-baseline justify-between text-xs text-neutral-500 pt-3 border-t border-neutral-200/30 font-light tracking-wide">
-                    <dt>{t('vatIncludedInSubtotal')}</dt>
-                    <dd>{formatPrice(tax, 'SEK')}</dd>
-                  </div>
-                  <div className="flex items-baseline justify-between text-base font-light border-t border-neutral-200/30 pt-5 mt-5">
-                    <dt className="text-neutral-900 tracking-wide">{tCart('total')}</dt>
-                    <dd className="text-neutral-900 tracking-wide">
-                      {shippingCost !== null ? (
-                        formatPrice(total, 'SEK')
-                      ) : (
-                        <span className="text-neutral-500 text-sm font-light italic">
-                          {formatPrice(subtotal - discountAmount, 'SEK')} + {t('shipping')}
-                        </span>
-                      )}
-                    </dd>
-                  </div>
-                </dl>
+                </div>
 
-                {/* Trust Badges */}
-                <div className="mt-10 pt-10 border-t border-neutral-200/30 mx-10 mb-10">
-                  <div className="grid grid-cols-2 gap-6 text-center">
-                    <div className="flex flex-col items-center">
-                      <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-3">
-                        <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      </div>
-                      <p className="text-xs font-light text-neutral-700 tracking-wide">{t('securePayment')}</p>
-                      <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">{t('sslEncrypted')}</p>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-3">
-                        <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                      </div>
-                      <p className="text-xs font-light text-neutral-700 tracking-wide">{t('moneyBack')}</p>
-                      <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">{t('thirtyDayGuarantee')}</p>
-                    </div>
+                <div className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleEditContact()}
+                    className="text-blue-600 hover:underline text-sm flex items-center gap-2"
+                  >
+                    <span className="transform rotate-180">→</span> {t('backToInformation')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!selectedRegion) {
+                        setError(t('pleaseSelectShippingRegion'));
+                        return;
+                      }
+                      toggleSection('payment');
+                    }}
+                    className="px-8 py-4 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition-colors w-full sm:w-auto shadow-lg"
+                  >
+                    {t('continueToPayment')}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Payment */}
+            {expandedSections.payment && (
+              <div className="animate-fade-in space-y-8">
+                {/* Review Block */}
+                <div className="border border-gray-200 rounded-lg p-4 text-sm divide-y divide-gray-200 bg-white">
+                  <div className="flex justify-between py-3">
+                    <span className="text-gray-500 w-24">{t('contact')}</span>
+                    <span className="text-gray-900 flex-1 font-medium">{isLoggedIn ? user?.email : guestEmail}</span>
+                    <button type="button" onClick={() => {
+                      handleEditShipping();
+                    }} className="text-blue-600 hover:underline text-xs font-medium">{t('change')}</button>
+                  </div>
+                  <div className="flex justify-between py-3">
+                    <span className="text-gray-500 w-24">{t('shipTo')}</span>
+                    <span className="text-gray-900 flex-1 font-medium">{formData.shippingAddressLine1}, {formData.shippingCity}</span>
+                    <button type="button" onClick={() => handleEditShipping()} className="text-blue-600 hover:underline text-xs font-medium">{t('change')}</button>
+                  </div>
+                  <div className="flex justify-between py-3">
+                    <span className="text-gray-500 w-24">{t('method')}</span>
+                    <span className="text-gray-900 flex-1 font-medium">
+                      {selectedRegion ? (locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en) : '-'} · {shippingCost !== null ? (shippingCost === 0 ? t('free') : formatPrice(shippingCost, 'SEK')) : '-'}
+                    </span>
+                    <button type="button" onClick={() => toggleSection('payment')} className="text-blue-600 hover:underline text-xs font-medium">{t('change')}</button>
                   </div>
                 </div>
 
+                <h2 className="text-xl font-medium text-neutral-900">{t('payment')}</h2>
+                <p className="text-sm text-gray-500">{t('securePaymentViaStripe')}</p>
+
+                {/* Stripe Element */}
+                <div className="border border-gray-200 rounded-lg p-0 overflow-hidden bg-white shadow-sm">
+                  {stripeClientSecret ? (
+                    <Elements
+                      stripe={loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')}
+                      options={{
+                        clientSecret: stripeClientSecret,
+                        appearance: {
+                          theme: 'stripe',
+                          variables: {
+                            colorPrimary: '#000000',
+                            borderRadius: '8px',
+                            fontFamily: 'system-ui, sans-serif',
+                          },
+                        },
+                      } as StripeElementsOptions}
+                    >
+                      <div className="p-6">
+                        <StripePayment
+                          clientSecret={stripeClientSecret}
+                          onSuccess={handlePaymentSuccess}
+                          onError={handlePaymentError}
+                          disabled={paymentProcessing}
+                          shippingDetails={{
+                            name: formData.shippingName,
+                            address: {
+                              line1: formData.shippingAddressLine1,
+                              line2: formData.shippingAddressLine2,
+                              city: formData.shippingCity,
+                              postal_code: formData.shippingPostalCode,
+                              country: formData.shippingCountry,
+                            },
+                            phone: formData.shippingPhone,
+                          }}
+                        />
+                      </div>
+                    </Elements>
+                  ) : (
+                    <div className="flex items-center justify-center p-12 text-gray-500">
+                      {t('paymentInitializing')}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 flex justify-start">
+                  <button onClick={() => toggleSection('payment')} className="text-blue-600 hover:underline text-sm flex items-center gap-2">
+                    <span className="transform rotate-180">→</span> {t('backToShipping')}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
+          </form>
+
+          {/* Footer Links */}
+          <div className="mt-16 pt-6 border-t border-gray-200 flex gap-4 text-xs text-gray-500 flex-wrap">
+            <Link href="/legal/returns" className="hover:underline">{t('refundPolicy')}</Link>
+            <Link href="/legal/shipping" className="hover:underline">{t('shippingPolicyLink')}</Link>
+            <Link href="/legal/privacy" className="hover:underline">{t('privacyPolicyLink')}</Link>
+            <Link href="/legal/terms" className="hover:underline">{t('termsOfService')}</Link>
           </div>
         </div>
+      </div>
 
-        {/* Notification Banner */}
-        {notification && (
-          <div
-            data-error-section
-            className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 rounded-lg shadow-lg p-4 backdrop-blur-sm transition-all duration-300 ${notification.type === 'error'
-              ? 'bg-red-50/95 border border-red-200/50'
-              : 'bg-green-50/95 border border-green-200/50'
-              }`}
-            role="alert"
-            aria-live="assertive"
-          >
-            <div className={`flex items-center gap-3 text-sm ${notification.type === 'error' ? 'text-red-800' : 'text-green-800'
-              }`}>
-              {notification.type === 'error' ? (
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              )}
-              <p className="font-light">{notification.message}</p>
-              <button
-                onClick={() => setNotification(null)}
-                className="ml-auto text-current opacity-60 hover:opacity-100 transition-opacity"
-                aria-label="Close notification"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
+      {/* Sidebar (Right) */}
+      <div className="hidden lg:block w-full lg:w-[42%] bg-[#fafafa] relative">
+        <div className="sticky top-0 h-screen overflow-y-auto p-12 pr-12 xl:pr-24 border-l border-gray-200">
+          <CheckoutSummary
+            cartItems={cartItems}
+            subtotal={subtotal}
+            shippingCost={shippingCost}
+            discountAmount={appliedDiscount?.amount || 0}
+            total={total}
+            discountCode={appliedDiscount?.code || ''}
+            isApplyingDiscount={validatingDiscount}
+            onApplyDiscount={handleApplyDiscount}
+            onRemoveDiscount={handleRemoveDiscount}
+            currency="SEK"
+            locale={locale}
+            discountError={discountError}
+          />
+        </div>
+      </div>
 
-        {error && !notification && (
-          <div
-            data-error-section
-            className="rounded-xl bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm"
-            role="alert"
-            aria-live="assertive"
-          >
-            <div className="flex items-center gap-2 text-sm text-red-800">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {error}
-            </div>
-          </div>
-        )}
-      </section>
     </div>
+
   );
 }
-
-
-

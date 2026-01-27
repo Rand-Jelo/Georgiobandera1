@@ -5,8 +5,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { routing } from '@/lib/i18n/routing';
 import { Geist, Geist_Mono } from "next/font/google";
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
+import ConditionalLayout from '@/components/layout/ConditionalLayout';
 import { OrganizationStructuredData } from '@/components/seo/StructuredData';
 import "./globals.css";
 
@@ -85,7 +84,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  
+
   // Ensure that the incoming `locale` is valid
   if (!routing.locales.includes(locale as any)) {
     notFound();
@@ -102,11 +101,9 @@ export default async function LocaleLayout({
       >
         <OrganizationStructuredData siteUrl={SITE_URL} />
         <NextIntlClientProvider messages={messages}>
-          <Header />
-          <div className="flex-1">
+          <ConditionalLayout>
             {children}
-          </div>
-          <Footer />
+          </ConditionalLayout>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -18,7 +18,7 @@ export default function OrderSuccessPage() {
 
         if (!paymentIntentId || !clientSecret) {
             setStatus('error');
-            setMessage(t('invalidPaymentSession') || 'Invalid payment session');
+            setMessage(t('invalidPaymentSession'));
             return;
         }
 
@@ -38,12 +38,12 @@ export default function OrderSuccessPage() {
                     router.push(`/orders/${data.orderNumber}`);
                 } else {
                     setStatus('error');
-                    setMessage(data.error || t('paymentConfirmationFailed') || 'Payment confirmation failed');
+                    setMessage(data.error || t('paymentConfirmationFailed'));
                 }
             } catch (err) {
                 console.error('Error confirming payment:', err);
                 setStatus('error');
-                setMessage(t('paymentConfirmationFailed') || 'Payment confirmation failed');
+                setMessage(t('paymentConfirmationFailed'));
             }
         };
 
@@ -59,7 +59,7 @@ export default function OrderSuccessPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </div>
-                    <h1 className="text-2xl font-light mb-4 text-neutral-900">{t('somethingWentWrong') || 'Something went wrong'}</h1>
+                    <h1 className="text-2xl font-light mb-4 text-neutral-900">{t('somethingWentWrong')}</h1>
                     <p className="text-neutral-500 font-light mb-8">
                         {message}
                     </p>
@@ -67,7 +67,7 @@ export default function OrderSuccessPage() {
                         onClick={() => router.push('/checkout')}
                         className="w-full py-4 px-6 bg-neutral-900 text-white text-sm font-light uppercase tracking-wider hover:bg-neutral-800 transition-all duration-300"
                     >
-                        {t('returnToCheckout') || 'Return to Checkout'}
+                        {t('returnToCheckout')}
                     </button>
                 </div>
             </div>
@@ -78,9 +78,9 @@ export default function OrderSuccessPage() {
         <div className="min-h-screen flex items-center justify-center bg-white">
             <div className="text-center p-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-2 border-neutral-200 border-t-neutral-900 mx-auto mb-6"></div>
-                <h1 className="text-xl font-light text-neutral-900 mb-2">{t('processingOrder') || 'Processing your order...'}</h1>
+                <h1 className="text-xl font-light text-neutral-900 mb-2">{t('processingOrder')}</h1>
                 <p className="text-sm text-neutral-500 font-light">
-                    {t('pleaseWaitDoNotClose') || 'Please wait, do not close this window.'}
+                    {t('pleaseWaitDoNotClose')}
                 </p>
             </div>
         </div>
