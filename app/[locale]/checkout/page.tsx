@@ -11,12 +11,9 @@ import { COUNTRIES } from '@/lib/constants/countries';
 import { validateAddressFormat, validatePostalCode, formatPostalCode } from '@/lib/utils/address-validation';
 import { loadStripe, type StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import StripePayment from '@/components/payment/StripePayment';
-import PayPalPayment from '@/components/payment/PayPalPayment';
 import visaLogo from '@/assets/images/visa-official.svg';
 import mastercardLogo from '@/assets/images/mastercard-official.svg';
-import paypalLogo from '@/assets/images/paypal-official.svg';
 import klarnaLogo from '@/assets/images/klarna-official.svg';
 
 interface ShippingRegion {
@@ -115,7 +112,6 @@ export default function CheckoutPage() {
 
   // Payment state
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
-  const [paypalOrderId, setPaypalOrderId] = useState<string | null>(null);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   // Saved addresses
@@ -358,78 +354,62 @@ export default function CheckoutPage() {
   // Initialize payment when method is selected and shipping is complete
   // Payment initializes as soon as both conditions are met (no need to wait for review step)
   useEffect(() => {
-    if (!formData.paymentMethod || shippingCost === null || total <= 0) {
+    if (shippingCost === null || total <= 0) {
       setStripeClientSecret(null);
-      setPaypalOrderId(null);
       return;
     }
 
     // Initialize payment as soon as shipping is complete and payment method is selected
     if (!isShippingComplete()) {
       setStripeClientSecret(null);
-      setPaypalOrderId(null);
       return;
     }
 
     const initializePayment = async () => {
       try {
-        if (formData.paymentMethod === 'stripe') {
-          const response = await fetch('/api/payments/stripe/create-intent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              shippingRegionId: formData.shippingRegionId,
-              discountCode: appliedDiscount?.code || null,
-              email: guestEmail || undefined, // Send guest email if available
-            }),
-          });
+        // Always usage stripe logic now
+        const response = await fetch('/api/payments/stripe/create-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shippingRegionId: formData.shippingRegionId,
+            discountCode: appliedDiscount?.code || null,
+            email: guestEmail || undefined, // Send guest email if available
+          }),
+        });
 
-          const data = await response.json() as {
-            clientSecret?: string;
-            paymentIntentId?: string;
-            error?: string;
-            details?: string;
-          };
+        const data = await response.json() as {
+          clientSecret?: string;
+          paymentIntentId?: string;
+          error?: string;
+          details?: string;
+        };
 
-          if (data.error) {
-            const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
-            setError(errorMsg);
-            console.error('Stripe payment intent error:', data);
-            return;
-          }
+        if (data.error) {
+          const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
+          setError(errorMsg);
+          console.error('Stripe payment intent error:', data);
+          return;
+        }
 
-          if (data.clientSecret) {
-            setStripeClientSecret(data.clientSecret);
-          }
-        } else if (formData.paymentMethod === 'paypal') {
-          const response = await fetch('/api/payments/paypal/create-order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              shippingRegionId: formData.shippingRegionId,
-              discountCode: appliedDiscount?.code || null,
-            }),
-          });
-
-          const data = await response.json() as { orderId?: string; status?: string; error?: string };
-
-          if (data.error) {
-            setError(data.error);
-            return;
-          }
-
-          if (data.orderId) {
-            setPaypalOrderId(data.orderId);
-          }
+        if (data.clientSecret) {
+          setStripeClientSecret(data.clientSecret);
         }
       } catch (err) {
         console.error('Error initializing payment:', err);
-        setError(t('failedToInitializePayment'));
+        setError('Failed to initialize payment');
       }
     };
 
     initializePayment();
-  }, [formData.paymentMethod, formData.shippingRegionId, shippingCost, total, appliedDiscount]);
+  }, [
+    // Depend on shipping completion and cost/total changes
+    formData.shippingRegionId,
+    shippingCost,
+    total,
+    guestEmail
+    // removed formData.paymentMethod dependence
+  ]);
 
   const handlePaymentSuccess = async (paymentId: string) => {
     setPaymentProcessing(true);
@@ -469,42 +449,39 @@ export default function CheckoutPage() {
         }
       }
 
-      // Create order with payment confirmation
-      const response = await fetch('/api/checkout/create-order', {
+      // usage confirm-payment API to verify payment and create order
+      const response = await fetch('/api/checkout/confirm-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          paymentIntentId: formData.paymentMethod === 'stripe' ? paymentId : undefined,
-          paypalOrderId: formData.paymentMethod === 'paypal' ? paymentId : undefined,
-          discountCode: appliedDiscount?.code || null,
-          orderNotes: orderNotes || undefined,
-          giftMessage: giftMessage || undefined,
-          guestEmail: guestEmail || undefined,
-          createAccount: createAccount || false,
-          locale: locale,
+          paymentIntentId: paymentId,
         }),
       });
 
       const data = await response.json() as {
-        order?: { id: string; order_number: string };
+        success?: boolean;
+        orderNumber?: string;
         error?: string;
         details?: string;
       };
 
-      if (data.error) {
-        const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
+      if (data.error || !data.success) {
+        const errorMsg = data.details ? `${data.error}: ${data.details}` : (data.error || 'Failed to confirm payment');
         setError(errorMsg);
-        console.error('Create order error:', data);
+        console.error('Confirm payment error:', data);
         setPaymentProcessing(false);
         return;
       }
 
-      if (data.order) {
-        router.push(`/orders/${data.order.order_number}`);
-      }
+      // Success! Clear local cart state if needed (API already clears DB cart)
+      setCartItems([]);
+
+      // Redirect to success page
+      router.push(`/orders/success?orderNumber=${data.orderNumber}`);
+
     } catch (err) {
-      setError('Failed to create order. Please try again.');
+      console.error('Payment success handler error:', err);
+      setError('An unexpected error occurred processing your order');
       setPaymentProcessing(false);
     }
   };
@@ -1363,7 +1340,7 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              {/* Section 2: Payment */}
+              {/* Section 3: Payment */}
               <div className="bg-white border border-neutral-200/30 shadow-sm w-full" data-section="payment">
                 <button
                   type="button"
@@ -1394,7 +1371,7 @@ export default function CheckoutPage() {
                       </h2>
                       {isPaymentComplete() && (
                         <p className="text-xs text-neutral-500 font-light mt-1 normal-case">
-                          {formData.paymentMethod === 'stripe' ? t('creditDebitCard') : 'PayPal'}
+                          {t('securePaymentViaStripe')}
                         </p>
                       )}
                     </div>
@@ -1411,221 +1388,8 @@ export default function CheckoutPage() {
                 {expandedSections.payment && isShippingComplete() && (
                   <div>
                     <div className="p-10">
-                      <div className="space-y-4">
-                        {/* Stripe Payment Option */}
-                        <div
-                          onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'stripe' }))}
-                          className={`p-6 border cursor-pointer transition-all duration-200 ${formData.paymentMethod === 'stripe'
-                            ? 'border-neutral-900 bg-neutral-50'
-                            : 'border-neutral-200/40 bg-white hover:border-neutral-300'
-                            }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-5">
-                              <input
-                                type="radio"
-                                name="paymentMethod"
-                                value="stripe"
-                                checked={formData.paymentMethod === 'stripe'}
-                                onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as 'stripe' | 'paypal' }))}
-                                className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300"
-                              />
-                              <div>
-                                <p className="text-sm font-light text-neutral-900 tracking-wide">{t('creditDebitCard')} & Klarna</p>
-                                <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">{t('securePaymentViaStripe')}</p>
-                              </div>
-                            </div>
-                            <div className="flex gap-2 items-center">
-                              {/* Visa Logo */}
-                              <div className="w-12 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
-                                <img
-                                  src={visaLogo.src}
-                                  alt="Visa"
-                                  className="w-full h-full object-contain"
-                                />
-                              </div>
-                              {/* Mastercard Logo */}
-                              <div className="w-12 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
-                                <img
-                                  src={mastercardLogo.src}
-                                  alt="Mastercard"
-                                  className="w-full h-full object-contain"
-                                />
-                              </div>
-                              {/* Klarna Logo */}
-                              <div className="w-12 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
-                                <img
-                                  src={klarnaLogo.src}
-                                  alt="Klarna"
-                                  className="w-full h-full object-contain"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* PayPal Payment Option */}
-                        <div
-                          onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'paypal' }))}
-                          className={`p-6 border cursor-pointer transition-all duration-200 ${formData.paymentMethod === 'paypal'
-                            ? 'border-neutral-900 bg-neutral-50'
-                            : 'border-neutral-200/40 bg-white hover:border-neutral-300'
-                            }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-5">
-                              <input
-                                type="radio"
-                                name="paymentMethod"
-                                value="paypal"
-                                checked={formData.paymentMethod === 'paypal'}
-                                onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as 'stripe' | 'paypal' }))}
-                                className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300"
-                              />
-                              <div>
-                                <p className="text-sm font-light text-neutral-900 tracking-wide">PayPal</p>
-                                <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">Pay with your PayPal account</p>
-                              </div>
-                            </div>
-                            <div className="w-16 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
-                              {/* PayPal Logo */}
-                              <img
-                                src={paypalLogo.src}
-                                alt="PayPal"
-                                className="w-full h-full object-contain"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Section 3: Review & Complete Order */}
-              <div className="bg-white border border-neutral-200/30 shadow-sm w-full">
-                <button
-                  type="button"
-                  onClick={() => toggleSection('review')}
-                  disabled={!isPaymentComplete() || !isShippingComplete()}
-                  className="w-full px-10 py-8 border-b border-neutral-200/30 flex items-center justify-between hover:bg-neutral-50/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  aria-label={t('reviewYourOrder')}
-                  aria-expanded={expandedSections.review}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isPaymentComplete() && isShippingComplete()
-                      ? expandedSections.review
-                        ? 'bg-amber-100 text-amber-600'
-                        : 'bg-green-100 text-green-600'
-                      : 'bg-neutral-100 text-neutral-400'
-                      }`}>
-                      {isPaymentComplete() && isShippingComplete() && !expandedSections.review ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : (
-                        <span className="text-xs font-medium">3</span>
-                      )}
-                    </div>
-                    <div className="text-left">
-                      <h2 className="text-xs font-light uppercase tracking-[0.2em] text-neutral-900">
-                        {t('reviewYourOrder')}
-                      </h2>
-                    </div>
-                  </div>
-                  <svg
-                    className={`w-5 h-5 text-neutral-400 transition-transform ${expandedSections.review ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {expandedSections.review && isPaymentComplete() && isShippingComplete() && (
-                  <div className="p-10 space-y-10">
-                    {/* Shipping Address Review */}
-                    <div>
-                      <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">{t('shippingAddress')}</h3>
-                      <div className="bg-neutral-50 border border-neutral-200/30 p-6">
-                        <p className="font-light text-neutral-900 text-sm tracking-wide">{formData.shippingName}</p>
-                        <p className="font-light text-neutral-900 text-sm tracking-wide mt-1">{formData.shippingAddressLine1}</p>
-                        {formData.shippingAddressLine2 && (
-                          <p className="font-light text-neutral-900 text-sm tracking-wide">{formData.shippingAddressLine2}</p>
-                        )}
-                        <p className="font-light text-neutral-900 text-sm tracking-wide mt-1">
-                          {formData.shippingPostalCode} {formData.shippingCity}
-                        </p>
-                        <p className="font-light text-neutral-900 text-sm tracking-wide">
-                          {COUNTRIES.find(c => c.code === formData.shippingCountry)?.name || formData.shippingCountry}
-                        </p>
-                        {formData.shippingPhone && (
-                          <p className="font-light text-neutral-900 text-sm tracking-wide mt-1">{formData.shippingPhone}</p>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setExpandedSections(prev => ({ ...prev, shipping: true, review: false }));
-                          // Scroll to shipping section
-                          setTimeout(() => {
-                            document.querySelector('[data-section="shipping"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 100);
-                        }}
-                        className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
-                      >
-                        {t('editAddress')}
-                      </button>
-                    </div>
-
-                    {/* Payment Method Review */}
-                    <div>
-                      <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">{t('paymentMethod')}</h3>
-                      <div className="bg-neutral-50 border border-neutral-200/30 p-6">
-                        <p className="font-light text-neutral-900 text-sm tracking-wide capitalize">
-                          {formData.paymentMethod === 'stripe' ? t('creditDebitCard') : 'PayPal'}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setExpandedSections(prev => ({ ...prev, payment: true, review: false }));
-                          // Scroll to payment section
-                          setTimeout(() => {
-                            document.querySelector('[data-section="payment"]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 100);
-                        }}
-                        className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
-                      >
-                        {t('changePaymentMethod')}
-                      </button>
-                    </div>
-
-                    {/* Order Notes & Gift Message */}
-                    {(orderNotes || giftMessage) && (
-                      <div>
-                        <h3 className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-5">{t('additionalInformation')}</h3>
-                        <div className="bg-neutral-50 border border-neutral-200/30 p-6 space-y-5">
-                          {orderNotes && (
-                            <div>
-                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('orderNotes')}</p>
-                              <p className="text-sm font-light text-neutral-900 tracking-wide">{orderNotes}</p>
-                            </div>
-                          )}
-                          {giftMessage && (
-                            <div>
-                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('giftMessage')}</p>
-                              <p className="text-sm font-light text-neutral-900 tracking-wide">{giftMessage}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Payment Forms */}
-                    {formData.paymentMethod === 'stripe' && stripeClientSecret && (
-                      <div className="pt-6 border-t border-neutral-200/50">
+                      {/* Stripe Payment Elements - rendered directly without selection */}
+                      {stripeClientSecret ? (
                         <Elements
                           stripe={loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '')}
                           options={{
@@ -1662,44 +1426,21 @@ export default function CheckoutPage() {
                             }}
                           />
                         </Elements>
-                      </div>
-                    )}
-
-                    {formData.paymentMethod === 'paypal' && paypalOrderId && (
-                      <div className="pt-6 border-t border-neutral-200/50">
-                        <PayPalScriptProvider
-                          options={{
-                            clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || '',
-                            currency: 'SEK',
-                            intent: 'capture',
-                          }}
-                        >
-                          <PayPalPaymentWrapper
-                            orderId={paypalOrderId}
-                            onSuccess={handlePaymentSuccess}
-                            onError={handlePaymentError}
-                            disabled={paymentProcessing}
-                            total={subtotal + (shippingCost || 0)}
-                          />
-                        </PayPalScriptProvider>
-                      </div>
-                    )}
-
-                    {formData.paymentMethod && !stripeClientSecret && !paypalOrderId && shippingCost !== null && (
-                      <div className="pt-6 border-t border-neutral-200/50">
-                        <div className="flex items-center justify-center gap-3 text-sm text-neutral-500 font-light">
+                      ) : (
+                        <div className="flex items-center justify-center gap-3 text-sm text-neutral-500 font-light py-8">
                           <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                           </svg>
                           <span>{t('paymentInitializing')}</span>
                         </div>
-                      </div>
-                    )}
-
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
+
+
             </div>
 
             {/* Right Column - Order Summary */}
@@ -1961,111 +1702,5 @@ export default function CheckoutPage() {
   );
 }
 
-// Stripe Payment Wrapper Component
-function StripePaymentWrapper({ clientSecret, onSuccess, onError, disabled }: {
-  clientSecret: string;
-  onSuccess: (id: string) => void;
-  onError: (error: string) => void;
-  disabled?: boolean;
-}) {
-  const stripePromise = useMemo(() => {
-    const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-    if (!publishableKey) return null;
-    return loadStripe(publishableKey);
-  }, []);
 
-  if (!stripePromise) {
-    return (
-      <div className="text-center py-4">
-        <p className="text-sm text-red-600">Stripe is not configured. Please add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to environment variables.</p>
-      </div>
-    );
-  }
-
-  const options: StripeElementsOptions = {
-    clientSecret,
-    appearance: {
-      theme: 'stripe',
-      variables: {
-        colorPrimary: '#171717',
-        colorBackground: '#ffffff',
-        colorText: '#171717',
-        colorDanger: '#ef4444',
-        fontFamily: 'system-ui, sans-serif',
-        spacingUnit: '4px',
-        borderRadius: '12px',
-      },
-    },
-  };
-
-  return (
-    <Elements stripe={stripePromise} options={options}>
-      <StripePayment
-        clientSecret={clientSecret}
-        onSuccess={onSuccess}
-        onError={onError}
-        disabled={disabled}
-        shippingDetails={{
-          name: '', // This wrapper seems to be used directly or might not have access to formData. Wait, this function 'StripePaymentWrapper' doesn't have formData access. It's a helper function defined outside the component.
-          // Let's check where it's called or if I should move it inside to access state. 
-          // Actually, looking at the code, `StripePaymentWrapper` doesn't exist anymore in the main component usage I replaced earlier. 
-          // But I see it's defined at the bottom of the file (lines 1985+). 
-          // If this is unused code, I should remove it or update it. 
-          // The lint error was at line 2001. 
-          // If this `StripePaymentWrapper` (which is actually just an unnamed component or function in the view around 2001?) 
-          // wait, the view shows `function StripePaymentWrapper` is NOT there, it just shows `const options ... return <Elements...`. 
-          // This seems to be a sub-component defined at the bottom.
-          // Ah, I see `function PayPalPaymentWrapper` below it.
-          // So this `function` at 1974 (implied) is likely `StripePaymentWrapper`.
-          // I should verify if `StripePaymentWrapper` is used.
-          // In my previous edit I replaced `StripePaymentWrapper` usage with direct `StripePayment` usage in the main component.
-          // So this definition might be dead code now.
-          // Let's double check if I can just delete this dead code.
-          address: { line1: '', city: '', postal_code: '', country: '' }
-        }}
-      />
-    </Elements>
-  );
-}
-
-// PayPal Payment Wrapper Component
-function PayPalPaymentWrapper({ orderId, onSuccess, onError, disabled, total }: {
-  orderId: string;
-  onSuccess: (id: string) => void;
-  onError: (error: string) => void;
-  disabled?: boolean;
-  total: number;
-}) {
-  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
-
-  if (!paypalClientId) {
-    return (
-      <div className="text-center py-4">
-        <p className="text-sm text-red-600">PayPal is not configured. Please add NEXT_PUBLIC_PAYPAL_CLIENT_ID to environment variables.</p>
-      </div>
-    );
-  }
-
-  const isProduction = !paypalClientId.includes('sandbox') && !paypalClientId.includes('test');
-  const currency = 'SEK';
-
-  return (
-    <PayPalScriptProvider
-      options={{
-        clientId: paypalClientId,
-        currency,
-        intent: 'capture',
-        components: 'buttons',
-      }}
-    >
-      <PayPalPayment
-        orderId={orderId}
-        onSuccess={onSuccess}
-        onError={onError}
-        disabled={disabled}
-        total={total}
-      />
-    </PayPalScriptProvider>
-  );
-}
 
