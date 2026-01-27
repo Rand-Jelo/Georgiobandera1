@@ -1399,10 +1399,10 @@ export default function CheckoutPage() {
 
           {/* Footer Links */}
           <div className="mt-16 pt-6 border-t border-gray-200 flex gap-4 text-xs text-gray-500 flex-wrap">
-            <Link href="/legal/returns" className="hover:underline">{t('refundPolicy')}</Link>
-            <Link href="/legal/shipping" className="hover:underline">{t('shippingPolicyLink')}</Link>
-            <Link href="/legal/privacy" className="hover:underline">{t('privacyPolicyLink')}</Link>
-            <Link href="/legal/terms" className="hover:underline">{t('termsOfService')}</Link>
+            <Link href={`/${locale}/legal/returns`} className="hover:underline">{t('refundPolicy')}</Link>
+            <Link href={`/${locale}/legal/shipping`} className="hover:underline">{t('shippingPolicyLink')}</Link>
+            <Link href={`/${locale}/legal/privacy`} className="hover:underline">{t('privacyPolicyLink')}</Link>
+            <Link href={`/${locale}/legal/terms`} className="hover:underline">{t('termsOfService')}</Link>
           </div>
         </div>
       </div>
