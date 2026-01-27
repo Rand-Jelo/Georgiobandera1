@@ -43,6 +43,8 @@ export default function LoginPage() {
         router.refresh();
       } else {
         // Redirect to profile or home
+        // Trigger cart count refresh to reflect merged cart
+        window.dispatchEvent(new Event('cart-updated'));
         router.push('/profile');
         router.refresh();
       }
@@ -131,8 +133,8 @@ export default function LoginPage() {
                     <label htmlFor="password" className="block text-xs font-light uppercase tracking-wider text-neutral-700">
                       {t('password')}
                     </label>
-                    <Link 
-                      href="/forgot-password" 
+                    <Link
+                      href="/forgot-password"
                       className="text-xs font-light text-amber-600 hover:text-amber-500 transition-colors"
                     >
                       {t('forgotPassword')}

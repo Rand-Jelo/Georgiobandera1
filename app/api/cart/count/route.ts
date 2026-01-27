@@ -10,14 +10,14 @@ export async function GET(request: NextRequest) {
 
     const sessionId = request.cookies.get('session-id')?.value || undefined;
     const items = await getCartItems(db, session?.userId, sessionId);
-    
+
     const count = items.reduce((sum, item) => sum + item.quantity, 0);
-    
+
     // Add caching headers to reduce requests
-    // Cache for 10 seconds - balances freshness with request reduction
+    // Disable caching to ensure accurate count
     const headers = new Headers();
-    headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30');
-    
+    headers.set('Cache-Control', 'no-store, max-age=0');
+
     return NextResponse.json({ count }, { headers });
   } catch (error) {
     console.error('Get cart count error:', error);
