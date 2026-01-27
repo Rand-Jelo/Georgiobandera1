@@ -1212,7 +1212,6 @@ export default function CheckoutPage() {
               <div className="mt-8 flex justify-end">
                 <button
                   type="submit"
-                  onClick={() => handleShippingSubmit()}
                   className="px-8 py-4 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition-colors w-full sm:w-auto shadow-lg"
                 >
                   {t('continueToShipping') || 'Continue to Shipping'}
