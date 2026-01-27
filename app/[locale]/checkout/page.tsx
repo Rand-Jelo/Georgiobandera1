@@ -503,7 +503,7 @@ export default function CheckoutPage() {
       setCartItems([]);
 
       // Redirect to success page
-      router.push(`/orders/success?orderNumber=${data.orderNumber}`);
+      router.push(`/${locale}/orders/success?orderNumber=${data.orderNumber}`);
 
     } catch (err) {
       console.error('Payment success handler error:', err);
