@@ -345,7 +345,8 @@
     "didntReceiveEmail": "Didn't receive the email?",
     "verificationEmailResent": "Verification email has been resent. Please check your inbox.",
     "resendVerificationEmail": "Resend Verification Email",
-    "verificationHelpText": "Make sure to check your spam folder if you don't see the email. The verification link will expire in 24 hours."
+    "verificationHelpText": "Make sure to check your spam folder if you don't see the email. The verification link will expire in 24 hours.",
+    "logout": "Logout"
   },
   "profile": {
     "title": "My Profile",
