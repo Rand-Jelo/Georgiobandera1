@@ -88,8 +88,13 @@ export default function UserMenu({ trigger }: UserMenuProps = {}) {
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
-    router.push('/');
-    router.refresh();
+
+    // Trigger updates to clear state across components
+    window.dispatchEvent(new Event('user-updated'));
+    window.dispatchEvent(new Event('cart-updated'));
+
+    // Hard refresh to home page to clear all client state and give visual feedback
+    window.location.href = '/';
   };
 
   if (loading) {
