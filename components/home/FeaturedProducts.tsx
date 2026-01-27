@@ -169,8 +169,8 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
             - We duplicate the list to allow for a seamless loop.
             - The animation translates X by -50% (the width of the first set).
         */}
-        <div className="hidden md:flex w-full overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
-          <div className="flex gap-8 animate-scroll hover:[animation-play-state:paused] w-max">
+        <div className="hidden md:flex w-full overflow-hidden">
+          <div className="flex animate-scroll hover:[animation-play-state:paused] w-max">
             {carouselProducts.map((product, index) => {
               // Create a unique key for duplicated items to avoid React warnings
               const uniqueKey = `${product.id}-${index}`;
@@ -191,6 +191,7 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
                        transition-all duration-500 ease-out 
                        hover:border-amber-500/30 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]
                        min-w-[320px] w-[320px] flex-shrink-0
+                       mr-8
                      "
                 >
                   {/* Image container */}
