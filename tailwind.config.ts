@@ -20,7 +20,18 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }: { addUtilities: any }) {
+      addUtilities({
+        '.pause': {
+          'animation-play-state': 'paused',
+        },
+        '.running': {
+          'animation-play-state': 'running',
+        },
+      });
+    },
+  ],
 };
 
 export default config;
