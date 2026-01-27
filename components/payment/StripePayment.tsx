@@ -9,10 +9,21 @@ interface StripePaymentProps {
   clientSecret: string;
   onSuccess: (paymentIntentId: string) => void;
   onError: (error: string) => void;
+  shippingDetails: {
+    name: string;
+    address: {
+      line1: string;
+      line2?: string;
+      city: string;
+      postal_code: string;
+      country: string;
+    };
+    phone?: string;
+  };
   disabled?: boolean;
 }
 
-export default function StripePayment({ clientSecret, onSuccess, onError, disabled }: StripePaymentProps) {
+export default function StripePayment({ clientSecret, onSuccess, onError, disabled, shippingDetails }: StripePaymentProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -40,6 +51,17 @@ export default function StripePayment({ clientSecret, onSuccess, onError, disabl
       clientSecret,
       confirmParams: {
         return_url: `${window.location.origin}/orders/success`,
+        shipping: {
+          name: shippingDetails.name,
+          address: {
+            line1: shippingDetails.address.line1,
+            line2: shippingDetails.address.line2 || undefined,
+            city: shippingDetails.address.city,
+            postal_code: shippingDetails.address.postal_code,
+            country: shippingDetails.address.country,
+          },
+          phone: shippingDetails.phone || undefined,
+        },
       },
       redirect: 'if_required',
     });

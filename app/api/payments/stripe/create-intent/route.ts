@@ -14,6 +14,7 @@ import { getShippingRegionById, calculateShippingCost } from '@/lib/db/queries/s
 const createIntentSchema = z.object({
   shippingRegionId: z.string().optional(),
   discountCode: z.string().nullable().optional(),
+  email: z.string().email().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -148,6 +149,7 @@ export async function POST(request: NextRequest) {
         tax: tax.toString(),
         discount: discountAmount.toString(),
         discountCode: validated.discountCode || '',
+        email: validated.email || '',
       },
       automatic_payment_methods: {
         enabled: true,
@@ -167,13 +169,13 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Create Stripe payment intent error:', error);
-    
+
     // Return more detailed error information
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorDetails = error instanceof Error ? error.stack : String(error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to create payment intent',
         details: errorMessage,
         // Only include stack in development
