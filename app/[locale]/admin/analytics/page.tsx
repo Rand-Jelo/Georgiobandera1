@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
@@ -138,7 +140,7 @@ export default function AdminAnalyticsPage() {
     if (isAdmin) {
       fetchAnalytics();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [days, isAdmin]);
 
   // Set default custom dates

@@ -60,7 +60,7 @@ export async function GET(
 
     const db = getDB();
     const user = await getUserById(db, session.userId);
-    
+
     if (!user || !user.is_admin) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -84,7 +84,7 @@ export async function GET(
 
     // Get variants
     const variants = await getProductVariants(db, id);
-    
+
     // Get collections
     const collectionIds = await getProductCollections(db, id);
 
@@ -113,7 +113,7 @@ export async function PATCH(
 
     const db = getDB();
     const user = await getUserById(db, session.userId);
-    
+
     if (!user || !user.is_admin) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -123,10 +123,10 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
-    
+
     // Log the request body for debugging
     console.log('Update product request body:', JSON.stringify(body, null, 2));
-    
+
     const validated = updateProductSchema.parse(body);
 
     // Check if product exists
@@ -163,19 +163,19 @@ export async function PATCH(
     const fields: string[] = [];
     const values: any[] = [];
 
-    if (validated.name_en !== undefined) fields.push('name_en = ?'), values.push(validated.name_en);
-    if (validated.name_sv !== undefined) fields.push('name_sv = ?'), values.push(validated.name_sv);
-    if (validated.slug !== undefined) fields.push('slug = ?'), values.push(validated.slug);
-    if (validated.description_en !== undefined) fields.push('description_en = ?'), values.push(validated.description_en);
-    if (validated.description_sv !== undefined) fields.push('description_sv = ?'), values.push(validated.description_sv);
-    if (validated.category_id !== undefined) fields.push('category_id = ?'), values.push(validated.category_id);
-    if (validated.price !== undefined) fields.push('price = ?'), values.push(validated.price);
-    if (validated.compare_at_price !== undefined) fields.push('compare_at_price = ?'), values.push(validated.compare_at_price);
-    if (validated.sku !== undefined) fields.push('sku = ?'), values.push(validated.sku);
-    if (validated.status !== undefined) fields.push('status = ?'), values.push(validated.status);
-    if (validated.featured !== undefined) fields.push('featured = ?'), values.push(validated.featured ? 1 : 0);
-    if (validated.stock_quantity !== undefined) fields.push('stock_quantity = ?'), values.push(validated.stock_quantity);
-    if (validated.track_inventory !== undefined) fields.push('track_inventory = ?'), values.push(validated.track_inventory ? 1 : 0);
+    if (validated.name_en !== undefined) { fields.push('name_en = ?'); values.push(validated.name_en); }
+    if (validated.name_sv !== undefined) { fields.push('name_sv = ?'); values.push(validated.name_sv); }
+    if (validated.slug !== undefined) { fields.push('slug = ?'); values.push(validated.slug); }
+    if (validated.description_en !== undefined) { fields.push('description_en = ?'); values.push(validated.description_en); }
+    if (validated.description_sv !== undefined) { fields.push('description_sv = ?'); values.push(validated.description_sv); }
+    if (validated.category_id !== undefined) { fields.push('category_id = ?'); values.push(validated.category_id); }
+    if (validated.price !== undefined) { fields.push('price = ?'); values.push(validated.price); }
+    if (validated.compare_at_price !== undefined) { fields.push('compare_at_price = ?'); values.push(validated.compare_at_price); }
+    if (validated.sku !== undefined) { fields.push('sku = ?'); values.push(validated.sku); }
+    if (validated.status !== undefined) { fields.push('status = ?'); values.push(validated.status); }
+    if (validated.featured !== undefined) { fields.push('featured = ?'); values.push(validated.featured ? 1 : 0); }
+    if (validated.stock_quantity !== undefined) { fields.push('stock_quantity = ?'); values.push(validated.stock_quantity); }
+    if (validated.track_inventory !== undefined) { fields.push('track_inventory = ?'); values.push(validated.track_inventory ? 1 : 0); }
 
     if (fields.length === 0) {
       return NextResponse.json(
@@ -305,7 +305,7 @@ export async function DELETE(
 
     const db = getDB();
     const user = await getUserById(db, session.userId);
-    
+
     if (!user || !user.is_admin) {
       return NextResponse.json(
         { error: 'Unauthorized' },

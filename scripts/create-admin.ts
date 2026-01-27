@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import bcrypt from 'bcryptjs';
 import { execSync } from 'child_process';
 import { randomUUID } from 'crypto';
@@ -29,12 +30,12 @@ async function createAdmin() {
   const fs = require('fs');
   const path = require('path');
   const sqlFile = path.join(__dirname, '../temp-admin-insert.sql');
-  
+
   // Escape single quotes in values
   const escapedEmail = email.replace(/'/g, "''");
   const escapedName = name.replace(/'/g, "''");
   const escapedHash = passwordHash.replace(/'/g, "''");
-  
+
   const sql = `INSERT INTO users (id, email, password_hash, name, is_admin, created_at, updated_at)
 VALUES ('${userId}', '${escapedEmail}', '${escapedHash}', '${escapedName}', 1, ${now}, ${now});`;
 
@@ -47,7 +48,7 @@ VALUES ('${userId}', '${escapedEmail}', '${escapedHash}', '${escapedName}', 1, $
       `npx wrangler d1 execute georgiobandera-db-local --local --file ${sqlFile}`,
       { stdio: 'inherit' }
     );
-    
+
     // Clean up temp file
     fs.unlinkSync(sqlFile);
     console.log('');

@@ -88,7 +88,7 @@ export default function AdminMessagesPage() {
     if (isAdmin) {
       fetchMessages();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [statusFilter, isAdmin]);
 
   const handleStatusChange = async (messageId: string, newStatus: Message['status']) => {

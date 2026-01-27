@@ -1,4 +1,4 @@
-import { D1Database, R2Bucket } from '@cloudflare/workers-types';
+import { D1Database, R2Bucket, D1Result } from '@cloudflare/workers-types';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 export interface Env {

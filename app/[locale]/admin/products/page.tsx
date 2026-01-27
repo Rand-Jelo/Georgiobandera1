@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -106,10 +108,10 @@ export default function AdminProductsPage() {
         const nameSv = product.name_sv?.toLowerCase() || '';
         const sku = product.sku?.toLowerCase() || '';
         const slug = product.slug?.toLowerCase() || '';
-        return nameEn.includes(query) || 
-               nameSv.includes(query) || 
-               sku.includes(query) || 
-               slug.includes(query);
+        return nameEn.includes(query) ||
+          nameSv.includes(query) ||
+          sku.includes(query) ||
+          slug.includes(query);
       });
     }
 
@@ -120,13 +122,13 @@ export default function AdminProductsPage() {
     if (isAdmin) {
       fetchProducts();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [statusFilter, isAdmin]);
 
   const handleDelete = async (productId: string, e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
-    
+
     if (!confirm('Are you sure you want to permanently delete this product? This action cannot be undone and will delete all related data (variants, images, reviews, etc.).')) {
       return;
     }
@@ -193,10 +195,11 @@ export default function AdminProductsPage() {
       case 'category':
         confirmMessage = `Are you sure you want to update category for ${selectedProducts.size} product(s)?`;
         break;
-      case 'featured':
+      case 'featured': {
         const featuredValue = bulkValue === 'true';
         confirmMessage = `Are you sure you want to ${featuredValue ? 'mark' : 'unmark'} ${selectedProducts.size} product(s) as featured?`;
         break;
+      }
     }
 
     if (!confirm(confirmMessage)) {
@@ -230,12 +233,12 @@ export default function AdminProductsPage() {
       }
 
       alert(data.message || `Successfully updated ${data.updated || selectedProducts.size} product(s)`);
-      
+
       // Reset selections and form
       setSelectedProducts(new Set());
       setBulkAction('');
       setBulkValue('');
-      
+
       // Refresh products list
       fetchProducts();
     } catch (error) {
@@ -319,11 +322,10 @@ export default function AdminProductsPage() {
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors ${
-                    statusFilter === status
+                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors ${statusFilter === status
                       ? 'bg-white text-black'
                       : 'bg-black/50 text-neutral-300 hover:bg-black/70 border border-white/10'
-                  }`}
+                    }`}
                 >
                   {status === 'all' ? t('all') : status === 'draft' ? t('draft') : status === 'active' ? t('active') : t('archive')}
                 </button>
@@ -462,7 +464,7 @@ export default function AdminProductsPage() {
                       </svg>
                       <p className="text-neutral-400 text-base sm:text-lg font-medium mb-2">{t('noResults')}</p>
                       <p className="text-neutral-500 text-xs sm:text-sm mb-4">
-                        {searchQuery || statusFilter !== 'all' 
+                        {searchQuery || statusFilter !== 'all'
                           ? t('noResults')
                           : t('addProduct')
                         }
@@ -505,13 +507,12 @@ export default function AdminProductsPage() {
                       </td>
                       <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            product.status === 'active'
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${product.status === 'active'
                               ? 'bg-green-500/20 text-green-300'
                               : product.status === 'draft'
-                              ? 'bg-yellow-500/20 text-yellow-300'
-                              : 'bg-gray-500/20 text-gray-300'
-                          }`}
+                                ? 'bg-yellow-500/20 text-yellow-300'
+                                : 'bg-gray-500/20 text-gray-300'
+                            }`}
                         >
                           {product.status === 'active' ? t('active') : product.status === 'draft' ? t('draft') : t('archive')}
                         </span>

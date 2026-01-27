@@ -90,7 +90,7 @@ export default function AdminReviewsPage() {
     if (isAdmin) {
       fetchReviews();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [statusFilter, isAdmin]);
 
   const handleStatusChange = async (reviewId: string, newStatus: 'approved' | 'rejected') => {

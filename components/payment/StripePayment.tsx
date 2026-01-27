@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import { useState, useEffect } from 'react';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 

@@ -1,6 +1,9 @@
- 'use client';
+'use client';
+
+import React from 'react';
 
 import { useTranslations } from 'next-intl';
+import { Link } from '@/lib/i18n/routing';
 
 export default function AboutPage() {
   const tCommon = useTranslations('common');
@@ -26,12 +29,12 @@ export default function AboutPage() {
               </p>
               <div className="mt-2 h-px w-16 bg-gradient-to-r from-amber-500/50 to-transparent" />
             </div>
-            
+
             {/* Main heading */}
             <h1 className="text-5xl font-extralight tracking-[0.02em] leading-[1.1] mb-4 sm:text-6xl lg:text-7xl">
               {tCommon('about')}
             </h1>
-            
+
             {/* Description */}
             <p className="max-w-2xl text-base leading-relaxed text-neutral-300 sm:text-lg lg:text-xl">
               {t('heroDescription')}
@@ -119,12 +122,12 @@ export default function AboutPage() {
             <p className="text-base leading-relaxed text-neutral-700 font-light mb-4">
               {t('contactCtaText')}
             </p>
-            <a
+            <Link
               href="/contact"
               className="inline-block rounded-sm bg-neutral-900 px-8 py-3.5 text-sm font-medium tracking-wider text-white transition-all duration-300 hover:bg-neutral-800 hover:shadow-[0_0_30px_rgba(0,0,0,0.3)]"
             >
               {t('contactCtaButton')}
-            </a>
+            </Link>
           </section>
         </div>
       </div>

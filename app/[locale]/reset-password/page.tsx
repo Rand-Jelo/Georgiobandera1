@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
@@ -10,7 +10,7 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const t = useTranslations('auth');
   const token = searchParams.get('token');
-  
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -60,7 +60,7 @@ export default function ResetPasswordPage() {
       if (response.ok) {
         setStatus('success');
         setMessage(data.message || t('passwordResetSuccess'));
-        
+
         // Redirect to login after 3 seconds
         setTimeout(() => {
           router.push('/login');

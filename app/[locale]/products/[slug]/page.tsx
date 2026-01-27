@@ -1,5 +1,7 @@
 'use client';
 
+import React from 'react';
+
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
@@ -115,7 +117,7 @@ export default function ProductPage() {
   useEffect(() => {
     // Check if user has already reviewed
     if (userSession && reviews.length > 0) {
-      const userReview = reviews.find((r) => 
+      const userReview = reviews.find((r) =>
         (userSession.userId && r.user_id === userSession.userId) ||
         (userSession.email && r.email === userSession.email)
       );
@@ -164,7 +166,7 @@ export default function ProductPage() {
     try {
       const response = await fetch(`/api/products/${slug}`);
       const data = await response.json() as { product?: Product; error?: string };
-      
+
       if (data.error) {
         setError(data.error);
       } else if (data.product) {
@@ -205,19 +207,19 @@ export default function ProductPage() {
 
   const fetchRelatedProducts = async () => {
     if (!product || !product.category_id) return;
-    
+
     setLoadingRelated(true);
     try {
       // Fetch all categories to find parent and siblings
       const categoryResponse = await fetch(`/api/categories`);
-      const categoryData = await categoryResponse.json() as { 
-        categories?: Array<{ 
-          id: string; 
+      const categoryData = await categoryResponse.json() as {
+        categories?: Array<{
+          id: string;
           parent_id: string | null;
           children?: Array<{ id: string }>;
-        }> 
+        }>
       };
-      
+
       // Flatten categories to get all (including nested children)
       const flattenCategories = (cats: typeof categoryData.categories): Array<{ id: string; parent_id: string | null }> => {
         if (!cats) return [];
@@ -230,9 +232,9 @@ export default function ProductPage() {
         }
         return result;
       };
-      
+
       const allCategories = flattenCategories(categoryData.categories);
-      
+
       // Find current category
       const currentCategory = allCategories.find(c => c.id === product.category_id);
       if (!currentCategory) {
@@ -245,10 +247,10 @@ export default function ProductPage() {
         setLoadingRelated(false);
         return;
       }
-      
+
       const parentId = currentCategory.parent_id;
       let categoryIdsToFetch: string[] = [product.category_id];
-      
+
       // If category has a parent, get all sibling categories (categories with same parent_id)
       if (parentId) {
         const siblingCategories = allCategories
@@ -256,13 +258,13 @@ export default function ProductPage() {
           .map(c => c.id);
         categoryIdsToFetch = [...new Set([...categoryIdsToFetch, ...siblingCategories])];
       }
-      
+
       // Fetch products from current category + sibling categories
       const categoryIdsParam = categoryIdsToFetch.join(',');
       const response = await fetch(`/api/products?categoryIds=${categoryIdsParam}&status=active&limit=8`);
       const data = await response.json() as { products?: Product[] };
       const products = data.products || [];
-      
+
       // Filter out the current product
       const related = products.filter(p => p.id !== product.id).slice(0, 4);
       setRelatedProducts(related);
@@ -327,7 +329,7 @@ export default function ProductPage() {
 
   const handleMarkHelpful = async (reviewId: string) => {
     if (!product) return;
-    
+
     // Check if already clicked
     if (helpfulClicked.has(reviewId)) {
       return;
@@ -392,8 +394,8 @@ export default function ProductPage() {
   const getDisplayName = (): string => {
     const baseName = locale === 'sv' ? product?.name_sv : product?.name_en;
     if (selectedVariant) {
-      const variantName = locale === 'sv' 
-        ? selectedVariant.name_sv 
+      const variantName = locale === 'sv'
+        ? selectedVariant.name_sv
         : selectedVariant.name_en;
       if (variantName) {
         return `${baseName} - ${variantName}`;
@@ -465,7 +467,7 @@ export default function ProductPage() {
     if (quantity > maxQty && maxQty > 0) {
       setQuantity(Math.max(1, maxQty));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [product?.stock_quantity, selectedVariant?.stock_quantity]);
 
   if (loading) {
@@ -495,8 +497,8 @@ export default function ProductPage() {
   }
 
   const productName = locale === 'sv' ? product.name_sv : product.name_en;
-  const productDescription = locale === 'sv' 
-    ? product.description_sv 
+  const productDescription = locale === 'sv'
+    ? product.description_sv
     : product.description_en;
   const hasDiscount = product.compare_at_price && product.compare_at_price > getDisplayPrice();
   const inStock = isInStock();
@@ -519,7 +521,7 @@ export default function ProductPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Structured Data */}
-      <ProductStructuredData 
+      <ProductStructuredData
         product={{
           id: product.id,
           name_en: product.name_en,
@@ -536,7 +538,7 @@ export default function ProductPage() {
         siteUrl={SITE_URL}
       />
       <BreadcrumbStructuredData items={breadcrumbItems} />
-      
+
       <div className="max-w-[1600px] mx-auto px-6 py-12 lg:py-16">
         {/* Breadcrumbs */}
         <nav className="mb-8 pb-6 border-b border-neutral-200/50" aria-label="Breadcrumb">
@@ -552,7 +554,7 @@ export default function ProductPage() {
                   <span className="mx-2">/</span>
                 </li>
                 <li>
-                  <Link 
+                  <Link
                     href={`/shop?categories=${product.category.id}`}
                     className="hover:text-amber-600 transition-colors duration-300"
                   >
@@ -591,11 +593,10 @@ export default function ProductPage() {
                       <button
                         key={image.id}
                         onClick={() => setSelectedImageIndex(index)}
-                        className={`aspect-square bg-neutral-50 overflow-hidden border transition-all duration-300 ${
-                          selectedImageIndex === index
+                        className={`aspect-square bg-neutral-50 overflow-hidden border transition-all duration-300 ${selectedImageIndex === index
                             ? 'border-neutral-900'
                             : 'border-neutral-200/50 hover:border-neutral-300'
-                        }`}
+                          }`}
                       >
                         <Image
                           src={image.url}
@@ -651,24 +652,24 @@ export default function ProductPage() {
             {/* Variants - Separate Size and Color */}
             {(() => {
               // Separate variants into sizes and colors
-              const sizeVariants = product.variants.filter(v => 
+              const sizeVariants = product.variants.filter(v =>
                 v.option1_name?.toLowerCase() === 'size' && v.option1_value
               );
-              const colorVariants = product.variants.filter(v => 
+              const colorVariants = product.variants.filter(v =>
                 v.option2_name?.toLowerCase() === 'color' && v.option2_value
               );
 
               // Get unique sizes and colors
               const uniqueSizes = Array.from(new Set(sizeVariants.map(v => v.option1_value).filter((s): s is string => Boolean(s))));
-              
+
               // Extract colors - try to get name from variant name or use hex
               const uniqueColors = colorVariants.map(v => {
                 const hex = v.option2_value || '#000000';
                 // Try to extract color name from variant name
-                let name = locale === 'sv' 
+                let name = locale === 'sv'
                   ? (v.name_sv || v.name_en || '')
                   : (v.name_en || v.name_sv || '');
-                
+
                 // If no name from variant, try to get from hex color mapping
                 if (!name && hex.startsWith('#')) {
                   // Common color names mapping
@@ -694,13 +695,13 @@ export default function ProductPage() {
                   };
                   name = colorMap[hex.toUpperCase()] || hex;
                 }
-                
+
                 return {
                   variant: v,
                   hex: hex,
                   name: name || hex,
                 };
-              }).filter((v, i, self) => 
+              }).filter((v, i, self) =>
                 i === self.findIndex(t => t.hex === v.hex)
               );
 
@@ -718,8 +719,8 @@ export default function ProductPage() {
                           const selectedSize = e.target.value;
                           // Find variant with this size (and current color if selected)
                           const currentColor = selectedVariant?.option2_value;
-                          let newVariant = sizeVariants.find(v => 
-                            v.option1_value === selectedSize && 
+                          let newVariant = sizeVariants.find(v =>
+                            v.option1_value === selectedSize &&
                             (!currentColor || v.option2_value === currentColor)
                           );
                           // If no variant with both size and color, just find by size
@@ -735,8 +736,8 @@ export default function ProductPage() {
                           const sizeVariant = sizeVariants.find(v => v.option1_value === size);
                           const inStock = sizeVariant && (sizeVariant.stock_quantity > 0 || !sizeVariant.track_inventory);
                           return (
-                            <option 
-                              key={size} 
+                            <option
+                              key={size}
                               value={size}
                               disabled={!inStock}
                             >
@@ -761,7 +762,7 @@ export default function ProductPage() {
                           const isSelected = selectedVariant?.option2_value === colorItem.hex;
                           const colorVariant = colorVariants.find(v => v.option2_value === colorItem.hex);
                           const inStock = colorVariant && (colorVariant.stock_quantity > 0 || !colorVariant.track_inventory);
-                          
+
                           return (
                             <div key={colorItem.hex} className="relative group">
                               <button
@@ -769,8 +770,8 @@ export default function ProductPage() {
                                 onClick={() => {
                                   // Find variant with this color (and current size if selected)
                                   const currentSize = selectedVariant?.option1_value;
-                                  let newVariant = colorVariants.find(v => 
-                                    v.option2_value === colorItem.hex && 
+                                  let newVariant = colorVariants.find(v =>
+                                    v.option2_value === colorItem.hex &&
                                     (!currentSize || v.option1_value === currentSize)
                                   );
                                   // If no variant with both color and size, just find by color
@@ -787,8 +788,8 @@ export default function ProductPage() {
                                 disabled={!inStock}
                                 className={`
                                   relative w-12 h-12 border transition-all duration-300
-                                  ${isSelected 
-                                    ? 'border-neutral-900' 
+                                  ${isSelected
+                                    ? 'border-neutral-900'
                                     : 'border-neutral-200/50 hover:border-neutral-300'
                                   }
                                   ${!inStock ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
@@ -881,7 +882,7 @@ export default function ProductPage() {
           trackInventory={getTrackInventory()}
           size={(() => {
             // If there's only one size, show it in specifications
-            const sizeVariants = product.variants.filter(v => 
+            const sizeVariants = product.variants.filter(v =>
               v.option1_name?.toLowerCase() === 'size' && v.option1_value
             );
             const uniqueSizes = Array.from(new Set(sizeVariants.map(v => v.option1_value).filter(Boolean)));
@@ -963,7 +964,7 @@ export default function ProductPage() {
                     <form onSubmit={handleSubmitReview} className="space-y-5">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                        <label htmlFor="review-name" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
+                          <label htmlFor="review-name" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
                             {t('reviewNameLabel') || 'Name *'}
                           </label>
                           <input
@@ -976,7 +977,7 @@ export default function ProductPage() {
                           />
                         </div>
                         <div>
-                        <label htmlFor="review-email" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
+                          <label htmlFor="review-email" className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
                             {t('reviewEmailLabel') || 'Email *'}
                           </label>
                           <input
@@ -1106,16 +1107,15 @@ export default function ProductPage() {
                       <button
                         onClick={() => handleMarkHelpful(review.id)}
                         disabled={helpfulClicked.has(review.id)}
-                        className={`text-sm flex items-center gap-1.5 transition-colors ${
-                          helpfulClicked.has(review.id)
+                        className={`text-sm flex items-center gap-1.5 transition-colors ${helpfulClicked.has(review.id)
                             ? 'text-neutral-400 cursor-not-allowed'
                             : 'text-neutral-600 hover:text-neutral-900'
-                        }`}
+                          }`}
                       >
-                        <svg 
-                          className={`w-4 h-4 ${helpfulClicked.has(review.id) ? 'fill-current' : ''}`} 
-                          fill={helpfulClicked.has(review.id) ? 'currentColor' : 'none'} 
-                          stroke="currentColor" 
+                        <svg
+                          className={`w-4 h-4 ${helpfulClicked.has(review.id) ? 'fill-current' : ''}`}
+                          fill={helpfulClicked.has(review.id) ? 'currentColor' : 'none'}
+                          stroke="currentColor"
                           viewBox="0 0 24 24"
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />

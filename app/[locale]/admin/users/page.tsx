@@ -85,7 +85,7 @@ export default function AdminUsersPage() {
     if (isAdmin) {
       fetchUsers();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [isAdmin]);
 
   const handleToggleAdmin = async (userId: string, currentIsAdmin: boolean) => {

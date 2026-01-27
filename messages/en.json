@@ -157,9 +157,12 @@
     "cityPlaceholder": "City",
     "postalCode": "Postal Code",
     "postalCodePlaceholder": "12345",
+    "invalidPostalCodeFormat": "Invalid postal code format for {country}",
+    "postalCodeRequired": "Postal code is required",
     "country": "Country",
     "selectCountry": "Select a country",
     "phone": "Phone",
+    "phonePlaceholder": "070 123 45 67",
     "optional": "Optional",
     "shippingRegion": "Shipping Region",
     "basePrice": "Base Price",
@@ -1714,4 +1717,3 @@
     "failedToDeleteImage": "Failed to delete image"
   }
 }
-

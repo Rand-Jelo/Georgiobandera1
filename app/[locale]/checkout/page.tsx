@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -12,6 +14,10 @@ import { Elements } from '@stripe/react-stripe-js';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import StripePayment from '@/components/payment/StripePayment';
 import PayPalPayment from '@/components/payment/PayPalPayment';
+import visaLogo from '@/assets/images/visa-official.svg';
+import mastercardLogo from '@/assets/images/mastercard-official.svg';
+import paypalLogo from '@/assets/images/paypal-official.svg';
+import klarnaLogo from '@/assets/images/klarna-official.svg';
 
 interface ShippingRegion {
   id: string;
@@ -93,6 +99,8 @@ export default function CheckoutPage() {
     paymentMethod: '' as 'stripe' | 'paypal' | '',
   });
 
+  const [phoneCountryCode, setPhoneCountryCode] = useState('+46'); // Default to Sweden
+
   const [shippingCost, setShippingCost] = useState<number | null>(null); // null means not calculated yet
   const [calculatingShipping, setCalculatingShipping] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState<ShippingRegion | null>(null);
@@ -104,7 +112,7 @@ export default function CheckoutPage() {
   } | null>(null);
   const [discountError, setDiscountError] = useState('');
   const [validatingDiscount, setValidatingDiscount] = useState(false);
-  
+
   // Payment state
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
   const [paypalOrderId, setPaypalOrderId] = useState<string | null>(null);
@@ -128,7 +136,7 @@ export default function CheckoutPage() {
 
   // Address validation
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
-  
+
   // Success/error notifications
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -206,17 +214,17 @@ export default function CheckoutPage() {
         body: JSON.stringify({ country: countryCode }),
       });
 
-      const data = await response.json() as { 
-        region?: { 
-          id: string; 
-          name_en: string; 
-          name_sv: string; 
+      const data = await response.json() as {
+        region?: {
+          id: string;
+          name_en: string;
+          name_sv: string;
           code: string;
           base_price: number;
           free_shipping_threshold: number | null;
           active: boolean;
-        }; 
-        error?: string 
+        };
+        error?: string
       };
 
       if (data.region) {
@@ -255,7 +263,7 @@ export default function CheckoutPage() {
 
   // Calculate shipping when region is selected and address is complete
   useEffect(() => {
-    const isAddressComplete = 
+    const isAddressComplete =
       formData.shippingName &&
       formData.shippingAddressLine1 &&
       formData.shippingCity &&
@@ -374,13 +382,13 @@ export default function CheckoutPage() {
             }),
           });
 
-          const data = await response.json() as { 
-            clientSecret?: string; 
-            paymentIntentId?: string; 
+          const data = await response.json() as {
+            clientSecret?: string;
+            paymentIntentId?: string;
             error?: string;
             details?: string;
           };
-          
+
           if (data.error) {
             const errorMsg = data.details ? `${data.error}: ${data.details}` : data.error;
             setError(errorMsg);
@@ -402,7 +410,7 @@ export default function CheckoutPage() {
           });
 
           const data = await response.json() as { orderId?: string; status?: string; error?: string };
-          
+
           if (data.error) {
             setError(data.error);
             return;
@@ -431,7 +439,7 @@ export default function CheckoutPage() {
         const nameParts = formData.shippingName.split(' ');
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
-        
+
         try {
           const saveResponse = await fetch('/api/addresses', {
             method: 'POST',
@@ -448,7 +456,7 @@ export default function CheckoutPage() {
               is_default: savedAddresses.length === 0, // Set as default if it's the first address
             }),
           });
-          
+
           if (saveResponse.ok) {
             setNotification({ type: 'success', message: t('addressSavedSuccess') });
             setTimeout(() => setNotification(null), 3000);
@@ -476,8 +484,8 @@ export default function CheckoutPage() {
         }),
       });
 
-      const data = await response.json() as { 
-        order?: { id: string; order_number: string }; 
+      const data = await response.json() as {
+        order?: { id: string; order_number: string };
         error?: string;
         details?: string;
       };
@@ -544,7 +552,7 @@ export default function CheckoutPage() {
     // The actual order placement happens in handlePaymentSuccess
     // which is called by the payment components after successful payment
   };
-  
+
   // Auto-hide notification after 5 seconds and scroll to it
   useEffect(() => {
     if (notification) {
@@ -557,12 +565,12 @@ export default function CheckoutPage() {
           }
         }, 100);
       }
-      
+
       const timer = setTimeout(() => setNotification(null), 5000);
       return () => clearTimeout(timer);
     }
   }, [notification]);
-  
+
   // Scroll to first error field when validation errors appear
   useEffect(() => {
     const firstErrorKey = Object.keys(addressErrors)[0];
@@ -582,7 +590,7 @@ export default function CheckoutPage() {
     if (formData.shippingCountry) {
       detectShippingRegion(formData.shippingCountry);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [formData.shippingCountry]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -617,17 +625,23 @@ export default function CheckoutPage() {
       }
     }
 
-    // Validate postal code when it changes
-    if (name === 'shippingPostalCode' && formData.shippingCountry) {
-      const validation = validatePostalCode(value, formData.shippingCountry);
-      if (!validation.valid) {
-        newErrors.shippingPostalCode = validation.errors[0] || 'Invalid postal code';
-      } else {
-        delete newErrors.shippingPostalCode;
-        // Auto-format postal code
-        const formatted = formatPostalCode(value, formData.shippingCountry);
-        if (formatted !== value) {
-          setFormData(prev => ({ ...prev, shippingPostalCode: formatted }));
+    // Validate postal code when it changes (Numeric only, max 5 digits)
+    if (name === 'shippingPostalCode') {
+      // Remove any non-numeric characters
+      const numericValue = value.replace(/\D/g, '').slice(0, 5);
+
+      // Update the value if it changed (to enforce restriction)
+      if (numericValue !== value) {
+        setFormData(prev => ({ ...prev, [name]: numericValue }));
+        return; // Stop here, the state update will trigger another render/change
+      }
+
+      if (formData.shippingCountry) {
+        const validation = validatePostalCode(numericValue, formData.shippingCountry, t);
+        if (!validation.valid) {
+          newErrors.shippingPostalCode = validation.errors[0] || 'Invalid postal code';
+        } else {
+          delete newErrors.shippingPostalCode;
         }
       }
     }
@@ -654,6 +668,16 @@ export default function CheckoutPage() {
 
     setAddressErrors(newErrors);
   };
+
+  // Sync phone country code when shipping country changes
+  useEffect(() => {
+    if (formData.shippingCountry) {
+      const country = COUNTRIES.find(c => c.code === formData.shippingCountry);
+      if (country && country.dial_code) {
+        setPhoneCountryCode(country.dial_code);
+      }
+    }
+  }, [formData.shippingCountry]);
 
   const handleApplyDiscount = async () => {
     if (!discountCode.trim()) {
@@ -844,23 +868,22 @@ export default function CheckoutPage() {
                   const isShipping = section.id === 'shipping';
                   const isPayment = section.id === 'payment';
                   const isReview = section.id === 'review';
-                  
-                  const isCompleted = 
+
+                  const isCompleted =
                     (isShipping && isShippingComplete()) ||
                     (isPayment && isPaymentComplete() && isShippingComplete()) ||
                     (isReview && isPaymentComplete() && isShippingComplete());
-                  
+
                   const isActive = expandedSections[section.id];
                   const isLast = index === sections.length - 1;
 
                   return (
                     <div key={section.id} className="flex items-center flex-1">
                       <div className="flex flex-col items-center flex-1">
-                        <div className={`relative flex items-center justify-center w-12 h-12 border-2 transition-all duration-300 ${
-                          isCompleted || isActive
-                            ? 'border-amber-500 bg-amber-500 text-white'
-                            : 'border-neutral-600 bg-transparent text-neutral-500'
-                        }`}>
+                        <div className={`relative flex items-center justify-center w-12 h-12 border-2 transition-all duration-300 ${isCompleted || isActive
+                          ? 'border-amber-500 bg-amber-500 text-white'
+                          : 'border-neutral-600 bg-transparent text-neutral-500'
+                          }`}>
                           {isCompleted && !isActive ? (
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -880,16 +903,14 @@ export default function CheckoutPage() {
                             </svg>
                           )}
                         </div>
-                        <span className={`mt-3 text-xs font-light uppercase tracking-wider hidden sm:block ${
-                          isActive ? 'text-amber-400' : isCompleted ? 'text-neutral-400' : 'text-neutral-600'
-                        }`}>
+                        <span className={`mt-3 text-xs font-light uppercase tracking-wider hidden sm:block ${isActive ? 'text-amber-400' : isCompleted ? 'text-neutral-400' : 'text-neutral-600'
+                          }`}>
                           {section.label}
                         </span>
                       </div>
                       {!isLast && (
-                        <div className={`flex-1 h-px mx-4 transition-all duration-300 ${
-                          isCompleted ? 'bg-amber-500' : 'bg-neutral-700'
-                        }`} />
+                        <div className={`flex-1 h-px mx-4 transition-all duration-300 ${isCompleted ? 'bg-amber-500' : 'bg-neutral-700'
+                          }`} />
                       )}
                     </div>
                   );
@@ -916,13 +937,12 @@ export default function CheckoutPage() {
                   aria-expanded={expandedSections.shipping}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                      isShippingComplete() 
-                        ? 'bg-green-100 text-green-600' 
-                        : expandedSections.shipping 
-                        ? 'bg-amber-100 text-amber-600' 
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isShippingComplete()
+                      ? 'bg-green-100 text-green-600'
+                      : expandedSections.shipping
+                        ? 'bg-amber-100 text-amber-600'
                         : 'bg-neutral-100 text-neutral-400'
-                    }`}>
+                      }`}>
                       {isShippingComplete() ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -942,10 +962,10 @@ export default function CheckoutPage() {
                       )}
                     </div>
                   </div>
-                  <svg 
+                  <svg
                     className={`w-5 h-5 text-neutral-400 transition-transform ${expandedSections.shipping ? 'rotate-180' : ''}`}
-                    fill="none" 
-                    stroke="currentColor" 
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -953,270 +973,292 @@ export default function CheckoutPage() {
                 </button>
                 {expandedSections.shipping && (
                   <div>
-                  <div className="p-10">
-                    {/* Saved Addresses Selector */}
-                    {savedAddresses.length > 0 && (
-                      <div className="mb-10 pb-10 border-b border-neutral-200/30">
-                        <label className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          {t('useSavedAddress')}
-                        </label>
-                        <select
-                          value={selectedAddressId || ''}
-                          onChange={(e) => {
-                            const addressId = e.target.value;
-                            if (addressId) {
-                              const address = savedAddresses.find(a => a.id === addressId);
-                              if (address) {
-                                handleSelectSavedAddress(address);
+                    <div className="p-10">
+                      {/* Saved Addresses Selector */}
+                      {savedAddresses.length > 0 && (
+                        <div className="mb-10 pb-10 border-b border-neutral-200/30">
+                          <label className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                            {t('useSavedAddress')}
+                          </label>
+                          <select
+                            value={selectedAddressId || ''}
+                            onChange={(e) => {
+                              const addressId = e.target.value;
+                              if (addressId) {
+                                const address = savedAddresses.find(a => a.id === addressId);
+                                if (address) {
+                                  handleSelectSavedAddress(address);
+                                }
+                              } else {
+                                setSelectedAddressId(null);
                               }
-                            } else {
-                              setSelectedAddressId(null);
-                            }
-                          }}
-                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                          aria-label={t('useSavedAddress')}
-                        >
-                          <option value="">{t('selectSavedAddress')}</option>
-                          {savedAddresses.map((address) => (
-                            <option key={address.id} value={address.id}>
-                              {address.label || `${address.first_name} ${address.last_name}`} - {address.city}, {address.country}
-                            </option>
-                          ))}
-                        </select>
-                        {selectedAddressId && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedAddressId(null);
-                              setFormData({
-                                shippingName: '',
-                                shippingAddressLine1: '',
-                                shippingAddressLine2: '',
-                                shippingCity: '',
-                                shippingPostalCode: '',
-                                shippingCountry: 'SE',
-                                shippingPhone: '',
-                                shippingRegionId: '',
-                                paymentMethod: '' as 'stripe' | 'paypal' | '',
-                              });
                             }}
-                            className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
-                            aria-label={t('useDifferentAddress')}
+                            className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                            aria-label={t('useSavedAddress')}
                           >
-                            {t('useDifferentAddress')}
-                          </button>
-                        )}
-                      </div>
-                    )}
+                            <option value="">{t('selectSavedAddress')}</option>
+                            {savedAddresses.map((address) => (
+                              <option key={address.id} value={address.id}>
+                                {address.label || `${address.first_name} ${address.last_name}`} - {address.city}, {address.country}
+                              </option>
+                            ))}
+                          </select>
+                          {selectedAddressId && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedAddressId(null);
+                                setFormData({
+                                  shippingName: '',
+                                  shippingAddressLine1: '',
+                                  shippingAddressLine2: '',
+                                  shippingCity: '',
+                                  shippingPostalCode: '',
+                                  shippingCountry: 'SE',
+                                  shippingPhone: '',
+                                  shippingRegionId: '',
+                                  paymentMethod: '' as 'stripe' | 'paypal' | '',
+                                });
+                              }}
+                              className="mt-4 text-xs text-neutral-500 hover:text-neutral-900 transition-colors font-light tracking-wide"
+                              aria-label={t('useDifferentAddress')}
+                            >
+                              {t('useDifferentAddress')}
+                            </button>
+                          )}
+                        </div>
+                      )}
 
-                    <div className="space-y-8">
-                      <div>
-                        <label htmlFor="shippingName" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          {t('fullName')} <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="shippingName"
-                          name="shippingName"
-                          required
-                          value={formData.shippingName}
-                          onChange={handleChange}
-                          className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
-                            addressErrors.shippingName
-                              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                              : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                          }`}
-                          placeholder={t('fullNamePlaceholder')}
-                        />
-                        {addressErrors.shippingName && (
-                          <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {addressErrors.shippingName}
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label htmlFor="shippingAddressLine1" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          {t('addressLine1')} <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="shippingAddressLine1"
-                          name="shippingAddressLine1"
-                          required
-                          value={formData.shippingAddressLine1}
-                          onChange={handleChange}
-                          className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
-                            addressErrors.shippingAddressLine1
-                              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                              : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                          }`}
-                          placeholder={t('addressLine1Placeholder')}
-                        />
-                        {addressErrors.shippingAddressLine1 && (
-                          <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            {addressErrors.shippingAddressLine1}
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label htmlFor="shippingAddressLine2" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          {t('addressLine2')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="shippingAddressLine2"
-                          name="shippingAddressLine2"
-                          value={formData.shippingAddressLine2}
-                          onChange={handleChange}
-                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                          placeholder={t('addressLine2Placeholder')}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-8">
                         <div>
-                          <label htmlFor="shippingCity" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            {t('city')} <span className="text-red-500">*</span>
+                          <label htmlFor="shippingName" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                            {t('fullName')} <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="text"
-                            id="shippingCity"
-                            name="shippingCity"
+                            id="shippingName"
+                            name="shippingName"
                             required
-                            value={formData.shippingCity}
+                            value={formData.shippingName}
                             onChange={handleChange}
-                            className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
-                              addressErrors.shippingCity
-                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                                : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                            }`}
-                            placeholder={t('cityPlaceholder')}
+                            className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.shippingName
+                              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                              : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                              }`}
+                            placeholder={t('fullNamePlaceholder')}
                           />
-                          {addressErrors.shippingCity && (
+                          {addressErrors.shippingName && (
                             <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
-                              {addressErrors.shippingCity}
+                              {addressErrors.shippingName}
                             </p>
                           )}
                         </div>
 
                         <div>
-                          <label htmlFor="shippingPostalCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                            {t('postalCode')} <span className="text-red-500">*</span>
+                          <label htmlFor="shippingAddressLine1" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                            {t('addressLine1')} <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="text"
-                            id="shippingPostalCode"
-                            name="shippingPostalCode"
+                            id="shippingAddressLine1"
+                            name="shippingAddressLine1"
                             required
-                            value={formData.shippingPostalCode}
+                            value={formData.shippingAddressLine1}
                             onChange={handleChange}
-                            className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
-                              addressErrors.shippingPostalCode
-                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                                : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                            }`}
-                            placeholder={t('postalCodePlaceholder')}
+                            className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.shippingAddressLine1
+                              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                              : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                              }`}
+                            placeholder={t('addressLine1Placeholder')}
                           />
-                          {addressErrors.shippingPostalCode && (
+                          {addressErrors.shippingAddressLine1 && (
                             <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
-                              {addressErrors.shippingPostalCode}
+                              {addressErrors.shippingAddressLine1}
                             </p>
                           )}
                         </div>
-                      </div>
 
-                      <div>
-                        <label htmlFor="shippingCountry" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          {t('country')} <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="shippingCountry"
-                          name="shippingCountry"
-                          required
-                          value={formData.shippingCountry}
-                          onChange={handleChange}
-                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                        >
-                          <option value="">{t('selectCountry')}</option>
-                          {COUNTRIES.map((country) => (
-                            <option key={country.code} value={country.code}>
-                              {country.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                        <div>
+                          <label htmlFor="shippingAddressLine2" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                            {t('addressLine2')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
+                          </label>
+                          <input
+                            type="text"
+                            id="shippingAddressLine2"
+                            name="shippingAddressLine2"
+                            value={formData.shippingAddressLine2}
+                            onChange={handleChange}
+                            className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                            placeholder={t('addressLine2Placeholder')}
+                          />
+                        </div>
 
-                      <div>
-                        <label htmlFor="shippingPhone" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
-                          {t('phone')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
-                        </label>
-                        <input
-                          type="tel"
-                          id="shippingPhone"
-                          name="shippingPhone"
-                          value={formData.shippingPhone}
-                          onChange={handleChange}
-                          className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                          placeholder="+46 70 123 45 67"
-                        />
-                      </div>
-
-                      {selectedRegion && (
-                        <div className="bg-neutral-50 border border-neutral-200/30 p-6">
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('shippingRegion')}</p>
-                              <p className="text-sm font-light text-neutral-900 tracking-wide">
-                                {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
-                              </p>
+                        <div>
+                          <label htmlFor="shippingPhone" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                            {t('phone')} <span className="text-neutral-400 font-normal normal-case">({t('optional')})</span>
+                          </label>
+                          <div className="flex">
+                            <div className="relative">
+                              <select
+                                value={phoneCountryCode}
+                                onChange={(e) => setPhoneCountryCode(e.target.value)}
+                                className="appearance-none block w-[140px] pl-4 pr-10 py-4 border-y border-l border-r-0 border-neutral-200/40 bg-neutral-50 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide rounded-l-none"
+                                style={{ borderRadius: '0' }}
+                              >
+                                {COUNTRIES.map((country) => (
+                                  <option key={`${country.code}-${country.dial_code}`} value={country.dial_code}>
+                                    {country.code} ({country.dial_code})
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-neutral-500">
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('basePrice')}</p>
-                              <p className="text-sm font-light text-neutral-900 tracking-wide">
-                                {formatPrice(selectedRegion.base_price, 'SEK')}
-                              </p>
-                            </div>
+                            <input
+                              type="tel"
+                              id="shippingPhone"
+                              name="shippingPhone"
+                              value={formData.shippingPhone}
+                              onChange={handleChange}
+                              inputMode="numeric"
+                              className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide flex-1"
+                              placeholder={t('phonePlaceholder')}
+                            />
                           </div>
-                          {selectedRegion.free_shipping_threshold && (
-                            <p className="text-xs text-neutral-500 font-light tracking-wide pt-3 border-t border-neutral-200/30">
-                              {t('freeShippingOver', { amount: formatPrice(selectedRegion.free_shipping_threshold, 'SEK') })}
-                            </p>
-                          )}
                         </div>
-                      )}
 
-                      {/* Save Address Option */}
-                      {!selectedAddressId && (
-                        <div className="flex items-center pt-2">
-                          <input
-                            type="checkbox"
-                            id="saveAddress"
-                            checked={showSaveAddress}
-                            onChange={(e) => setShowSaveAddress(e.target.checked)}
-                            className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
-                          />
-                          <label htmlFor="saveAddress" className="ml-3 text-sm text-neutral-700 font-light tracking-wide">
-                            {t('saveAddressForFuture')}
-                          </label>
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <label htmlFor="shippingCity" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                              {t('city')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              id="shippingCity"
+                              name="shippingCity"
+                              required
+                              value={formData.shippingCity}
+                              onChange={handleChange}
+                              className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.shippingCity
+                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                                : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                                }`}
+                              placeholder={t('cityPlaceholder')}
+                            />
+                            {addressErrors.shippingCity && (
+                              <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {addressErrors.shippingCity}
+                              </p>
+                            )}
+                          </div>
+
+                          <div>
+                            <label htmlFor="shippingPostalCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                              {t('postalCode')} <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              id="shippingPostalCode"
+                              name="shippingPostalCode"
+                              required
+                              value={formData.shippingPostalCode}
+                              onChange={handleChange}
+                              maxLength={5}
+                              inputMode="numeric"
+                              className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.shippingPostalCode
+                                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                                : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                                }`}
+                              placeholder={t('postalCodePlaceholder')}
+                            />
+                            {addressErrors.shippingPostalCode && (
+                              <p className="mt-2 text-xs text-red-600 flex items-center gap-1 font-light" role="alert" aria-live="polite">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {addressErrors.shippingPostalCode}
+                              </p>
+                            )}
+                          </div>
                         </div>
-                      )}
+
+                        <div>
+                          <label htmlFor="shippingCountry" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600 mb-4">
+                            {t('country')} <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            id="shippingCountry"
+                            name="shippingCountry"
+                            required
+                            value={formData.shippingCountry}
+                            onChange={handleChange}
+                            className="block w-full px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                          >
+                            <option value="">{t('selectCountry')}</option>
+                            {COUNTRIES.map((country) => (
+                              <option key={country.code} value={country.code}>
+                                {country.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+
+
+                        {selectedRegion && (
+                          <div className="bg-neutral-50 border border-neutral-200/30 p-6">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('shippingRegion')}</p>
+                                <p className="text-sm font-light text-neutral-900 tracking-wide">
+                                  {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-[10px] font-light uppercase tracking-[0.2em] text-neutral-500 mb-2">{t('basePrice')}</p>
+                                <p className="text-sm font-light text-neutral-900 tracking-wide">
+                                  {formatPrice(selectedRegion.base_price, 'SEK')}
+                                </p>
+                              </div>
+                            </div>
+                            {selectedRegion.free_shipping_threshold && (
+                              <p className="text-xs text-neutral-500 font-light tracking-wide pt-3 border-t border-neutral-200/30">
+                                {t('freeShippingOver', { amount: formatPrice(selectedRegion.free_shipping_threshold, 'SEK') })}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Save Address Option */}
+                        {!selectedAddressId && (
+                          <div className="flex items-center pt-2">
+                            <input
+                              type="checkbox"
+                              id="saveAddress"
+                              checked={showSaveAddress}
+                              onChange={(e) => setShowSaveAddress(e.target.checked)}
+                              className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300 rounded"
+                            />
+                            <label htmlFor="saveAddress" className="ml-3 text-sm text-neutral-700 font-light tracking-wide">
+                              {t('saveAddressForFuture')}
+                            </label>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
                 )}
               </div>
 
@@ -1242,11 +1284,10 @@ export default function CheckoutPage() {
                         onChange={handleChange}
                         onBlur={handleChange}
                         placeholder={t('emailPlaceholder')}
-                        className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${
-                          addressErrors.guestEmail
-                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                            : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
-                        }`}
+                        className={`block w-full px-6 py-4 border bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 transition-all text-sm font-light tracking-wide ${addressErrors.guestEmail
+                          ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+                          : 'border-neutral-200/40 focus:ring-neutral-900 focus:border-neutral-900'
+                          }`}
                         aria-invalid={!!addressErrors.guestEmail}
                         aria-describedby={addressErrors.guestEmail ? 'guestEmail-error' : undefined}
                       />
@@ -1331,13 +1372,12 @@ export default function CheckoutPage() {
                   aria-expanded={expandedSections.payment}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                      isPaymentComplete() && isShippingComplete()
-                        ? 'bg-green-100 text-green-600' 
-                        : expandedSections.payment && isShippingComplete()
-                        ? 'bg-amber-100 text-amber-600' 
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isPaymentComplete() && isShippingComplete()
+                      ? 'bg-green-100 text-green-600'
+                      : expandedSections.payment && isShippingComplete()
+                        ? 'bg-amber-100 text-amber-600'
                         : 'bg-neutral-100 text-neutral-400'
-                    }`}>
+                      }`}>
                       {isPaymentComplete() && isShippingComplete() ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -1357,10 +1397,10 @@ export default function CheckoutPage() {
                       )}
                     </div>
                   </div>
-                  <svg 
+                  <svg
                     className={`w-5 h-5 text-neutral-400 transition-transform ${expandedSections.payment ? 'rotate-180' : ''}`}
-                    fill="none" 
-                    stroke="currentColor" 
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1368,89 +1408,95 @@ export default function CheckoutPage() {
                 </button>
                 {expandedSections.payment && isShippingComplete() && (
                   <div>
-                  <div className="p-10">
-                    <div className="space-y-4">
-                      {/* Stripe Payment Option */}
-                      <div
-                        onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'stripe' }))}
-                        className={`p-6 border cursor-pointer transition-all duration-200 ${
-                          formData.paymentMethod === 'stripe'
+                    <div className="p-10">
+                      <div className="space-y-4">
+                        {/* Stripe Payment Option */}
+                        <div
+                          onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'stripe' }))}
+                          className={`p-6 border cursor-pointer transition-all duration-200 ${formData.paymentMethod === 'stripe'
                             ? 'border-neutral-900 bg-neutral-50'
                             : 'border-neutral-200/40 bg-white hover:border-neutral-300'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-5">
-                            <input
-                              type="radio"
-                              name="paymentMethod"
-                              value="stripe"
-                              checked={formData.paymentMethod === 'stripe'}
-                              onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as 'stripe' | 'paypal' }))}
-                              className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300"
-                            />
-                            <div>
-                              <p className="text-sm font-light text-neutral-900 tracking-wide">{t('creditDebitCard')}</p>
-                              <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">{t('securePaymentViaStripe')}</p>
-                            </div>
-                          </div>
-                          <div className="flex gap-2 items-center">
-                            {/* Visa Logo - Official */}
-                            <div className="w-14 h-9 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
-                              <img
-                                src="/visa-logo-official.png"
-                                alt="Visa"
-                                className="w-full h-full object-contain"
+                            }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-5">
+                              <input
+                                type="radio"
+                                name="paymentMethod"
+                                value="stripe"
+                                checked={formData.paymentMethod === 'stripe'}
+                                onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as 'stripe' | 'paypal' }))}
+                                className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300"
                               />
+                              <div>
+                                <p className="text-sm font-light text-neutral-900 tracking-wide">{t('creditDebitCard')} & Klarna</p>
+                                <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">{t('securePaymentViaStripe')}</p>
+                              </div>
                             </div>
-                            {/* Mastercard Logo - Official */}
-                            <div className="w-14 h-9 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
-                              <img
-                                src="/mastercard-logo-official.svg"
-                                alt="Mastercard"
-                                className="w-full h-full object-contain"
-                              />
+                            <div className="flex gap-2 items-center">
+                              {/* Visa Logo */}
+                              <div className="w-12 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
+                                <img
+                                  src={visaLogo.src}
+                                  alt="Visa"
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              {/* Mastercard Logo */}
+                              <div className="w-12 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
+                                <img
+                                  src={mastercardLogo.src}
+                                  alt="Mastercard"
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                              {/* Klarna Logo */}
+                              <div className="w-12 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
+                                <img
+                                  src={klarnaLogo.src}
+                                  alt="Klarna"
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* PayPal Payment Option */}
-                      <div
-                        onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'paypal' }))}
-                        className={`p-6 border cursor-pointer transition-all duration-200 ${
-                          formData.paymentMethod === 'paypal'
+                        {/* PayPal Payment Option */}
+                        <div
+                          onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'paypal' }))}
+                          className={`p-6 border cursor-pointer transition-all duration-200 ${formData.paymentMethod === 'paypal'
                             ? 'border-neutral-900 bg-neutral-50'
                             : 'border-neutral-200/40 bg-white hover:border-neutral-300'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-5">
-                            <input
-                              type="radio"
-                              name="paymentMethod"
-                              value="paypal"
-                              checked={formData.paymentMethod === 'paypal'}
-                              onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as 'stripe' | 'paypal' }))}
-                              className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300"
-                            />
-                            <div>
-                              <p className="text-sm font-light text-neutral-900 tracking-wide">PayPal</p>
-                              <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">Pay with your PayPal account</p>
+                            }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-5">
+                              <input
+                                type="radio"
+                                name="paymentMethod"
+                                value="paypal"
+                                checked={formData.paymentMethod === 'paypal'}
+                                onChange={(e) => setFormData(prev => ({ ...prev, paymentMethod: e.target.value as 'stripe' | 'paypal' }))}
+                                className="h-4 w-4 text-neutral-900 focus:ring-neutral-900 border-neutral-300"
+                              />
+                              <div>
+                                <p className="text-sm font-light text-neutral-900 tracking-wide">PayPal</p>
+                                <p className="text-xs text-neutral-500 font-light mt-1 tracking-wide">Pay with your PayPal account</p>
+                              </div>
                             </div>
-                          </div>
-                          <div className="w-20 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
-                            {/* PayPal Logo - Official */}
-                            <img
-                              src="/paypal-logo-official.jpg"
-                              alt="PayPal Logo"
-                              className="w-full h-full object-contain"
-                            />
+                            <div className="w-16 h-8 flex items-center justify-center bg-white rounded border border-neutral-200/30 p-1">
+                              {/* PayPal Logo */}
+                              <img
+                                src={paypalLogo.src}
+                                alt="PayPal"
+                                className="w-full h-full object-contain"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
                   </div>
                 )}
               </div>
@@ -1466,13 +1512,12 @@ export default function CheckoutPage() {
                   aria-expanded={expandedSections.review}
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                      isPaymentComplete() && isShippingComplete()
-                        ? expandedSections.review 
-                        ? 'bg-amber-100 text-amber-600' 
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isPaymentComplete() && isShippingComplete()
+                      ? expandedSections.review
+                        ? 'bg-amber-100 text-amber-600'
                         : 'bg-green-100 text-green-600'
-                        : 'bg-neutral-100 text-neutral-400'
-                    }`}>
+                      : 'bg-neutral-100 text-neutral-400'
+                      }`}>
                       {isPaymentComplete() && isShippingComplete() && !expandedSections.review ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -1487,10 +1532,10 @@ export default function CheckoutPage() {
                       </h2>
                     </div>
                   </div>
-                  <svg 
+                  <svg
                     className={`w-5 h-5 text-neutral-400 transition-transform ${expandedSections.review ? 'rotate-180' : ''}`}
-                    fill="none" 
-                    stroke="currentColor" 
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1695,220 +1740,218 @@ export default function CheckoutPage() {
 
                   {/* Discount Code - Moved to order summary for better visibility */}
                   <div className="border-b border-neutral-200/30 pb-8 mb-8">
-                      {!appliedDiscount ? (
-                        <div className="space-y-4">
-                          <label htmlFor="discountCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600">
-                            {t('discountCode')}
-                          </label>
-                          <div className="flex gap-3">
-                            <input
-                              type="text"
-                              id="discountCode"
-                              value={discountCode}
-                              onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
-                              placeholder={t('enterCode')}
-                              className="flex-1 px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
-                            />
-                            <button
-                              type="button"
-                              onClick={handleApplyDiscount}
-                              disabled={validatingDiscount || !discountCode.trim()}
-                              className="px-6 py-4 border border-neutral-200/40 text-sm font-light uppercase tracking-[0.15em] text-neutral-900 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                            >
-                              {validatingDiscount ? (
-                                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                              ) : t('apply')}
-                            </button>
-                          </div>
-                          {discountError && (
-                            <p className="text-xs text-red-600 flex items-center gap-1 font-light tracking-wide">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              {discountError}
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between p-5 bg-green-50 border border-green-200/40">
-                          <div>
-                            <p className="text-sm font-light text-green-800 tracking-wide">
-                              {t('discountApplied')}: {appliedDiscount.code}
-                            </p>
-                            <p className="text-xs text-green-600 mt-1.5 font-light tracking-wide">
-                              -{formatPrice(appliedDiscount.amount, 'SEK')}
-                            </p>
-                          </div>
+                    {!appliedDiscount ? (
+                      <div className="space-y-4">
+                        <label htmlFor="discountCode" className="block text-[10px] font-light uppercase tracking-[0.2em] text-neutral-600">
+                          {t('discountCode')}
+                        </label>
+                        <div className="flex gap-3">
+                          <input
+                            type="text"
+                            id="discountCode"
+                            value={discountCode}
+                            onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+                            placeholder={t('enterCode')}
+                            className="flex-1 px-6 py-4 border border-neutral-200/40 bg-white text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 transition-all text-sm font-light tracking-wide"
+                          />
                           <button
                             type="button"
-                            onClick={handleRemoveDiscount}
-                            className="text-xs text-green-600 hover:text-green-800 font-light transition-colors tracking-wide"
+                            onClick={handleApplyDiscount}
+                            disabled={validatingDiscount || !discountCode.trim()}
+                            className="px-6 py-4 border border-neutral-200/40 text-sm font-light uppercase tracking-[0.15em] text-neutral-900 bg-white hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                           >
-                            {t('remove')}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Totals */}
-                  <dl className="space-y-8 text-sm px-10 pb-10">
-                    <div className="flex items-baseline justify-between">
-                      <dt className="text-neutral-600 font-light tracking-wide">{t('subtotalInclVat')}</dt>
-                      <dd className="text-neutral-900 font-light tracking-wide">
-                        {formatPrice(subtotal, 'SEK')}
-                      </dd>
-                    </div>
-                    {appliedDiscount && (
-                      <div className="flex items-baseline justify-between text-green-600">
-                        <dt className="font-light tracking-wide">{t('discount')} ({appliedDiscount.code})</dt>
-                        <dd className="font-light tracking-wide">
-                          -{formatPrice(appliedDiscount.amount, 'SEK')}
-                        </dd>
-                      </div>
-                    )}
-                    {shippingCost !== null ? (
-                      <div className="flex items-baseline justify-between">
-                        <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
-                        <dd className="text-neutral-900 font-light tracking-wide">
-                          {shippingCost === 0 ? (
-                            <span className="text-green-600">{t('free')}</span>
-                          ) : (
-                            formatPrice(shippingCost, 'SEK')
-                          )}
-                        </dd>
-                      </div>
-                    ) : (
-                      <div className="flex items-baseline justify-between">
-                        <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
-                        <dd className="text-neutral-500 text-xs italic font-light tracking-wide">
-                          {calculatingShipping ? (
-                            <span className="flex items-center gap-2">
+                            {validatingDiscount ? (
                               <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                               </svg>
-                              {t('calculatingShipping')}
-                            </span>
-                          ) : formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry
-                            ? t('calculating')
-                            : t('enterAddressToCalculate')
-                          }
-                        </dd>
+                            ) : t('apply')}
+                          </button>
+                        </div>
+                        {discountError && (
+                          <p className="text-xs text-red-600 flex items-center gap-1 font-light tracking-wide">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {discountError}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between p-5 bg-green-50 border border-green-200/40">
+                        <div>
+                          <p className="text-sm font-light text-green-800 tracking-wide">
+                            {t('discountApplied')}: {appliedDiscount.code}
+                          </p>
+                          <p className="text-xs text-green-600 mt-1.5 font-light tracking-wide">
+                            -{formatPrice(appliedDiscount.amount, 'SEK')}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRemoveDiscount}
+                          className="text-xs text-green-600 hover:text-green-800 font-light transition-colors tracking-wide"
+                        >
+                          {t('remove')}
+                        </button>
                       </div>
                     )}
-                    <div className="flex items-baseline justify-between text-xs text-neutral-500 pt-3 border-t border-neutral-200/30 font-light tracking-wide">
-                      <dt>{t('vatIncludedInSubtotal')}</dt>
-                      <dd>{formatPrice(tax, 'SEK')}</dd>
+                  </div>
+                </div>
+
+                {/* Totals */}
+                <dl className="space-y-8 text-sm px-10 pb-10">
+                  <div className="flex items-baseline justify-between">
+                    <dt className="text-neutral-600 font-light tracking-wide">{t('subtotalInclVat')}</dt>
+                    <dd className="text-neutral-900 font-light tracking-wide">
+                      {formatPrice(subtotal, 'SEK')}
+                    </dd>
+                  </div>
+                  {appliedDiscount && (
+                    <div className="flex items-baseline justify-between text-green-600">
+                      <dt className="font-light tracking-wide">{t('discount')} ({appliedDiscount.code})</dt>
+                      <dd className="font-light tracking-wide">
+                        -{formatPrice(appliedDiscount.amount, 'SEK')}
+                      </dd>
                     </div>
-                    <div className="flex items-baseline justify-between text-base font-light border-t border-neutral-200/30 pt-5 mt-5">
-                      <dt className="text-neutral-900 tracking-wide">{tCart('total')}</dt>
-                      <dd className="text-neutral-900 tracking-wide">
-                        {shippingCost !== null ? (
-                          formatPrice(total, 'SEK')
+                  )}
+                  {shippingCost !== null ? (
+                    <div className="flex items-baseline justify-between">
+                      <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
+                      <dd className="text-neutral-900 font-light tracking-wide">
+                        {shippingCost === 0 ? (
+                          <span className="text-green-600">{t('free')}</span>
                         ) : (
-                          <span className="text-neutral-500 text-sm font-light italic">
-                            {formatPrice(subtotal - discountAmount, 'SEK')} + {t('shipping')}
-                          </span>
+                          formatPrice(shippingCost, 'SEK')
                         )}
                       </dd>
                     </div>
-                  </dl>
+                  ) : (
+                    <div className="flex items-baseline justify-between">
+                      <dt className="text-neutral-600 font-light tracking-wide">{tCart('shipping')}</dt>
+                      <dd className="text-neutral-500 text-xs italic font-light tracking-wide">
+                        {calculatingShipping ? (
+                          <span className="flex items-center gap-2">
+                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            {t('calculatingShipping')}
+                          </span>
+                        ) : formData.shippingName && formData.shippingAddressLine1 && formData.shippingCity && formData.shippingPostalCode && formData.shippingCountry
+                          ? t('calculating')
+                          : t('enterAddressToCalculate')
+                        }
+                      </dd>
+                    </div>
+                  )}
+                  <div className="flex items-baseline justify-between text-xs text-neutral-500 pt-3 border-t border-neutral-200/30 font-light tracking-wide">
+                    <dt>{t('vatIncludedInSubtotal')}</dt>
+                    <dd>{formatPrice(tax, 'SEK')}</dd>
+                  </div>
+                  <div className="flex items-baseline justify-between text-base font-light border-t border-neutral-200/30 pt-5 mt-5">
+                    <dt className="text-neutral-900 tracking-wide">{tCart('total')}</dt>
+                    <dd className="text-neutral-900 tracking-wide">
+                      {shippingCost !== null ? (
+                        formatPrice(total, 'SEK')
+                      ) : (
+                        <span className="text-neutral-500 text-sm font-light italic">
+                          {formatPrice(subtotal - discountAmount, 'SEK')} + {t('shipping')}
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                </dl>
 
-                  {/* Trust Badges */}
-                  <div className="mt-10 pt-10 border-t border-neutral-200/30 mx-10 mb-10">
-                    <div className="grid grid-cols-2 gap-6 text-center">
-                      <div className="flex flex-col items-center">
-                        <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-3">
-                          <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                          </svg>
-                        </div>
-                        <p className="text-xs font-light text-neutral-700 tracking-wide">{t('securePayment')}</p>
-                        <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">{t('sslEncrypted')}</p>
+                {/* Trust Badges */}
+                <div className="mt-10 pt-10 border-t border-neutral-200/30 mx-10 mb-10">
+                  <div className="grid grid-cols-2 gap-6 text-center">
+                    <div className="flex flex-col items-center">
+                      <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-3">
+                        <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
                       </div>
-                      <div className="flex flex-col items-center">
-                        <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-3">
-                          <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                          </svg>
-                        </div>
-                        <p className="text-xs font-light text-neutral-700 tracking-wide">{t('moneyBack')}</p>
-                        <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">{t('thirtyDayGuarantee')}</p>
+                      <p className="text-xs font-light text-neutral-700 tracking-wide">{t('securePayment')}</p>
+                      <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">{t('sslEncrypted')}</p>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-3">
+                        <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        </svg>
                       </div>
+                      <p className="text-xs font-light text-neutral-700 tracking-wide">{t('moneyBack')}</p>
+                      <p className="text-[10px] text-neutral-500 mt-1 font-light tracking-wide">{t('thirtyDayGuarantee')}</p>
                     </div>
                   </div>
-
                 </div>
+
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Notification Banner */}
-          {notification && (
-            <div 
-              data-error-section
-              className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 rounded-lg shadow-lg p-4 backdrop-blur-sm transition-all duration-300 ${
-                notification.type === 'error' 
-                  ? 'bg-red-50/95 border border-red-200/50' 
-                  : 'bg-green-50/95 border border-green-200/50'
+        {/* Notification Banner */}
+        {notification && (
+          <div
+            data-error-section
+            className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 max-w-md w-full mx-4 rounded-lg shadow-lg p-4 backdrop-blur-sm transition-all duration-300 ${notification.type === 'error'
+              ? 'bg-red-50/95 border border-red-200/50'
+              : 'bg-green-50/95 border border-green-200/50'
               }`}
-              role="alert"
-              aria-live="assertive"
-            >
-              <div className={`flex items-center gap-3 text-sm ${
-                notification.type === 'error' ? 'text-red-800' : 'text-green-800'
+            role="alert"
+            aria-live="assertive"
+          >
+            <div className={`flex items-center gap-3 text-sm ${notification.type === 'error' ? 'text-red-800' : 'text-green-800'
               }`}>
-                {notification.type === 'error' ? (
-                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                ) : (
-                  <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-                <p className="font-light">{notification.message}</p>
-                <button
-                  onClick={() => setNotification(null)}
-                  className="ml-auto text-current opacity-60 hover:opacity-100 transition-opacity"
-                  aria-label="Close notification"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {error && !notification && (
-            <div 
-              data-error-section
-              className="rounded-xl bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm"
-              role="alert"
-              aria-live="assertive"
-            >
-              <div className="flex items-center gap-2 text-sm text-red-800">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {notification.type === 'error' ? (
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {error}
-              </div>
+              ) : (
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+              <p className="font-light">{notification.message}</p>
+              <button
+                onClick={() => setNotification(null)}
+                className="ml-auto text-current opacity-60 hover:opacity-100 transition-opacity"
+                aria-label="Close notification"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          )}
+          </div>
+        )}
+
+        {error && !notification && (
+          <div
+            data-error-section
+            className="rounded-xl bg-red-50/50 border border-red-200/50 p-4 backdrop-blur-sm"
+            role="alert"
+            aria-live="assertive"
+          >
+            <div className="flex items-center gap-2 text-sm text-red-800">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              {error}
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );
 }
 
 // Stripe Payment Wrapper Component
-function StripePaymentWrapper({ clientSecret, onSuccess, onError, disabled }: { 
-  clientSecret: string; 
-  onSuccess: (id: string) => void; 
+function StripePaymentWrapper({ clientSecret, onSuccess, onError, disabled }: {
+  clientSecret: string;
+  onSuccess: (id: string) => void;
   onError: (error: string) => void;
   disabled?: boolean;
 }) {
@@ -1955,9 +1998,9 @@ function StripePaymentWrapper({ clientSecret, onSuccess, onError, disabled }: {
 }
 
 // PayPal Payment Wrapper Component
-function PayPalPaymentWrapper({ orderId, onSuccess, onError, disabled, total }: { 
-  orderId: string; 
-  onSuccess: (id: string) => void; 
+function PayPalPaymentWrapper({ orderId, onSuccess, onError, disabled, total }: {
+  orderId: string;
+  onSuccess: (id: string) => void;
   onError: (error: string) => void;
   disabled?: boolean;
   total: number;

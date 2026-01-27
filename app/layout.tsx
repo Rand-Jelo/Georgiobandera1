@@ -1,4 +1,5 @@
 // This is the root layout that redirects to the locale-based layout
+import React from 'react';
 import { redirect } from 'next/navigation';
 import { routing } from '@/lib/i18n/routing';
 

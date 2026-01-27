@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     let updated = 0;
 
     switch (action) {
-      case 'delete':
+      case 'delete': {
         // Soft delete by setting status to archived
         const deleteResult = await executeDB(
           db,
@@ -56,8 +56,9 @@ export async function POST(request: NextRequest) {
         );
         updated = deleteResult.meta?.changes || 0;
         break;
+      }
 
-      case 'status':
+      case 'status': {
         if (!value || typeof value !== 'string') {
           return NextResponse.json(
             { error: 'Status value is required' },
@@ -77,8 +78,9 @@ export async function POST(request: NextRequest) {
         );
         updated = statusResult.meta?.changes || 0;
         break;
+      }
 
-      case 'category':
+      case 'category': {
         // value can be null to remove category
         const categoryResult = await executeDB(
           db,
@@ -87,8 +89,9 @@ export async function POST(request: NextRequest) {
         );
         updated = categoryResult.meta?.changes || 0;
         break;
+      }
 
-      case 'featured':
+      case 'featured': {
         if (typeof value !== 'boolean') {
           return NextResponse.json(
             { error: 'Featured value must be a boolean' },
@@ -102,6 +105,7 @@ export async function POST(request: NextRequest) {
         );
         updated = featuredResult.meta?.changes || 0;
         break;
+      }
 
       default:
         return NextResponse.json(

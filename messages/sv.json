@@ -157,9 +157,12 @@
     "cityPlaceholder": "Stad",
     "postalCode": "Postnummer",
     "postalCodePlaceholder": "12345",
+    "invalidPostalCodeFormat": "Ogiltigt postnummerformat för {country}",
+    "postalCodeRequired": "Postnummer krävs",
     "country": "Land",
     "selectCountry": "Välj ett land",
     "phone": "Telefon",
+    "phonePlaceholder": "070 123 45 67",
     "optional": "Valfritt",
     "shippingRegion": "Fraktregion",
     "basePrice": "Grundpris",
@@ -1714,4 +1717,3 @@
     "failedToDeleteImage": "Misslyckades med att ta bort bild"
   }
 }
-

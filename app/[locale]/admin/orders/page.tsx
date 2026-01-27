@@ -88,7 +88,7 @@ export default function AdminOrdersPage() {
     if (isAdmin) {
       fetchOrders();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [statusFilter, isAdmin]);
 
   if (!isAdmin || loading) {

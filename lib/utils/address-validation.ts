@@ -11,7 +11,7 @@ export interface AddressValidationResult {
 /**
  * Validate postal code format based on country
  */
-export function validatePostalCode(postalCode: string, country: string): AddressValidationResult {
+export function validatePostalCode(postalCode: string, country: string, t?: (key: string, params?: any) => string): AddressValidationResult {
   const errors: string[] = [];
   const trimmedCode = postalCode.trim().replace(/\s+/g, '');
 
@@ -29,13 +29,17 @@ export function validatePostalCode(postalCode: string, country: string): Address
   };
 
   if (!trimmedCode) {
-    errors.push('Postal code is required');
+    const errorMsg = t ? t('postalCodeRequired') : 'Postal code is required';
+    errors.push(errorMsg);
     return { valid: false, errors };
   }
 
   const pattern = patterns[country];
   if (pattern && !pattern.test(trimmedCode)) {
-    errors.push(`Invalid postal code format for ${country}`);
+    const errorMsg = t
+      ? t('invalidPostalCodeFormat', { country })
+      : `Invalid postal code format for ${country}`;
+    errors.push(errorMsg);
     return { valid: false, errors };
   }
 

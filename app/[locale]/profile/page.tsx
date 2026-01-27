@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import * as React from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/lib/i18n/routing';
@@ -107,7 +108,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setUpdating(true);
     setError('');
@@ -163,7 +164,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: FormEvent) => {
     e.preventDefault();
     setChangingPassword(true);
     setPasswordError('');
@@ -209,7 +210,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleAddressSubmit = async (e: React.FormEvent) => {
+  const handleAddressSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSavingAddress(true);
     setAddressError('');
@@ -365,7 +366,7 @@ export default function ProfilePage() {
               </Link>
             )}
           </div>
-          
+
           {/* Quick Links */}
           <div className="flex items-center gap-8 pt-6 border-t border-white/10">
             <Link
@@ -398,31 +399,28 @@ export default function ProfilePage() {
             <nav className="sticky top-8 space-y-2">
               <button
                 onClick={() => setActiveSection('profile')}
-                className={`w-full text-left px-4 py-3 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 ${
-                  activeSection === 'profile'
-                    ? 'text-neutral-900 border-l-2 border-neutral-900'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
+                className={`w-full text-left px-4 py-3 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 ${activeSection === 'profile'
+                  ? 'text-neutral-900 border-l-2 border-neutral-900'
+                  : 'text-neutral-400 hover:text-neutral-600'
+                  }`}
               >
                 {t('personalInfo')}
               </button>
               <button
                 onClick={() => setActiveSection('password')}
-                className={`w-full text-left px-4 py-3 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 ${
-                  activeSection === 'password'
-                    ? 'text-neutral-900 border-l-2 border-neutral-900'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
+                className={`w-full text-left px-4 py-3 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 ${activeSection === 'password'
+                  ? 'text-neutral-900 border-l-2 border-neutral-900'
+                  : 'text-neutral-400 hover:text-neutral-600'
+                  }`}
               >
                 {t('changePassword') || 'Change Password'}
               </button>
               <button
                 onClick={() => setActiveSection('addresses')}
-                className={`w-full text-left px-4 py-3 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 ${
-                  activeSection === 'addresses'
-                    ? 'text-neutral-900 border-l-2 border-neutral-900'
-                    : 'text-neutral-400 hover:text-neutral-600'
-                }`}
+                className={`w-full text-left px-4 py-3 text-xs font-light uppercase tracking-[0.2em] transition-all duration-300 ${activeSection === 'addresses'
+                  ? 'text-neutral-900 border-l-2 border-neutral-900'
+                  : 'text-neutral-400 hover:text-neutral-600'
+                  }`}
               >
                 {t('savedAddresses') || 'Saved Addresses'}
               </button>

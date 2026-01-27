@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import type { StoreSettings } from '@/lib/db/queries/settings';

@@ -96,7 +96,7 @@ export default function AdminDiscountCodesPage() {
     if (isAdmin) {
       fetchCodes();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [activeFilter, isAdmin]);
 
   const handleDelete = async (codeId: string) => {

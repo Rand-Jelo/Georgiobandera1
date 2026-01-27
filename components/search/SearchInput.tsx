@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -32,7 +34,7 @@ export default function SearchInput({ className = '' }: SearchInputProps) {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounced search
   const performSearch = useCallback(async (searchQuery: string) => {
@@ -95,7 +97,7 @@ export default function SearchInput({ className = '' }: SearchInputProps) {
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setSelectedIndex((prev) => 
+        setSelectedIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : prev
         );
         break;
@@ -212,9 +214,8 @@ export default function SearchInput({ className = '' }: SearchInputProps) {
                 setShowSuggestions(false);
                 setQuery('');
               }}
-              className={`flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors ${
-                index === selectedIndex ? 'bg-neutral-50' : ''
-              } ${index !== suggestions.length - 1 ? 'border-b border-neutral-100' : ''}`}
+              className={`flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors ${index === selectedIndex ? 'bg-neutral-50' : ''
+                } ${index !== suggestions.length - 1 ? 'border-b border-neutral-100' : ''}`}
             >
               {suggestion.image ? (
                 <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-neutral-100">

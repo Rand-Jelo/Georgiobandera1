@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { resend, emailConfig, isEmailConfigured } from './index';
 import { VerificationEmail } from './templates/verification-email';
 import { PasswordResetEmail } from './templates/password-reset-email';
@@ -42,8 +43,8 @@ export async function sendVerificationEmail({
     const { data, error } = await resend.emails.send({
       from: emailConfig.from.noreply,
       to,
-      subject: locale === 'sv' 
-        ? 'Verifiera din e-postadress - Georgio Bandera' 
+      subject: locale === 'sv'
+        ? 'Verifiera din e-postadress - Georgio Bandera'
         : 'Verify your email address - Georgio Bandera',
       html,
     });
@@ -88,8 +89,8 @@ export async function sendPasswordResetEmail({
     const { data, error } = await resend.emails.send({
       from: emailConfig.from.noreply,
       to,
-      subject: locale === 'sv' 
-        ? 'Återställ ditt lösenord - Georgio Bandera' 
+      subject: locale === 'sv'
+        ? 'Återställ ditt lösenord - Georgio Bandera'
         : 'Reset your password - Georgio Bandera',
       html,
     });
@@ -133,8 +134,8 @@ export async function sendWelcomeEmail({
       from: emailConfig.from.info,
       replyTo: emailConfig.replyTo.info,
       to,
-      subject: locale === 'sv' 
-        ? 'Välkommen till Georgio Bandera!' 
+      subject: locale === 'sv'
+        ? 'Välkommen till Georgio Bandera!'
         : 'Welcome to Georgio Bandera!',
       html,
     });
@@ -226,8 +227,8 @@ export async function sendOrderConfirmationEmail({
       from: emailConfig.from.order,
       replyTo: emailConfig.replyTo.order,
       to,
-      subject: locale === 'sv' 
-        ? `Orderbekräftelse - Order ${orderNumber}` 
+      subject: locale === 'sv'
+        ? `Orderbekräftelse - Order ${orderNumber}`
         : `Order Confirmation - Order ${orderNumber}`,
       html,
     });
@@ -294,8 +295,8 @@ export async function sendDeliveryNotificationEmail({
       from: emailConfig.from.order,
       replyTo: emailConfig.replyTo.order,
       to,
-      subject: locale === 'sv' 
-        ? `Din beställning ${orderNumber} är på väg!` 
+      subject: locale === 'sv'
+        ? `Din beställning ${orderNumber} är på väg!`
         : `Your order ${orderNumber} is on its way!`,
       html,
     });
@@ -343,8 +344,8 @@ export async function sendContactConfirmationEmail({
       from: emailConfig.from.info,
       replyTo: emailConfig.replyTo.info,
       to,
-      subject: locale === 'sv' 
-        ? 'Vi har mottagit ditt meddelande - Georgio Bandera' 
+      subject: locale === 'sv'
+        ? 'Vi har mottagit ditt meddelande - Georgio Bandera'
         : 'We have received your message - Georgio Bandera',
       html,
     });
@@ -403,7 +404,7 @@ export async function sendAdminReplyEmail({
       from: emailConfig.from.info,
       replyTo: emailConfig.replyTo.info,
       to,
-      subject: locale === 'sv' 
+      subject: locale === 'sv'
         ? `Svar på ditt meddelande${originalSubject ? `: ${originalSubject}` : ''} - Georgio Bandera`
         : `Reply to your message${originalSubject ? `: ${originalSubject}` : ''} - Georgio Bandera`,
       html,
