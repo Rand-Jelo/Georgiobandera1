@@ -4,6 +4,7 @@ import * as React from 'react';
 
 import { useState, useEffect } from 'react';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { useLocale } from 'next-intl';
 
 interface StripePaymentProps {
   clientSecret: string;
@@ -27,6 +28,7 @@ import { useTranslations } from 'next-intl';
 
 export default function StripePayment({ clientSecret, onSuccess, onError, disabled, shippingDetails }: StripePaymentProps) {
   const t = useTranslations('checkout');
+  const locale = useLocale();
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -49,11 +51,14 @@ export default function StripePayment({ clientSecret, onSuccess, onError, disabl
       return;
     }
 
+    // Build return URL with locale for redirect-based payments (Klarna, etc.)
+    const returnUrl = `${window.location.origin}/${locale}/orders/success`;
+
     const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
       elements,
       clientSecret,
       confirmParams: {
-        return_url: `${window.location.origin}/orders/success`,
+        return_url: returnUrl,
         shipping: {
           name: shippingDetails.name,
           address: {
@@ -73,8 +78,20 @@ export default function StripePayment({ clientSecret, onSuccess, onError, disabl
       setError(confirmError.message || t('paymentFailed'));
       onError(confirmError.message || t('paymentFailed'));
       setProcessing(false);
-    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      onSuccess(paymentIntent.id);
+    } else if (paymentIntent) {
+      // Handle various payment intent statuses
+      if (paymentIntent.status === 'succeeded') {
+        onSuccess(paymentIntent.id);
+      } else if (paymentIntent.status === 'requires_action' || paymentIntent.status === 'processing') {
+        // Payment requires redirect (Klarna, etc.) or is processing
+        // The redirect will happen automatically, user will return to success page
+        // Don't show error, the redirect handles it
+        console.log('Payment requires action/redirect, status:', paymentIntent.status);
+      } else {
+        setError(t('paymentProcessingFailed'));
+        onError(t('paymentProcessingFailed'));
+        setProcessing(false);
+      }
     } else {
       setError(t('paymentProcessingFailed'));
       onError(t('paymentProcessingFailed'));
