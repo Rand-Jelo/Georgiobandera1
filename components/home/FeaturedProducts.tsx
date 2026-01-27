@@ -71,123 +71,124 @@ export default function FeaturedProducts({ products, loading }: FeaturedProducts
     );
   }
 
-  <section className="relative bg-white py-12 sm:py-16 md:py-20 lg:py-24 overflow-hidden">
-    {/* Subtle background texture */}
-    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,0,0,0.01)_0%,_transparent_50%)]" />
+  return (
+    <section className="relative bg-white py-12 sm:py-16 md:py-20 lg:py-24 overflow-hidden">
+      {/* Subtle background texture */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(0,0,0,0.01)_0%,_transparent_50%)]" />
 
-    <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
-      {/* Section header with elegant styling */}
-      <div className="mb-10 text-center sm:mb-12 md:mb-16">
-        <div className="inline-block">
-          <p className="text-[9px] font-light uppercase tracking-[0.4em] text-neutral-500 sm:text-[10px]">
-            {t('featuredProducts')}
-          </p>
-          <div className="mt-2 h-px w-16 bg-gradient-to-r from-transparent via-amber-500/60 to-transparent mx-auto sm:mt-3 sm:w-20" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6">
+        {/* Section header with elegant styling */}
+        <div className="mb-10 text-center sm:mb-12 md:mb-16">
+          <div className="inline-block">
+            <p className="text-[9px] font-light uppercase tracking-[0.4em] text-neutral-500 sm:text-[10px]">
+              {t('featuredProducts')}
+            </p>
+            <div className="mt-2 h-px w-16 bg-gradient-to-r from-transparent via-amber-500/60 to-transparent mx-auto sm:mt-3 sm:w-20" />
+          </div>
+          <h2 className="mt-4 text-2xl font-light tracking-wide text-neutral-900 sm:mt-6 sm:text-3xl md:text-4xl">
+            Signature Collection
+          </h2>
         </div>
-        <h2 className="mt-4 text-2xl font-light tracking-wide text-neutral-900 sm:mt-6 sm:text-3xl md:text-4xl">
-          Signature Collection
-        </h2>
-      </div>
 
-      {/* Premium product carousel */}
-      {/* Mobile: Grid/Stack (Vertical), Desktop: Flex (Horizontal Scroll) */}
-      <div
-        className="
+        {/* Premium product carousel */}
+        {/* Mobile: Grid/Stack (Vertical), Desktop: Flex (Horizontal Scroll) */}
+        <div
+          className="
             flex flex-col gap-6 
             md:flex-row md:overflow-x-auto md:snap-x md:snap-mandatory md:pb-12 md:-mx-6 md:px-6 
             scrollbar-hide
           "
-      >
-        {products.map((product, index) => {
-          const name = locale === 'sv' ? product.name_sv : product.name_en;
-          const categoryName = product.category
-            ? (locale === 'sv' ? product.category.name_sv : product.category.name_en)
-            : 'Product';
-          const imageUrl = product.images?.[0]?.url;
-          const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
+        >
+          {products.map((product, index) => {
+            const name = locale === 'sv' ? product.name_sv : product.name_en;
+            const categoryName = product.category
+              ? (locale === 'sv' ? product.category.name_sv : product.category.name_en)
+              : 'Product';
+            const imageUrl = product.images?.[0]?.url;
+            const hasDiscount = product.compare_at_price && product.compare_at_price > product.price;
 
-          // Hide items beyond the first 3 on mobile only
-          // On desktop/tablet (md+), show all items in the carousel
-          const styles = index >= 3 ? 'hidden md:flex' : 'flex';
+            // Hide items beyond the first 3 on mobile only
+            // On desktop/tablet (md+), show all items in the carousel
+            const styles = index >= 3 ? 'hidden md:flex' : 'flex';
 
-          return (
-            <Link
-              key={product.id}
-              href={`/products/${product.slug}`}
-              className={`
+            return (
+              <Link
+                key={product.id}
+                href={`/products/${product.slug}`}
+                className={`
                   ${styles} group relative flex-col bg-white border border-neutral-200/50 
                   transition-all duration-500 ease-out 
                   hover:border-amber-500/30 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]
                   md:min-w-[320px] md:snap-center md:flex-shrink-0
                 `}
-            >
-              {/* Image container with premium styling */}
-              <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 w-full">
-                {imageUrl ? (
-                  <Image
-                    src={imageUrl}
-                    alt={name}
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 320px"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 to-neutral-300" />
-                )}
-
-                {/* Overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-
-                {/* Discount badge */}
-                {hasDiscount && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <div className="bg-amber-500/95 backdrop-blur-sm px-3 py-1.5">
-                      <p className="text-[10px] font-medium uppercase tracking-wider text-white">
-                        Sale
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Product info with refined typography */}
-              <div className="flex flex-1 flex-col p-4 md:p-6 text-center">
-                <p className="text-[9px] font-light uppercase tracking-[0.3em] text-neutral-400 mb-2 sm:text-[10px]">
-                  {categoryName}
-                </p>
-                <h3 className="mb-2 text-sm font-light tracking-wide text-neutral-900 group-hover:text-amber-600 transition-colors duration-300 sm:mb-3 sm:text-base">
-                  {name}
-                </h3>
-
-                {/* Price with elegant styling */}
-                <div className="mt-auto flex items-baseline justify-center gap-2">
-                  {hasDiscount ? (
-                    <>
-                      <span className="text-base font-light text-neutral-900 sm:text-lg">
-                        {formatPrice(product.price, 'SEK')}
-                      </span>
-                      <span className="text-xs font-light text-neutral-400 line-through sm:text-sm">
-                        {formatPrice(product.compare_at_price!, 'SEK')}
-                      </span>
-                    </>
+              >
+                {/* Image container with premium styling */}
+                <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 w-full">
+                  {imageUrl ? (
+                    <Image
+                      src={imageUrl}
+                      alt={name}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 320px"
+                    />
                   ) : (
-                    <span className="text-base font-light text-neutral-900 sm:text-lg">
-                      {formatPrice(product.price, 'SEK')}
-                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-br from-neutral-200 to-neutral-300" />
+                  )}
+
+                  {/* Overlay on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+                  {/* Discount badge */}
+                  {hasDiscount && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="bg-amber-500/95 backdrop-blur-sm px-3 py-1.5">
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-white">
+                          Sale
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                {/* Subtle hover indicator */}
-                <div className="mt-4 h-px w-0 bg-gradient-to-r from-transparent via-amber-500 to-transparent transition-all duration-500 group-hover:w-full mx-auto opacity-50" />
-              </div>
-            </Link>
-          );
-        })}
-        {/* Spacer for end of carousel */}
-        <div className="hidden md:block w-6 flex-shrink-0" />
+                {/* Product info with refined typography */}
+                <div className="flex flex-1 flex-col p-4 md:p-6 text-center">
+                  <p className="text-[9px] font-light uppercase tracking-[0.3em] text-neutral-400 mb-2 sm:text-[10px]">
+                    {categoryName}
+                  </p>
+                  <h3 className="mb-2 text-sm font-light tracking-wide text-neutral-900 group-hover:text-amber-600 transition-colors duration-300 sm:mb-3 sm:text-base">
+                    {name}
+                  </h3>
+
+                  {/* Price with elegant styling */}
+                  <div className="mt-auto flex items-baseline justify-center gap-2">
+                    {hasDiscount ? (
+                      <>
+                        <span className="text-base font-light text-neutral-900 sm:text-lg">
+                          {formatPrice(product.price, 'SEK')}
+                        </span>
+                        <span className="text-xs font-light text-neutral-400 line-through sm:text-sm">
+                          {formatPrice(product.compare_at_price!, 'SEK')}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-base font-light text-neutral-900 sm:text-lg">
+                        {formatPrice(product.price, 'SEK')}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Subtle hover indicator */}
+                  <div className="mt-4 h-px w-0 bg-gradient-to-r from-transparent via-amber-500 to-transparent transition-all duration-500 group-hover:w-full mx-auto opacity-50" />
+                </div>
+              </Link>
+            );
+          })}
+          {/* Spacer for end of carousel */}
+          <div className="hidden md:block w-6 flex-shrink-0" />
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
   );
 }
 
