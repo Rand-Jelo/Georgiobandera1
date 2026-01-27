@@ -30,7 +30,7 @@ export default function OrderSuccessPage() {
                     body: JSON.stringify({ paymentIntentId }),
                 });
 
-                const data = await response.json();
+                const data = await response.json() as { orderNumber?: string; error?: string };
 
                 if (response.ok && data.orderNumber) {
                     setStatus('success');
