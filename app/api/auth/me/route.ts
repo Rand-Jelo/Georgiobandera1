@@ -22,10 +22,10 @@ export async function GET() {
       );
     }
 
-    // Add caching headers - user info can change, cache for 30 seconds
+    // Disable caching to ensure accurate auth state
     const headers = new Headers();
-    headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60');
-    
+    headers.set('Cache-Control', 'no-store, max-age=0');
+
     return NextResponse.json({
       user: {
         id: user.id,

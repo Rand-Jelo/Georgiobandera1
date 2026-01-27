@@ -41,12 +41,32 @@ export default function UserMenu({ trigger }: UserMenuProps = {}) {
 
   useEffect(() => {
     checkAuth();
+
+    // Listen for login/logout events
+    const handleUserUpdate = () => checkAuth();
+    window.addEventListener('user-updated', handleUserUpdate);
+
+    // Re-check when tab becomes visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) checkAuth();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('user-updated', handleUserUpdate);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/me', {
+      // Add timestamp to prevent caching
+      const response = await fetch(`/api/auth/me?t=${Date.now()}`, {
         credentials: 'include',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
       });
       if (response.ok) {
         const data = await response.json() as { user?: User };
@@ -84,7 +104,7 @@ export default function UserMenu({ trigger }: UserMenuProps = {}) {
     return (
       <div className="relative">
         {trigger ? (
-          <div 
+          <div
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -160,8 +180,8 @@ export default function UserMenu({ trigger }: UserMenuProps = {}) {
   // If trigger provided but not logged in, wrap it in a link
   if (trigger) {
     return (
-      <Link 
-        href="/login" 
+      <Link
+        href="/login"
         className="flex h-7 w-7 items-center justify-center rounded-full border border-white/20 hover:bg-white hover:text-black transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-105"
         aria-label="My account"
       >

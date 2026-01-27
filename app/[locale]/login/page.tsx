@@ -45,6 +45,8 @@ export default function LoginPage() {
         // Redirect to profile or home
         // Trigger cart count refresh to reflect merged cart
         window.dispatchEvent(new Event('cart-updated'));
+        // Trigger user menu refresh
+        window.dispatchEvent(new Event('user-updated'));
         router.push('/profile');
         router.refresh();
       }
