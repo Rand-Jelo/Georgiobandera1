@@ -14,7 +14,7 @@ import { getShippingRegionById, calculateShippingCost } from '@/lib/db/queries/s
 const createIntentSchema = z.object({
   shippingRegionId: z.string().optional(),
   discountCode: z.string().nullable().optional(),
-  email: z.string().email().optional(),
+  email: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
