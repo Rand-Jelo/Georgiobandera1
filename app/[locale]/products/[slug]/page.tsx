@@ -79,15 +79,26 @@ export default function ProductPage() {
 
   // Derived selected variant
   const selectedVariant = product?.variants.find(v => {
+    // Determine if options are required (more than 1 distinct value exists)
+    // We check the PRODUCT global state, not just this variant
+    const hasOption1 = product.variants.some(pv => pv.option1_value);
+    const hasOption2 = product.variants.some(pv => pv.option2_value);
+
     // Check Option 1
     const v1 = v.option1_value;
     const s1 = selectedOption1;
-    const match1 = format(v1) === format(s1) || (!v1 && !s1);
+    // Match if values match OR (variant has no option1 AND user selected nothing)
+    // CRITICAL: If attributes exist on the product, user MUST select them to get a specific variant
+    const match1 = hasOption1
+      ? format(v1) === format(s1)
+      : true;
 
     // Check Option 2
     const v2 = v.option2_value;
     const s2 = selectedOption2;
-    const match2 = format(v2) === format(s2) || (!v2 && !s2);
+    const match2 = hasOption2
+      ? format(v2) === format(s2)
+      : true;
 
     return match1 && match2;
   }) || null;

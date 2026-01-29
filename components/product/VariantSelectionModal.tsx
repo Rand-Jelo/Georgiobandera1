@@ -99,15 +99,24 @@ export default function VariantSelectionModal({
 
     // Derived selected variant
     const selectedVariant = product?.variants.find(v => {
+        // Robust matching helper
+        const format = (val: string | null | undefined) => val ? String(val).trim() : '';
+
+        // Check if options are globally required
+        const hasOption1 = product.variants.some(pv => pv.option1_value);
+        const hasOption2 = product.variants.some(pv => pv.option2_value);
+
         const v1 = v.option1_value;
         const s1 = selectedOption1;
-        // Robust matching: check for nulls, then trim strings
-        const format = (val: string | null | undefined) => val ? String(val).trim() : '';
-        const match1 = format(v1) === format(s1) || (!v1 && !s1);
+        const match1 = hasOption1
+            ? format(v1) === format(s1)
+            : true;
 
         const v2 = v.option2_value;
         const s2 = selectedOption2;
-        const match2 = format(v2) === format(s2) || (!v2 && !s2);
+        const match2 = hasOption2
+            ? format(v2) === format(s2)
+            : true;
 
         return match1 && match2;
     }) || null;
@@ -294,7 +303,7 @@ export default function VariantSelectionModal({
                                 </div>
                             </div>
 
-                            {/* Option 1 Selection (e.g., Size) */}
+                            {/* Option 1 Selection */}
                             {option1 && (
                                 <div className="mb-6">
                                     <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-3">
@@ -302,15 +311,25 @@ export default function VariantSelectionModal({
                                     </label>
                                     <div className="flex flex-wrap gap-2">
                                         {option1.values.map((value) => {
-                                            const isSelected = selectedOption1 === value;
+                                            const format = (v: any) => v ? String(v).trim() : '';
+                                            const isSelected = format(selectedOption1) === format(value);
+
+                                            // Compatibility Check
+                                            const hasOption2 = product.variants.some(pv => pv.option2_value);
+                                            const isCompatible = product.variants.some(v =>
+                                                format(v.option1_value) === format(value) &&
+                                                (!hasOption2 || !selectedOption2 || format(v.option2_value) === format(selectedOption2))
+                                            );
+
                                             return (
                                                 <button
                                                     key={value}
                                                     onClick={() => setSelectedOption1(value)}
+                                                    disabled={!isCompatible}
                                                     className={`px-4 py-2.5 text-xs font-light uppercase tracking-wide border transition-all duration-200 ${isSelected
                                                         ? 'bg-neutral-900 text-white border-neutral-900'
                                                         : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-400'
-                                                        }`}
+                                                        } ${!isCompatible ? 'opacity-40 cursor-not-allowed decoration-slice' : ''}`}
                                                 >
                                                     {value}
                                                 </button>
@@ -320,7 +339,7 @@ export default function VariantSelectionModal({
                                 </div>
                             )}
 
-                            {/* Option 2 Selection (e.g., Color) */}
+                            {/* Option 2 Selection */}
                             {option2 && (
                                 <div className="mb-6">
                                     <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-3">
@@ -328,15 +347,25 @@ export default function VariantSelectionModal({
                                     </label>
                                     <div className="flex flex-wrap gap-2">
                                         {option2.values.map((value) => {
-                                            const isSelected = selectedOption2 === value;
+                                            const format = (v: any) => v ? String(v).trim() : '';
+                                            const isSelected = format(selectedOption2) === format(value);
+
+                                            // Compatibility Check
+                                            const hasOption1 = product.variants.some(pv => pv.option1_value);
+                                            const isCompatible = product.variants.some(v =>
+                                                format(v.option2_value) === format(value) &&
+                                                (!hasOption1 || !selectedOption1 || format(v.option1_value) === format(selectedOption1))
+                                            );
+
                                             return (
                                                 <button
                                                     key={value}
                                                     onClick={() => setSelectedOption2(value)}
+                                                    disabled={!isCompatible}
                                                     className={`px-4 py-2.5 text-xs font-light uppercase tracking-wide border transition-all duration-200 ${isSelected
                                                         ? 'bg-neutral-900 text-white border-neutral-900'
                                                         : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-400'
-                                                        }`}
+                                                        } ${!isCompatible ? 'opacity-40 cursor-not-allowed' : ''}`}
                                                 >
                                                     {value}
                                                 </button>
