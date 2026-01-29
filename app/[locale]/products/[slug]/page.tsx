@@ -75,7 +75,7 @@ export default function ProductPage() {
   const [selectedOption2, setSelectedOption2] = useState<string | null>(null);
 
   // Robust string normalization helper
-  const format = (val: string | null | undefined) => val ? String(val).trim() : '';
+  const format = (val: string | null | undefined) => val ? String(val).trim().toLowerCase() : '';
 
   // Derived selected variant
   const selectedVariant = product?.variants.find(v => {
@@ -799,14 +799,14 @@ export default function ProductPage() {
                         // Use Buttons for few options
                         <div className="flex flex-wrap gap-2">
                           {uniqueOption1Values.map((value) => {
-                            const isSelected = selectedOption1 === value;
+                            const isSelected = format(selectedOption1) === format(value);
                             // Check if this option is valid with current selection of other option
                             const variant = product.variants.find(v =>
-                              v.option1_value === value &&
-                              (!selectedOption2 || !v.option2_value || v.option2_value === selectedOption2)
+                              format(v.option1_value) === format(value) &&
+                              (!selectedOption2 || !v.option2_value || format(v.option2_value) === format(selectedOption2))
                             );
                             // Fallback check: is there ANY variant with this value?
-                            const existsAtAll = product.variants.some(v => v.option1_value === value);
+                            const existsAtAll = product.variants.some(v => format(v.option1_value) === format(value));
                             const inStock = variant && (!variant.track_inventory || variant.stock_quantity > 0);
 
                             return (
@@ -838,12 +838,12 @@ export default function ProductPage() {
                         {uniqueOption2Values.map((value) => {
                           const isHex = value.startsWith('#');
                           const hexColor = isHex ? value : '#000000'; // Default if not hex
-                          const isSelected = selectedOption2 === value;
+                          const isSelected = format(selectedOption2) === format(value);
 
                           // Check compatibility with selectedOption1
                           const variant = product.variants.find(v =>
-                            v.option2_value === value &&
-                            (!selectedOption1 || !v.option1_value || v.option1_value === selectedOption1)
+                            format(v.option2_value) === format(value) &&
+                            (!selectedOption1 || !v.option1_value || format(v.option1_value) === format(selectedOption1))
                           );
                           const existsAtAll = product.variants.some(v => v.option2_value === value);
                           const inStock = variant && (!variant.track_inventory || variant.stock_quantity > 0);

@@ -100,7 +100,7 @@ export default function VariantSelectionModal({
     // Derived selected variant
     const selectedVariant = product?.variants.find(v => {
         // Robust matching helper
-        const format = (val: string | null | undefined) => val ? String(val).trim() : '';
+        const format = (val: string | null | undefined) => val ? String(val).trim().toLowerCase() : '';
 
         // Check if options are globally required
         const hasOption1 = product.variants.some(pv => pv.option1_value);
@@ -311,7 +311,7 @@ export default function VariantSelectionModal({
                                     </label>
                                     <div className="flex flex-wrap gap-2">
                                         {option1.values.map((value) => {
-                                            const format = (v: any) => v ? String(v).trim() : '';
+                                            const format = (v: any) => v ? String(v).trim().toLowerCase() : '';
                                             const isSelected = format(selectedOption1) === format(value);
 
                                             // Compatibility Check
@@ -347,7 +347,7 @@ export default function VariantSelectionModal({
                                     </label>
                                     <div className="flex flex-wrap gap-2">
                                         {option2.values.map((value) => {
-                                            const format = (v: any) => v ? String(v).trim() : '';
+                                            const format = (v: any) => v ? String(v).trim().toLowerCase() : '';
                                             const isSelected = format(selectedOption2) === format(value);
 
                                             // Compatibility Check
