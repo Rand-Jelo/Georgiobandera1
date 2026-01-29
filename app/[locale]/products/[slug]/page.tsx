@@ -74,13 +74,14 @@ export default function ProductPage() {
   const [selectedOption1, setSelectedOption1] = useState<string | null>(null);
   const [selectedOption2, setSelectedOption2] = useState<string | null>(null);
 
+  // Robust string normalization helper
+  const format = (val: string | null | undefined) => val ? String(val).trim() : '';
+
   // Derived selected variant
   const selectedVariant = product?.variants.find(v => {
     // Check Option 1
     const v1 = v.option1_value;
     const s1 = selectedOption1;
-    // Robust matching: check for nulls, then trim strings
-    const format = (val: string | null | undefined) => val ? String(val).trim() : '';
     const match1 = format(v1) === format(s1) || (!v1 && !s1);
 
     // Check Option 2
