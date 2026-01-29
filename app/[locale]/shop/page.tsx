@@ -541,7 +541,7 @@ export default function ShopPage() {
             ) : (
               <>
                 {/* Grid view - always shown on mobile, shown on desktop when viewMode is grid */}
-                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-10 lg:gap-12 ${viewMode === 'list' ? 'md:hidden' : ''}`}>
+                <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 md:gap-10 lg:gap-12 animate-in fade-in slide-in-from-bottom-4 duration-1000 ${viewMode === 'list' ? 'md:hidden' : ''}`}>
                   {products.map((product) => (
                     <ProductCard
                       key={product.id}
@@ -556,7 +556,7 @@ export default function ShopPage() {
 
                 {/* List view - only shown on desktop when viewMode is list */}
                 {viewMode === 'list' && (
-                  <div className="hidden md:block space-y-6 sm:space-y-8">
+                  <div className="hidden md:block space-y-6 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
                     {products.map((product) => (
                       <ProductCard
                         key={product.id}

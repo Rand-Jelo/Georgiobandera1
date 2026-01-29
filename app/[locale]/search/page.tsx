@@ -347,8 +347,8 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Mini-Hero Header - Premium Design */}
-      <section className="relative z-30 bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white py-12 sm:py-16 overflow-hidden">
+      {/* Hero Header - Premium Design aligned with Shop */}
+      <section className="relative z-30 bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white py-12 sm:py-16 md:py-20 lg:py-24 overflow-hidden">
         {/* Elegant background pattern */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
@@ -358,30 +358,25 @@ export default function SearchPage() {
 
         <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6">
           <div className="max-w-4xl">
-            <div className="inline-block mb-4">
-              <p className="text-[9px] font-light uppercase tracking-[0.4em] text-amber-400/80">
+            {/* Elegant subtitle */}
+            <div className="inline-block mb-4 sm:mb-6">
+              <p className="text-[9px] sm:text-[10px] font-light uppercase tracking-[0.4em] text-amber-400/80">
                 {tSearch('searchResults') || 'Search Results'}
               </p>
-              <div className="mt-2 h-px w-12 bg-gradient-to-r from-amber-500/50 to-transparent" />
+              <div className="mt-2 h-px w-12 sm:w-16 bg-gradient-to-r from-amber-500/50 to-transparent" />
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extralight tracking-wide mb-6">
+            {/* Main heading */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extralight tracking-[0.02em] leading-[1.1] mb-4 sm:mb-6">
               {totalCount > 0
                 ? searchQuery
                 : tSearch('noResults', { query: searchQuery }) || `No results for "${searchQuery}"`}
             </h1>
 
-            {/* In-page search bar to encourage searching again */}
-            <div className="max-w-xl">
+            {/* Search Bar */}
+            <div className="max-w-2xl relative z-40">
               <SearchInput />
             </div>
-
-            {totalCount > 0 && (
-              <p className="mt-8 text-sm text-neutral-400 font-light tracking-wide uppercase">
-                {tSearch('foundResults', { count: totalCount, query: searchQuery }) ||
-                  `Found ${totalCount} result${totalCount !== 1 ? 's' : ''} for "${searchQuery}"`}
-              </p>
-            )}
           </div>
         </div>
       </section>
@@ -401,42 +396,56 @@ export default function SearchPage() {
 
           {/* Products Grid/List */}
           <div className="lg:col-span-3">
-            {/* Controls */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                {/* View Mode Toggle */}
-                <div className="flex items-center gap-2 border border-neutral-300 rounded-lg p-1 bg-white">
+            {/* Toolbar - Refined matched with Shop */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-8 sm:mb-10">
+              {/* Results count */}
+              {totalCount > 0 && (
+                <div>
+                  <p className="text-[10px] sm:text-xs font-light text-neutral-400 tracking-wide uppercase">
+                    {tProduct('showingProducts', {
+                      start: ((currentPage - 1) * ITEMS_PER_PAGE) + 1,
+                      end: Math.min(currentPage * ITEMS_PER_PAGE, totalCount),
+                      total: totalCount
+                    })}
+                  </p>
+                </div>
+              )}
+
+              {/* Controls */}
+              <div className="flex items-center gap-3">
+                {/* View Mode Toggle - Refined */}
+                <div className="hidden md:flex items-center gap-1 border border-neutral-200/50 rounded-full p-1 bg-white/50 backdrop-blur-sm">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded transition-colors ${viewMode === 'grid'
-                      ? 'bg-neutral-900 text-white'
-                      : 'text-neutral-600 hover:text-neutral-900'
+                    className={`p-2 rounded-full transition-all duration-300 ${viewMode === 'grid'
+                      ? 'bg-neutral-900 text-white shadow-md'
+                      : 'text-neutral-500 hover:text-amber-600'
                       }`}
                     aria-label="Grid view"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded transition-colors ${viewMode === 'list'
-                      ? 'bg-neutral-900 text-white'
-                      : 'text-neutral-600 hover:text-neutral-900'
+                    className={`p-2 rounded-full transition-all duration-300 ${viewMode === 'list'
+                      ? 'bg-neutral-900 text-white shadow-md'
+                      : 'text-neutral-500 hover:text-amber-600'
                       }`}
                     aria-label="List view"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                   </button>
                 </div>
 
-                {/* Sort Dropdown */}
+                {/* Sort Dropdown - Refined */}
                 <select
                   value={sortBy}
                   onChange={(e) => handleSortChange(e.target.value as SortOption)}
-                  className="px-4 py-2 bg-white border border-neutral-300 rounded-lg text-neutral-900 text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/50 backdrop-blur-sm border border-neutral-200/50 rounded-full text-neutral-900 text-[10px] sm:text-xs md:text-sm font-light tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
                 >
                   <option value="newest">{tProduct('sortNewest') || 'Newest'}</option>
                   <option value="oldest">{tProduct('sortOldest') || 'Oldest'}</option>
@@ -445,15 +454,18 @@ export default function SearchPage() {
                   <option value="name_asc">{tProduct('sortNameAsc') || 'Name: A-Z'}</option>
                   <option value="name_desc">{tProduct('sortNameDesc') || 'Name: Z-A'}</option>
                 </select>
-              </div>
 
-              {/* Filters Button (Mobile) */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="lg:hidden px-4 py-2 bg-neutral-900 border border-neutral-900 rounded-lg text-white text-sm hover:bg-neutral-800 transition-colors"
-              >
-                {tProduct('filters') || 'Filters'}
-              </button>
+                {/* Filters Button (Mobile) */}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="lg:hidden inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-neutral-900 text-white rounded-full text-[10px] sm:text-xs font-light tracking-wide hover:bg-neutral-800 transition-all duration-300"
+                >
+                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  {tProduct('filters') || 'Filters'}
+                </button>
+              </div>
             </div>
 
             {/* Products */}
@@ -494,11 +506,11 @@ export default function SearchPage() {
                 <div
                   className={`
                     ${viewMode === 'grid'
-                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10'
+                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10 lg:gap-12'
                       : 'space-y-8'
                     }
                     ${viewMode === 'grid' && products.length < 3 ? 'lg:grid-cols-2 max-w-4xl' : ''}
-                    animate-in fade-in slide-in-from-bottom-4 duration-700
+                    animate-in fade-in slide-in-from-bottom-4 duration-1000
                   `}
                 >
                   {products.map((product) => (
@@ -512,46 +524,61 @@ export default function SearchPage() {
                   ))}
                 </div>
 
-                {/* Pagination */}
+                {/* Pagination - Refined matched with Shop */}
                 {totalPages > 1 && (
-                  <div className="mt-12 flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="px-4 py-2 bg-white border border-neutral-300 rounded-lg text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-                    >
-                      {tProduct('previous') || 'Previous'}
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                      if (
-                        page === 1 ||
-                        page === totalPages ||
-                        (page >= currentPage - 1 && page <= currentPage + 1)
-                      ) {
-                        return (
-                          <button
-                            key={page}
-                            onClick={() => handlePageChange(page)}
-                            className={`px-4 py-2 rounded-lg transition-colors ${currentPage === page
-                              ? 'bg-neutral-900 text-white'
-                              : 'bg-white border border-neutral-300 text-neutral-900 hover:bg-neutral-50'
-                              }`}
-                          >
-                            {page}
-                          </button>
-                        );
-                      } else if (page === currentPage - 2 || page === currentPage + 2) {
-                        return <span key={page} className="text-neutral-400">...</span>;
-                      }
-                      return null;
-                    })}
-                    <button
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="px-4 py-2 bg-white border border-neutral-300 rounded-lg text-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 transition-colors"
-                    >
-                      {tProduct('next') || 'Next'}
-                    </button>
+                  <div className="mt-12 sm:mt-16 md:mt-20 lg:mt-24 flex flex-col items-center gap-4 sm:gap-6">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-white border border-neutral-200/50 rounded-full text-neutral-700 text-[10px] sm:text-xs font-light tracking-wide disabled:opacity-30 disabled:cursor-not-allowed hover:bg-neutral-50 hover:border-amber-500/30 hover:text-amber-600 transition-all duration-300"
+                        aria-label="Previous page"
+                      >
+                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                        if (
+                          page === 1 ||
+                          page === totalPages ||
+                          (page >= currentPage - 1 && page <= currentPage + 1)
+                        ) {
+                          return (
+                            <button
+                              key={page}
+                              onClick={() => handlePageChange(page)}
+                              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-light tracking-wide transition-all duration-300 ${currentPage === page
+                                ? 'bg-neutral-900 text-white'
+                                : 'text-neutral-600 hover:text-amber-600 hover:bg-neutral-50'
+                                }`}
+                            >
+                              {page}
+                            </button>
+                          );
+                        } else if (page === currentPage - 2 || page === currentPage + 2) {
+                          return <span key={page} className="text-neutral-300 px-0.5 sm:px-1 text-[10px] sm:text-xs">...</span>;
+                        }
+                        return null;
+                      })}
+
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-white border border-neutral-200/50 rounded-full text-neutral-700 text-[10px] sm:text-xs font-light tracking-wide disabled:opacity-30 disabled:cursor-not-allowed hover:bg-neutral-50 hover:border-amber-500/30 hover:text-amber-600 transition-all duration-300"
+                        aria-label="Next page"
+                      >
+                        <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+
+                    {/* Page indicator */}
+                    <p className="text-[9px] sm:text-[10px] font-light uppercase tracking-[0.2em] text-neutral-400">
+                      Page {currentPage} of {totalPages}
+                    </p>
                   </div>
                 )}
 

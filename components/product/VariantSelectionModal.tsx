@@ -64,9 +64,17 @@ export default function VariantSelectionModal({
     const [product, setProduct] = useState<Product | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+    const [selectedOption1, setSelectedOption1] = useState<string | null>(null);
+    const [selectedOption2, setSelectedOption2] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [addSuccess, setAddSuccess] = useState(false);
+
+    // Derived selected variant
+    const selectedVariant = product?.variants.find(v => {
+        const match1 = !option1 || v.option1_value === selectedOption1;
+        const match2 = !option2 || v.option2_value === selectedOption2;
+        return match1 && match2;
+    }) || null;
 
     // Fetch product details with variants
     useEffect(() => {
@@ -78,7 +86,8 @@ export default function VariantSelectionModal({
     // Reset state when modal opens
     useEffect(() => {
         if (isOpen) {
-            setSelectedVariant(null);
+            setSelectedOption1(null);
+            setSelectedOption2(null);
             setQuantity(1);
             setAddSuccess(false);
             setError('');
@@ -160,48 +169,30 @@ export default function VariantSelectionModal({
 
     // Determine the appropriate variant selection message based on available options
     const getVariantSelectionMessage = () => {
-        if (!option1 && !option2) return t('selectVariantFirst');
+        // If we have options but no selection, guide the user
+        if ((option1 && !selectedOption1) && (option2 && !selectedOption2)) {
+            const opt1Name = option1.name?.toLowerCase() || '';
+            const opt2Name = option2?.name?.toLowerCase() || '';
 
-        const opt1Name = option1?.name?.toLowerCase() || '';
-        const opt2Name = option2?.name?.toLowerCase() || '';
+            const hasSize = opt1Name === 'size' || opt1Name === 'storlek' || opt2Name === 'size' || opt2Name === 'storlek';
+            const hasColor = opt1Name === 'color' || opt1Name === 'färg' || opt2Name === 'color' || opt2Name === 'färg';
 
-        const hasSize = opt1Name === 'size' || opt1Name === 'storlek' || opt2Name === 'size' || opt2Name === 'storlek';
-        const hasColor = opt1Name === 'color' || opt1Name === 'färg' || opt2Name === 'color' || opt2Name === 'färg';
+            if (hasSize && hasColor) return t('selectSizeAndColorFirst');
+        }
 
-        if (hasSize && hasColor) {
-            return t('selectSizeAndColorFirst');
-        } else if (hasSize) {
-            return t('selectSizeFirst');
-        } else if (hasColor) {
-            return t('selectColorFirst');
+        if (option1 && !selectedOption1) {
+            const opt1Name = option1.name?.toLowerCase() || '';
+            const isSize = opt1Name === 'size' || opt1Name === 'storlek';
+            return isSize ? t('selectSizeFirst') : t('selectVariantFirst');
+        }
+
+        if (option2 && !selectedOption2) {
+            const opt2Name = option2.name?.toLowerCase() || '';
+            const isColor = opt2Name === 'color' || opt2Name === 'färg';
+            return isColor ? t('selectColorFirst') : t('selectVariantFirst');
         }
 
         return t('selectVariantFirst');
-    };
-
-    // Get the currently selected option values
-    const selectedOption1 = selectedVariant?.option1_value || '';
-    const selectedOption2 = selectedVariant?.option2_value || '';
-
-    // Find variant by option values
-    const findVariant = (opt1Value?: string, opt2Value?: string) => {
-        if (!product?.variants) return null;
-        return product.variants.find(v => {
-            const match1 = !opt1Value || v.option1_value === opt1Value;
-            const match2 = !opt2Value || v.option2_value === opt2Value;
-            return match1 && match2;
-        }) || null;
-    };
-
-    // Handle option selection
-    const handleOption1Select = (value: string) => {
-        const variant = findVariant(value, selectedOption2 || undefined);
-        setSelectedVariant(variant);
-    };
-
-    const handleOption2Select = (value: string) => {
-        const variant = findVariant(selectedOption1 || undefined, value);
-        setSelectedVariant(variant);
     };
 
     // Check stock for selected variant
@@ -307,7 +298,7 @@ export default function VariantSelectionModal({
                                             return (
                                                 <button
                                                     key={value}
-                                                    onClick={() => handleOption1Select(value)}
+                                                    onClick={() => setSelectedOption1(value)}
                                                     className={`px-4 py-2.5 text-xs font-light uppercase tracking-wide border transition-all duration-200 ${isSelected
                                                         ? 'bg-neutral-900 text-white border-neutral-900'
                                                         : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-400'
@@ -333,7 +324,7 @@ export default function VariantSelectionModal({
                                             return (
                                                 <button
                                                     key={value}
-                                                    onClick={() => handleOption2Select(value)}
+                                                    onClick={() => setSelectedOption2(value)}
                                                     className={`px-4 py-2.5 text-xs font-light uppercase tracking-wide border transition-all duration-200 ${isSelected
                                                         ? 'bg-neutral-900 text-white border-neutral-900'
                                                         : 'bg-white text-neutral-700 border-neutral-200 hover:border-neutral-400'

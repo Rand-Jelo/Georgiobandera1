@@ -71,7 +71,21 @@ export default function ProductPage() {
   const slug = params?.slug as string;
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedOption1, setSelectedOption1] = useState<string | null>(null);
+  const [selectedOption2, setSelectedOption2] = useState<string | null>(null);
+
+  // Derived selected variant
+  const selectedVariant = product?.variants.find(v => {
+    // If option exists in product but not selected, match invalid
+    // If option doesn't exist in product (e.g. no size), ignore it
+    const hasOption1 = product.variants.some(v => v.option1_name);
+    const hasOption2 = product.variants.some(v => v.option2_name);
+
+    const match1 = !hasOption1 || v.option1_value === selectedOption1;
+    const match2 = !hasOption2 || v.option2_value === selectedOption2;
+    return match1 && match2;
+  }) || null;
+
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -174,7 +188,9 @@ export default function ProductPage() {
         // Only auto-select variant if there's exactly 1 variant
         // or if there's no real choice needed (1 unique size AND 1 unique color)
         if (data.product.variants.length === 1) {
-          setSelectedVariant(data.product.variants[0]);
+          const v = data.product.variants[0];
+          setSelectedOption1(v.option1_value || null);
+          setSelectedOption2(v.option2_value || null);
         } else if (data.product.variants.length > 1) {
           // Check if there's actually a choice to make
           const sizeVariants = data.product.variants.filter(v =>
@@ -188,7 +204,9 @@ export default function ProductPage() {
 
           // Auto-select only if there's at most 1 unique size AND at most 1 unique color
           if (uniqueSizes.size <= 1 && uniqueColors.size <= 1) {
-            setSelectedVariant(data.product.variants[0]);
+            const v = data.product.variants[0];
+            setSelectedOption1(v.option1_value || null);
+            setSelectedOption2(v.option2_value || null);
           }
           // Otherwise, don't auto-select - user must choose
         }
@@ -782,21 +800,8 @@ export default function ProductPage() {
                         {t('size') || 'Size'}
                       </label>
                       <select
-                        value={selectedVariant?.option1_value || ''}
-                        onChange={(e) => {
-                          const selectedSize = e.target.value;
-                          // Find variant with this size (and current color if selected)
-                          const currentColor = selectedVariant?.option2_value;
-                          let newVariant = sizeVariants.find(v =>
-                            v.option1_value === selectedSize &&
-                            (!currentColor || v.option2_value === currentColor)
-                          );
-                          // If no variant with both size and color, just find by size
-                          if (!newVariant) {
-                            newVariant = sizeVariants.find(v => v.option1_value === selectedSize);
-                          }
-                          if (newVariant) setSelectedVariant(newVariant);
-                        }}
+                        value={selectedOption1 || ''}
+                        onChange={(e) => setSelectedOption1(e.target.value)}
                         className="w-full px-5 py-3 border border-neutral-200/50 bg-white/50 backdrop-blur-sm text-neutral-900 text-sm font-light tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
                       >
                         <option value="">{t('selectSize') || 'Select Size'}</option>
@@ -827,7 +832,7 @@ export default function ProductPage() {
                         {uniqueColors.map((colorItem) => {
                           const isHex = colorItem.hex.startsWith('#');
                           const hexColor = isHex ? colorItem.hex : '#000000';
-                          const isSelected = selectedVariant?.option2_value === colorItem.hex;
+                          const isSelected = selectedOption2 === colorItem.hex;
                           const colorVariant = colorVariants.find(v => v.option2_value === colorItem.hex);
                           const inStock = colorVariant && (colorVariant.stock_quantity > 0 || !colorVariant.track_inventory);
 
@@ -836,22 +841,10 @@ export default function ProductPage() {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  // Find variant with this color (and current size if selected)
-                                  const currentSize = selectedVariant?.option1_value;
-                                  let newVariant = colorVariants.find(v =>
-                                    v.option2_value === colorItem.hex &&
-                                    (!currentSize || v.option1_value === currentSize)
-                                  );
-                                  // If no variant with both color and size, just find by color
-                                  if (!newVariant) {
-                                    newVariant = colorVariants.find(v => v.option2_value === colorItem.hex);
-                                  }
-                                  if (newVariant) {
-                                    setSelectedVariant(newVariant);
-                                    setSelectedColorName(colorItem.name);
-                                    // Hide name after 2 seconds
-                                    setTimeout(() => setSelectedColorName(null), 2000);
-                                  }
+                                  setSelectedOption2(colorItem.hex);
+                                  setSelectedColorName(colorItem.name);
+                                  // Hide name after 2 seconds
+                                  setTimeout(() => setSelectedColorName(null), 2000);
                                 }}
                                 disabled={!inStock}
                                 className={`

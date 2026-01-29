@@ -7,7 +7,7 @@ import { routing } from '@/lib/i18n/routing';
 import { Geist, Geist_Mono } from "next/font/google";
 import ConditionalLayout from '@/components/layout/ConditionalLayout';
 import { OrganizationStructuredData } from '@/components/seo/StructuredData';
-import "./globals.css";
+import "../globals.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://georgiobandera.se';
 
