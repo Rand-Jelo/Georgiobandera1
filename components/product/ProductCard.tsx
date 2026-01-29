@@ -24,6 +24,7 @@ interface Product {
     name_sv: string;
     slug: string;
   } | null;
+  hasVariants?: boolean;
 }
 
 interface ProductCardProps {
@@ -31,10 +32,10 @@ interface ProductCardProps {
   locale?: string;
   showQuickAdd?: boolean;
   viewMode?: 'grid' | 'list';
-  onQuickView?: () => void;
+  onVariantSelect?: (productId: string) => void;
 }
 
-export default function ProductCard({ product, locale = 'en', showQuickAdd = false, viewMode = 'grid', onQuickView }: ProductCardProps) {
+export default function ProductCard({ product, locale = 'en', showQuickAdd = false, viewMode = 'grid', onVariantSelect }: ProductCardProps) {
   const t = useTranslations('product');
   const { addToCart, adding } = useCart();
   const [quickAddSuccess, setQuickAddSuccess] = useState(false);
@@ -50,6 +51,14 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
   const handleQuickAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // If product has variants, open variant selection modal
+    if (product.hasVariants && onVariantSelect) {
+      onVariantSelect(product.slug);
+      return;
+    }
+
+    // Otherwise, add directly to cart
     try {
       await addToCart(product.id, undefined, 1);
       setQuickAddSuccess(true);
@@ -59,20 +68,10 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
     }
   };
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    // If clicking on a link or button, don't trigger quick view
-    if ((e.target as HTMLElement).closest('a, button')) return;
-    if (onQuickView) {
-      e.preventDefault();
-      e.stopPropagation();
-      onQuickView();
-    }
-  };
-
   if (viewMode === 'list') {
     return (
       <article className="group relative bg-white border-b border-neutral-200/50 transition-all duration-300 hover:bg-neutral-50/30">
-        <div onClick={handleCardClick} className="flex flex-col sm:flex-row gap-4 sm:gap-6 md:gap-8 cursor-pointer py-4 sm:py-5 md:py-6">
+        <Link href={`/products/${product.slug}`} className="flex flex-col sm:flex-row gap-4 sm:gap-6 md:gap-8 cursor-pointer py-4 sm:py-5 md:py-6">
           {/* Image */}
           <div className="relative w-full sm:w-24 md:w-32 h-48 sm:h-24 md:h-32 flex-shrink-0 bg-neutral-50">
             {product.images && product.images.length > 0 ? (
@@ -97,7 +96,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               </div>
             )}
           </div>
-          
+
           {/* Content */}
           <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between min-w-0 gap-4 sm:gap-6">
             <div className="flex-1 min-w-0 sm:pr-4 md:pr-8">
@@ -120,7 +119,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
                 )}
               </div>
             </div>
-            
+
             {/* Add to Cart */}
             {showQuickAdd && (
               <button
@@ -138,14 +137,14 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               </button>
             )}
           </div>
-        </div>
+        </Link>
       </article>
     );
   }
 
   return (
-    <article className="group relative" onClick={handleCardClick}>
-      <div className="block cursor-pointer">
+    <article className="group relative transition-all duration-500 hover:-translate-y-1">
+      <Link href={`/products/${product.slug}`} className="block cursor-pointer">
         {/* Image Container - Refined */}
         <div className="relative w-full overflow-hidden bg-neutral-50 aspect-[3/4] mb-4 sm:mb-5 md:mb-6">
           {product.images && product.images.length > 0 ? (
@@ -168,7 +167,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               </div>
             </div>
           )}
-          
+
           {/* Sale Badge - Refined */}
           {hasDiscount && (
             <div className="absolute top-4 right-4 z-10">
@@ -188,11 +187,11 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               {categoryName}
             </p>
           )}
-          
+
           <h3 className="text-base sm:text-lg font-extralight tracking-wide text-neutral-900 leading-tight group-hover:text-amber-600 transition-colors duration-300">
             {name}
           </h3>
-          
+
           {/* Price - Refined */}
           <div className="flex items-baseline gap-2 sm:gap-3 pt-1">
             {hasDiscount ? (
@@ -210,10 +209,10 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
               </span>
             )}
           </div>
-          
+
           {/* Subtle divider */}
           <div className="h-px w-0 bg-gradient-to-r from-amber-500/50 to-transparent transition-all duration-500 group-hover:w-full mt-3 sm:mt-4" />
-          
+
           {/* Add to Cart Button - Refined */}
           {showQuickAdd && (
             <button
@@ -231,7 +230,7 @@ export default function ProductCard({ product, locale = 'en', showQuickAdd = fal
             </button>
           )}
         </div>
-      </div>
+      </Link>
     </article>
   );
 }

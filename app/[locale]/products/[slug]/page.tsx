@@ -171,9 +171,26 @@ export default function ProductPage() {
         setError(data.error);
       } else if (data.product) {
         setProduct(data.product);
-        // Select first variant if available
-        if (data.product.variants.length > 0) {
+        // Only auto-select variant if there's exactly 1 variant
+        // or if there's no real choice needed (1 unique size AND 1 unique color)
+        if (data.product.variants.length === 1) {
           setSelectedVariant(data.product.variants[0]);
+        } else if (data.product.variants.length > 1) {
+          // Check if there's actually a choice to make
+          const sizeVariants = data.product.variants.filter(v =>
+            v.option1_name?.toLowerCase() === 'size' && v.option1_value
+          );
+          const colorVariants = data.product.variants.filter(v =>
+            v.option2_name?.toLowerCase() === 'color' && v.option2_value
+          );
+          const uniqueSizes = new Set(sizeVariants.map(v => v.option1_value));
+          const uniqueColors = new Set(colorVariants.map(v => v.option2_value));
+
+          // Auto-select only if there's at most 1 unique size AND at most 1 unique color
+          if (uniqueSizes.size <= 1 && uniqueColors.size <= 1) {
+            setSelectedVariant(data.product.variants[0]);
+          }
+          // Otherwise, don't auto-select - user must choose
         }
       }
     } catch (err) {
@@ -418,6 +435,57 @@ export default function ProductPage() {
     return true;
   };
 
+  // Check if the product requires variant selection before adding to cart
+  const needsVariantSelection = (): boolean => {
+    if (!product) return false;
+    if (product.variants.length === 0) return false; // No variants = no selection needed
+    if (product.variants.length === 1) return false; // Only 1 variant = auto-selected
+
+    // Check for multiple size options
+    const sizeVariants = product.variants.filter(v =>
+      v.option1_name?.toLowerCase() === 'size' && v.option1_value
+    );
+    const uniqueSizes = new Set(sizeVariants.map(v => v.option1_value));
+
+    // Check for multiple color options
+    const colorVariants = product.variants.filter(v =>
+      v.option2_name?.toLowerCase() === 'color' && v.option2_value
+    );
+    const uniqueColors = new Set(colorVariants.map(v => v.option2_value));
+
+    // Needs selection if 2+ sizes OR 2+ colors
+    return uniqueSizes.size > 1 || uniqueColors.size > 1;
+  };
+
+  // Get the appropriate variant selection message based on available options
+  const getVariantSelectionMessage = (): string => {
+    if (!product || product.variants.length === 0) return t('selectVariantFirst');
+
+    // Check for multiple size options
+    const sizeVariants = product.variants.filter(v =>
+      v.option1_name?.toLowerCase() === 'size' && v.option1_value
+    );
+    const uniqueSizes = new Set(sizeVariants.map(v => v.option1_value));
+    const hasSize = uniqueSizes.size > 1;
+
+    // Check for multiple color options
+    const colorVariants = product.variants.filter(v =>
+      v.option2_name?.toLowerCase() === 'color' && v.option2_value
+    );
+    const uniqueColors = new Set(colorVariants.map(v => v.option2_value));
+    const hasColor = uniqueColors.size > 1;
+
+    if (hasSize && hasColor) {
+      return t('selectSizeAndColorFirst');
+    } else if (hasSize) {
+      return t('selectSizeFirst');
+    } else if (hasColor) {
+      return t('selectColorFirst');
+    }
+
+    return t('selectVariantFirst');
+  };
+
   const getMaxQuantity = (): number => {
     if (!product) return 1;
     if (selectedVariant) {
@@ -594,8 +662,8 @@ export default function ProductPage() {
                         key={image.id}
                         onClick={() => setSelectedImageIndex(index)}
                         className={`aspect-square bg-neutral-50 overflow-hidden border transition-all duration-300 ${selectedImageIndex === index
-                            ? 'border-neutral-900'
-                            : 'border-neutral-200/50 hover:border-neutral-300'
+                          ? 'border-neutral-900'
+                          : 'border-neutral-200/50 hover:border-neutral-300'
                           }`}
                       >
                         <Image
@@ -849,18 +917,26 @@ export default function ProductPage() {
             )}
 
             {/* Add to Cart and Wishlist */}
-            <div className="mb-10 flex items-center gap-4">
-              <AddToCartButton
-                productId={product.id}
-                variantId={selectedVariant?.id}
-                quantity={quantity}
-                disabled={!inStock}
-                className="flex-1"
-              />
-              <WishlistButton
-                productId={product.id}
-                size="md"
-              />
+            <div className="mb-10 flex flex-col gap-3">
+              {/* Show prompt when variant selection is required but not made */}
+              {needsVariantSelection() && !selectedVariant && (
+                <p className="text-sm text-amber-600 font-light">
+                  {getVariantSelectionMessage()}
+                </p>
+              )}
+              <div className="flex items-center gap-4">
+                <AddToCartButton
+                  productId={product.id}
+                  variantId={selectedVariant?.id}
+                  quantity={quantity}
+                  disabled={!inStock || (needsVariantSelection() && !selectedVariant)}
+                  className="flex-1"
+                />
+                <WishlistButton
+                  productId={product.id}
+                  size="md"
+                />
+              </div>
             </div>
 
             {/* Price Alert */}
@@ -1108,8 +1184,8 @@ export default function ProductPage() {
                         onClick={() => handleMarkHelpful(review.id)}
                         disabled={helpfulClicked.has(review.id)}
                         className={`text-sm flex items-center gap-1.5 transition-colors ${helpfulClicked.has(review.id)
-                            ? 'text-neutral-400 cursor-not-allowed'
-                            : 'text-neutral-600 hover:text-neutral-900'
+                          ? 'text-neutral-400 cursor-not-allowed'
+                          : 'text-neutral-600 hover:text-neutral-900'
                           }`}
                       >
                         <svg

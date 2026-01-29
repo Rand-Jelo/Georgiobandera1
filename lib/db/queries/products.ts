@@ -142,6 +142,41 @@ export async function getProductVariants(
   return result.results || [];
 }
 
+export async function getProductVariantCount(
+  db: D1Database,
+  productId: string
+): Promise<number> {
+  const result = await queryOne<{ count: number }>(
+    db,
+    'SELECT COUNT(*) as count FROM product_variants WHERE product_id = ?',
+    [productId]
+  );
+  return result?.count ?? 0;
+}
+
+export async function getProductsVariantCounts(
+  db: D1Database,
+  productIds: string[]
+): Promise<Map<string, number>> {
+  if (productIds.length === 0) {
+    return new Map();
+  }
+
+  const placeholders = productIds.map(() => '?').join(',');
+  const result = await queryDB<{ product_id: string; count: number }>(
+    db,
+    `SELECT product_id, COUNT(*) as count FROM product_variants WHERE product_id IN (${placeholders}) GROUP BY product_id`,
+    productIds
+  );
+
+  const countMap = new Map<string, number>();
+  (result.results || []).forEach(row => {
+    countMap.set(row.product_id, row.count);
+  });
+
+  return countMap;
+}
+
 export async function getProductImages(
   db: D1Database,
   productId: string,

@@ -6,7 +6,7 @@ import { useLocale } from 'next-intl';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
-import QuickViewModal from '@/components/product/QuickViewModal';
+import VariantSelectionModal from '@/components/product/VariantSelectionModal';
 import SearchInput from '@/components/search/SearchInput';
 import { formatPrice } from '@/lib/utils';
 
@@ -26,6 +26,7 @@ interface Product {
     name_sv: string;
     slug: string;
   } | null;
+  hasVariants?: boolean;
 }
 
 interface Category {
@@ -58,7 +59,7 @@ export default function ShopPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [showFilters, setShowFilters] = useState(false);
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [variantSelectProductSlug, setVariantSelectProductSlug] = useState<string | null>(null);
 
   // Filters
   const [filters, setFilters] = useState<{
@@ -122,7 +123,7 @@ export default function ShopPage() {
     inStock?: boolean;
   }, newSort: SortOption, newPage: number, newCollectionId?: string | null) => {
     const params = new URLSearchParams();
-    
+
     // If collection is specified, use it instead of other filters
     if (newCollectionId) {
       params.set('collection', newCollectionId);
@@ -159,7 +160,7 @@ export default function ShopPage() {
   // Helper function to get all child category IDs recursively from nested structure
   const getAllChildCategoryIds = (categoryId: string, allCategories: Category[]): string[] => {
     const result: string[] = [categoryId];
-    
+
     // Find the category in the nested structure
     const findCategory = (cats: Category[], id: string): Category | null => {
       for (const cat of cats) {
@@ -173,7 +174,7 @@ export default function ShopPage() {
       }
       return null;
     };
-    
+
     // Recursively collect all descendant IDs
     const collectDescendants = (cat: Category): void => {
       if (cat.children) {
@@ -183,12 +184,12 @@ export default function ShopPage() {
         });
       }
     };
-    
+
     const category = findCategory(allCategories, categoryId);
     if (category) {
       collectDescendants(category);
     }
-    
+
     return result;
   };
 
@@ -216,7 +217,7 @@ export default function ShopPage() {
           offset: ((currentPage - 1) * ITEMS_PER_PAGE).toString(),
         }).toString()}`);
         const data = await response.json() as { products?: Product[]; error?: string };
-        
+
         if (data.error) {
           setError(data.error);
         } else {
@@ -249,7 +250,7 @@ export default function ShopPage() {
 
       const response = await fetch(`/api/products?${params.toString()}`);
       const data = await response.json() as { products?: Product[]; error?: string };
-      
+
       if (data.error) {
         setError(data.error);
       } else {
@@ -344,7 +345,7 @@ export default function ShopPage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section - Matching Homepage */}
-      <section className="relative bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white py-12 sm:py-16 md:py-20 lg:py-24 overflow-hidden">
+      <section className="relative z-30 bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white py-12 sm:py-16 md:py-20 lg:py-24">
         {/* Elegant background pattern */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
@@ -361,22 +362,22 @@ export default function ShopPage() {
               </p>
               <div className="mt-2 h-px w-12 sm:w-16 bg-gradient-to-r from-amber-500/50 to-transparent" />
             </div>
-            
+
             {/* Main heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extralight tracking-[0.02em] leading-[1.1] mb-4 sm:mb-6">
               {t('shop')}
             </h1>
-            
+
             {/* Description */}
             <p className="text-base sm:text-lg text-neutral-300 font-light leading-relaxed max-w-2xl mb-6 sm:mb-8">
-              {totalCount > 0 
+              {totalCount > 0
                 ? tHome('discoverProducts', { count: totalCount })
                 : tHome('browseCollection')
               }
             </p>
 
             {/* Search Bar - Integrated */}
-            <div className="max-w-2xl">
+            <div className="max-w-2xl relative z-40">
               <SearchInput />
             </div>
           </div>
@@ -407,7 +408,7 @@ export default function ShopPage() {
                 </div>
                 <div className="h-px w-12 bg-gradient-to-r from-amber-500/40 to-transparent mt-4" />
               </div>
-              
+
               {/* Filters Content */}
               <div className="space-y-8">
                 <ProductFilters
@@ -475,11 +476,10 @@ export default function ShopPage() {
                 <div className="hidden md:flex items-center gap-1 border border-neutral-200/50 rounded-full p-1 bg-white/50 backdrop-blur-sm">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-full transition-all duration-300 ${
-                      viewMode === 'grid'
-                        ? 'bg-neutral-900 text-white shadow-md'
-                        : 'text-neutral-500 hover:text-amber-600'
-                    }`}
+                    className={`p-2 rounded-full transition-all duration-300 ${viewMode === 'grid'
+                      ? 'bg-neutral-900 text-white shadow-md'
+                      : 'text-neutral-500 hover:text-amber-600'
+                      }`}
                     aria-label="Grid view"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -488,11 +488,10 @@ export default function ShopPage() {
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-full transition-all duration-300 ${
-                      viewMode === 'list'
-                        ? 'bg-neutral-900 text-white shadow-md'
-                        : 'text-neutral-500 hover:text-amber-600'
-                    }`}
+                    className={`p-2 rounded-full transition-all duration-300 ${viewMode === 'list'
+                      ? 'bg-neutral-900 text-white shadow-md'
+                      : 'text-neutral-500 hover:text-amber-600'
+                      }`}
                     aria-label="List view"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -550,11 +549,11 @@ export default function ShopPage() {
                       locale={locale as string}
                       showQuickAdd={true}
                       viewMode="grid"
-                      onQuickView={() => setQuickViewProduct(product)}
+                      onVariantSelect={(slug) => setVariantSelectProductSlug(slug)}
                     />
                   ))}
                 </div>
-                
+
                 {/* List view - only shown on desktop when viewMode is list */}
                 {viewMode === 'list' && (
                   <div className="hidden md:block space-y-6 sm:space-y-8">
@@ -565,7 +564,7 @@ export default function ShopPage() {
                         locale={locale as string}
                         showQuickAdd={true}
                         viewMode="list"
-                        onQuickView={() => setQuickViewProduct(product)}
+                        onVariantSelect={(slug) => setVariantSelectProductSlug(slug)}
                       />
                     ))}
                   </div>
@@ -585,7 +584,7 @@ export default function ShopPage() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 19l-7-7 7-7" />
                         </svg>
                       </button>
-                      
+
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                         if (
                           page === 1 ||
@@ -596,11 +595,10 @@ export default function ShopPage() {
                             <button
                               key={page}
                               onClick={() => handlePageChange(page)}
-                              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-light tracking-wide transition-all duration-300 ${
-                                currentPage === page
-                                  ? 'bg-neutral-900 text-white'
-                                  : 'text-neutral-600 hover:text-amber-600 hover:bg-neutral-50'
-                              }`}
+                              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-light tracking-wide transition-all duration-300 ${currentPage === page
+                                ? 'bg-neutral-900 text-white'
+                                : 'text-neutral-600 hover:text-amber-600 hover:bg-neutral-50'
+                                }`}
                             >
                               {page}
                             </button>
@@ -610,7 +608,7 @@ export default function ShopPage() {
                         }
                         return null;
                       })}
-                      
+
                       <button
                         onClick={() => handlePageChange(currentPage + 1)}
                         disabled={currentPage === totalPages}
@@ -622,7 +620,7 @@ export default function ShopPage() {
                         </svg>
                       </button>
                     </div>
-                    
+
                     {/* Page indicator */}
                     <p className="text-[9px] sm:text-[10px] font-light uppercase tracking-[0.2em] text-neutral-400">
                       Page {currentPage} of {totalPages}
@@ -635,11 +633,12 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Quick View Modal */}
-      <QuickViewModal
-        product={quickViewProduct}
-        isOpen={!!quickViewProduct}
-        onClose={() => setQuickViewProduct(null)}
+      {/* Variant Selection Modal */}
+      <VariantSelectionModal
+        productSlug={variantSelectProductSlug || ''}
+        isOpen={!!variantSelectProductSlug}
+        onClose={() => setVariantSelectProductSlug(null)}
+        onSuccess={() => setVariantSelectProductSlug(null)}
       />
     </div>
   );

@@ -6,7 +6,8 @@ import { useLocale } from 'next-intl';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
-import QuickViewModal from '@/components/product/QuickViewModal';
+import SearchInput from '@/components/search/SearchInput';
+import { useTranslations as useTranslationsIntl } from 'next-intl';
 
 interface Product {
   id: string;
@@ -56,7 +57,8 @@ export default function SearchPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [showFilters, setShowFilters] = useState(false);
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
   // Get search query from URL
   const searchQuery = searchParams.get('q') || '';
@@ -86,8 +88,18 @@ export default function SearchPage() {
     if (searchQuery) {
       fetchProducts();
       fetchProductCount();
+    } else {
+      setProducts([]);
+      setTotalCount(0);
     }
   }, [filters, sortBy, currentPage, searchQuery]);
+
+  // Fetch recommendations of no results
+  useEffect(() => {
+    if (!loading && products.length === 0 && searchQuery) {
+      fetchRecommendations();
+    }
+  }, [loading, products.length, searchQuery]);
 
   // Sync URL params with state
   useEffect(() => {
@@ -146,7 +158,7 @@ export default function SearchPage() {
   // Helper function to get all child category IDs recursively from nested structure
   const getAllChildCategoryIds = (categoryId: string, allCategories: Category[]): string[] => {
     const result: string[] = [categoryId];
-    
+
     const findCategory = (cats: Category[], id: string): Category | null => {
       for (const cat of cats) {
         if (cat.id === id) {
@@ -159,7 +171,7 @@ export default function SearchPage() {
       }
       return null;
     };
-    
+
     const collectDescendants = (cat: Category): void => {
       if (cat.children) {
         cat.children.forEach(child => {
@@ -168,12 +180,12 @@ export default function SearchPage() {
         });
       }
     };
-    
+
     const category = findCategory(allCategories, categoryId);
     if (category) {
       collectDescendants(category);
     }
-    
+
     return result;
   };
 
@@ -211,7 +223,7 @@ export default function SearchPage() {
 
       const response = await fetch(`/api/products?${params.toString()}`);
       const data = await response.json() as { products?: Product[]; error?: string };
-      
+
       if (data.error) {
         setError(data.error);
       } else {
@@ -246,7 +258,7 @@ export default function SearchPage() {
 
       const response = await fetch(`/api/products/count?${params.toString()}`);
       const data = await response.json() as { count?: number; error?: string };
-      
+
       if (data.error) {
         console.error('Error fetching product count:', data.error);
       } else {
@@ -254,6 +266,19 @@ export default function SearchPage() {
       }
     } catch (err) {
       console.error('Error fetching product count:', err);
+    }
+  };
+
+  const fetchRecommendations = async () => {
+    setLoadingRecommendations(true);
+    try {
+      const response = await fetch('/api/products?limit=4&sortBy=newest&status=active');
+      const data = await response.json() as { products?: Product[] };
+      setRecommendedProducts(data.products || []);
+    } catch (err) {
+      console.error('Error fetching recommendations:', err);
+    } finally {
+      setLoadingRecommendations(false);
     }
   };
 
@@ -321,21 +346,47 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-semibold text-neutral-900 mb-2">
-            {tSearch('searchResults') || 'Search Results'}
-          </h1>
-          <p className="text-neutral-600">
-            {totalCount > 0
-              ? tSearch('foundResults', { count: totalCount, query: searchQuery }) || 
-                `Found ${totalCount} result${totalCount !== 1 ? 's' : ''} for "${searchQuery}"`
-              : tSearch('noResults', { query: searchQuery }) || 
-                `No results found for "${searchQuery}"`}
-          </p>
+    <div className="min-h-screen bg-white">
+      {/* Mini-Hero Header - Premium Design */}
+      <section className="relative z-30 bg-gradient-to-b from-neutral-950 via-black to-neutral-950 text-white py-12 sm:py-16 overflow-hidden">
+        {/* Elegant background pattern */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.03)_0%,_transparent_50%)]" />
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(90deg,_transparent,_transparent_2px,_rgba(255,255,255,0.02)_2px,_rgba(255,255,255,0.02)_4px)]" />
         </div>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+
+        <div className="relative max-w-[1600px] mx-auto px-4 sm:px-6">
+          <div className="max-w-4xl">
+            <div className="inline-block mb-4">
+              <p className="text-[9px] font-light uppercase tracking-[0.4em] text-amber-400/80">
+                {tSearch('searchResults') || 'Search Results'}
+              </p>
+              <div className="mt-2 h-px w-12 bg-gradient-to-r from-amber-500/50 to-transparent" />
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extralight tracking-wide mb-6">
+              {totalCount > 0
+                ? searchQuery
+                : tSearch('noResults', { query: searchQuery }) || `No results for "${searchQuery}"`}
+            </h1>
+
+            {/* In-page search bar to encourage searching again */}
+            <div className="max-w-xl">
+              <SearchInput />
+            </div>
+
+            {totalCount > 0 && (
+              <p className="mt-8 text-sm text-neutral-400 font-light tracking-wide uppercase">
+                {tSearch('foundResults', { count: totalCount, query: searchQuery }) ||
+                  `Found ${totalCount} result${totalCount !== 1 ? 's' : ''} for "${searchQuery}"`}
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
 
         <div className="lg:grid lg:grid-cols-4 lg:gap-8">
           {/* Filters Sidebar */}
@@ -357,11 +408,10 @@ export default function SearchPage() {
                 <div className="flex items-center gap-2 border border-neutral-300 rounded-lg p-1 bg-white">
                   <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'grid'
-                        ? 'bg-neutral-900 text-white'
-                        : 'text-neutral-600 hover:text-neutral-900'
-                    }`}
+                    className={`p-2 rounded transition-colors ${viewMode === 'grid'
+                      ? 'bg-neutral-900 text-white'
+                      : 'text-neutral-600 hover:text-neutral-900'
+                      }`}
                     aria-label="Grid view"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -370,11 +420,10 @@ export default function SearchPage() {
                   </button>
                   <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded transition-colors ${
-                      viewMode === 'list'
-                        ? 'bg-neutral-900 text-white'
-                        : 'text-neutral-600 hover:text-neutral-900'
-                    }`}
+                    className={`p-2 rounded transition-colors ${viewMode === 'list'
+                      ? 'bg-neutral-900 text-white'
+                      : 'text-neutral-600 hover:text-neutral-900'
+                      }`}
                     aria-label="List view"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -409,22 +458,48 @@ export default function SearchPage() {
 
             {/* Products */}
             {products.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-neutral-600 text-lg mb-4">
-                  {tSearch('noResults', { query: searchQuery }) || `No results found for "${searchQuery}"`}
-                </p>
-                <p className="text-neutral-500 text-sm">
+              <div className="text-center py-20 animate-in fade-in duration-1000">
+                <div className="w-20 h-20 rounded-full bg-neutral-50 flex items-center justify-center mx-auto mb-6">
+                  <svg className="w-10 h-10 text-neutral-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <p className="text-neutral-400 text-sm font-light uppercase tracking-[0.2em] mb-12">
                   {tSearch('tryDifferentKeywords') || 'Try different keywords or check your spelling.'}
                 </p>
+
+                {recommendedProducts.length > 0 && (
+                  <div className="mt-16 text-left">
+                    <div className="flex items-center gap-4 mb-8">
+                      <h2 className="text-xs font-light uppercase tracking-[0.3em] text-neutral-500 whitespace-nowrap">
+                        You Might Also Like
+                      </h2>
+                      <div className="h-px w-full bg-gradient-to-r from-neutral-200 to-transparent" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
+                      {recommendedProducts.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          locale={locale as string}
+                          showQuickAdd={true}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <>
                 <div
-                  className={
-                    viewMode === 'grid'
-                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
-                      : 'space-y-6'
-                  }
+                  className={`
+                    ${viewMode === 'grid'
+                      ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10'
+                      : 'space-y-8'
+                    }
+                    ${viewMode === 'grid' && products.length < 3 ? 'lg:grid-cols-2 max-w-4xl' : ''}
+                    animate-in fade-in slide-in-from-bottom-4 duration-700
+                  `}
                 >
                   {products.map((product) => (
                     <ProductCard
@@ -432,7 +507,6 @@ export default function SearchPage() {
                       product={product}
                       locale={locale as string}
                       showQuickAdd={true}
-                      onQuickView={() => setQuickViewProduct(product)}
                       viewMode={viewMode}
                     />
                   ))}
@@ -458,11 +532,10 @@ export default function SearchPage() {
                           <button
                             key={page}
                             onClick={() => handlePageChange(page)}
-                            className={`px-4 py-2 rounded-lg transition-colors ${
-                              currentPage === page
-                                ? 'bg-neutral-900 text-white'
-                                : 'bg-white border border-neutral-300 text-neutral-900 hover:bg-neutral-50'
-                            }`}
+                            className={`px-4 py-2 rounded-lg transition-colors ${currentPage === page
+                              ? 'bg-neutral-900 text-white'
+                              : 'bg-white border border-neutral-300 text-neutral-900 hover:bg-neutral-50'
+                              }`}
                           >
                             {page}
                           </button>
@@ -510,13 +583,6 @@ export default function SearchPage() {
             </div>
           </div>
         )}
-
-        {/* Quick View Modal */}
-        <QuickViewModal
-          product={quickViewProduct}
-          isOpen={!!quickViewProduct}
-          onClose={() => setQuickViewProduct(null)}
-        />
       </div>
     </div>
   );

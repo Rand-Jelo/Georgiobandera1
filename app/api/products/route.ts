@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDB } from '@/lib/db/client';
-import { getProducts, getCategoryById, getProductImages } from '@/lib/db/queries/products';
+import { getProducts, getCategoryById, getProductImages, getProductsVariantCounts } from '@/lib/db/queries/products';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,13 +36,18 @@ export async function GET(request: NextRequest) {
       offset,
     });
 
-    // Enrich with images and category
+    // Get variant counts for all products in a single batch query
+    const productIds = products.map(p => p.id);
+    const variantCounts = await getProductsVariantCounts(db, productIds);
+
+    // Enrich with images, category, and hasVariants
     const productsWithImages = await Promise.all(
       products.map(async (product) => {
         const images = await getProductImages(db, product.id);
         const category = product.category_id
           ? await getCategoryById(db, product.category_id)
           : null;
+        const variantCount = variantCounts.get(product.id) || 0;
         return {
           ...product,
           images: images.slice(0, 1), // Get first image for listing
@@ -52,6 +57,7 @@ export async function GET(request: NextRequest) {
             name_sv: category.name_sv,
             slug: category.slug,
           } : null,
+          hasVariants: variantCount > 1, // More than 1 variant means user needs to select
         };
       })
     );
@@ -66,7 +72,7 @@ export async function GET(request: NextRequest) {
       // Static listings (featured, all products) - longer cache (2 minutes)
       headers.set('Cache-Control', 'public, max-age=120, stale-while-revalidate=300');
     }
-    
+
     return NextResponse.json({ products: productsWithImages }, { headers });
   } catch (error) {
     console.error('Get products error:', error);

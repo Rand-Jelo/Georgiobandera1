@@ -205,7 +205,7 @@ export default function SearchInput({ className = '' }: SearchInputProps) {
 
       {/* Suggestions Dropdown */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute z-50 w-full mt-2 bg-white border border-neutral-200 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+        <div className="absolute z-[9999] w-full mt-2 bg-white border border-neutral-200 rounded-lg shadow-lg max-h-96 overflow-y-auto">
           {suggestions.map((suggestion, index) => (
             <Link
               key={suggestion.id}
