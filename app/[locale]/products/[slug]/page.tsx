@@ -76,15 +76,36 @@ export default function ProductPage() {
 
   // Derived selected variant
   const selectedVariant = product?.variants.find(v => {
-    // If option exists in product but not selected, match invalid
-    // If option doesn't exist in product (e.g. no size), ignore it
-    const hasOption1 = product.variants.some(v => v.option1_name);
-    const hasOption2 = product.variants.some(v => v.option2_name);
+    // Check Option 1
+    const v1 = v.option1_value;
+    const s1 = selectedOption1;
+    const match1 = (v1 === s1) || (!v1 && !s1);
 
-    const match1 = !hasOption1 || v.option1_value === selectedOption1;
-    const match2 = !hasOption2 || v.option2_value === selectedOption2;
+    // Check Option 2
+    const v2 = v.option2_value;
+    const s2 = selectedOption2;
+    const match2 = (v2 === s2) || (!v2 && !s2);
+
+    if (typeof window !== 'undefined' && product) {
+      // console.log(`Variant ${v.id}: v1='${v1}' s1='${s1}' match1=${match1}, v2='${v2}' s2='${s2}' match2=${match2}`);
+    }
+
     return match1 && match2;
   }) || null;
+
+  useEffect(() => {
+    if (product) {
+      // Core debug to help identify issues if specific variants aren't matching
+      const variantDebug = product.variants.map(v => ({
+        id: v.id,
+        o1: v.option1_value,
+        o2: v.option2_value,
+        match: (v.option1_value === selectedOption1 || (!v.option1_value && !selectedOption1)) &&
+          (v.option2_value === selectedOption2 || (!v.option2_value && !selectedOption2))
+      }));
+      // console.log('Variant Matching Debug:', { selectedOption1, selectedOption2 }, variantDebug);
+    }
+  }, [product, selectedOption1, selectedOption2]);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);

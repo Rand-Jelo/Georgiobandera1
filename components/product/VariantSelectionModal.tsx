@@ -99,8 +99,14 @@ export default function VariantSelectionModal({
 
     // Derived selected variant
     const selectedVariant = product?.variants.find(v => {
-        const match1 = !option1 || v.option1_value === selectedOption1;
-        const match2 = !option2 || v.option2_value === selectedOption2;
+        const v1 = v.option1_value;
+        const s1 = selectedOption1;
+        const match1 = (v1 === s1) || (!v1 && !s1);
+
+        const v2 = v.option2_value;
+        const s2 = selectedOption2;
+        const match2 = (v2 === s2) || (!v2 && !s2);
+
         return match1 && match2;
     }) || null;
 
