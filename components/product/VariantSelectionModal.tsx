@@ -69,6 +69,34 @@ export default function VariantSelectionModal({
     const [quantity, setQuantity] = useState(1);
     const [addSuccess, setAddSuccess] = useState(false);
 
+    // Extract unique options from variants
+    const getUniqueOptions = () => {
+        if (!product?.variants) return { option1: null, option2: null };
+
+        const option1Values = new Set<string>();
+        const option2Values = new Set<string>();
+        let option1Name = '';
+        let option2Name = '';
+
+        product.variants.forEach(v => {
+            if (v.option1_name && v.option1_value) {
+                option1Name = v.option1_name;
+                option1Values.add(v.option1_value);
+            }
+            if (v.option2_name && v.option2_value) {
+                option2Name = v.option2_name;
+                option2Values.add(v.option2_value);
+            }
+        });
+
+        return {
+            option1: option1Values.size > 0 ? { name: option1Name, values: Array.from(option1Values) } : null,
+            option2: option2Values.size > 0 ? { name: option2Name, values: Array.from(option2Values) } : null,
+        };
+    };
+
+    const { option1, option2 } = getUniqueOptions();
+
     // Derived selected variant
     const selectedVariant = product?.variants.find(v => {
         const match1 = !option1 || v.option1_value === selectedOption1;
@@ -138,34 +166,6 @@ export default function VariantSelectionModal({
     if (!isOpen) return null;
 
     const productName = product ? (locale === 'sv' ? product.name_sv : product.name_en) : '';
-
-    // Extract unique options from variants
-    const getUniqueOptions = () => {
-        if (!product?.variants) return { option1: null, option2: null };
-
-        const option1Values = new Set<string>();
-        const option2Values = new Set<string>();
-        let option1Name = '';
-        let option2Name = '';
-
-        product.variants.forEach(v => {
-            if (v.option1_name && v.option1_value) {
-                option1Name = v.option1_name;
-                option1Values.add(v.option1_value);
-            }
-            if (v.option2_name && v.option2_value) {
-                option2Name = v.option2_name;
-                option2Values.add(v.option2_value);
-            }
-        });
-
-        return {
-            option1: option1Values.size > 0 ? { name: option1Name, values: Array.from(option1Values) } : null,
-            option2: option2Values.size > 0 ? { name: option2Name, values: Array.from(option2Values) } : null,
-        };
-    };
-
-    const { option1, option2 } = getUniqueOptions();
 
     // Determine the appropriate variant selection message based on available options
     const getVariantSelectionMessage = () => {

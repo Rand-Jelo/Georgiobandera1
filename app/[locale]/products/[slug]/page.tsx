@@ -459,46 +459,41 @@ export default function ProductPage() {
     if (product.variants.length === 0) return false; // No variants = no selection needed
     if (product.variants.length === 1) return false; // Only 1 variant = auto-selected
 
-    // Check for multiple size options
-    const sizeVariants = product.variants.filter(v =>
-      v.option1_name?.toLowerCase() === 'size' && v.option1_value
-    );
-    const uniqueSizes = new Set(sizeVariants.map(v => v.option1_value));
+    // Check for multiple values for each option
+    const uniqueOption1 = new Set(product.variants.map(v => v.option1_value).filter(Boolean));
+    const uniqueOption2 = new Set(product.variants.map(v => v.option2_value).filter(Boolean));
 
-    // Check for multiple color options
-    const colorVariants = product.variants.filter(v =>
-      v.option2_name?.toLowerCase() === 'color' && v.option2_value
-    );
-    const uniqueColors = new Set(colorVariants.map(v => v.option2_value));
-
-    // Needs selection if 2+ sizes OR 2+ colors
-    return uniqueSizes.size > 1 || uniqueColors.size > 1;
+    // Needs selection if 2+ values for any option
+    return uniqueOption1.size > 1 || uniqueOption2.size > 1;
   };
 
   // Get the appropriate variant selection message based on available options
   const getVariantSelectionMessage = (): string => {
     if (!product || product.variants.length === 0) return t('selectVariantFirst');
 
-    // Check for multiple size options
-    const sizeVariants = product.variants.filter(v =>
-      v.option1_name?.toLowerCase() === 'size' && v.option1_value
-    );
-    const uniqueSizes = new Set(sizeVariants.map(v => v.option1_value));
-    const hasSize = uniqueSizes.size > 1;
+    const uniqueOption1 = new Set(product.variants.map(v => v.option1_value).filter(Boolean));
+    const uniqueOption2 = new Set(product.variants.map(v => v.option2_value).filter(Boolean));
 
-    // Check for multiple color options
-    const colorVariants = product.variants.filter(v =>
-      v.option2_name?.toLowerCase() === 'color' && v.option2_value
-    );
-    const uniqueColors = new Set(colorVariants.map(v => v.option2_value));
-    const hasColor = uniqueColors.size > 1;
+    // Get option names dynamically
+    const option1Name = product.variants.find(v => v.option1_name)?.option1_name?.toLowerCase() || '';
+    const option2Name = product.variants.find(v => v.option2_name)?.option2_name?.toLowerCase() || '';
 
-    if (hasSize && hasColor) {
-      return t('selectSizeAndColorFirst');
-    } else if (hasSize) {
-      return t('selectSizeFirst');
-    } else if (hasColor) {
-      return t('selectColorFirst');
+    const hasMultipleOption1 = uniqueOption1.size > 1;
+    const hasMultipleOption2 = uniqueOption2.size > 1;
+
+    // Try to be specific if names match known patterns, otherwise generic
+    const isSize1 = option1Name === 'size' || option1Name === 'storlek';
+    const isColor2 = option2Name === 'color' || option2Name === 'färg';
+
+    if (hasMultipleOption1 && hasMultipleOption2) {
+      if (isSize1 && isColor2) return t('selectSizeAndColorFirst');
+      return t('selectVariantFirst');
+    } else if (hasMultipleOption1) {
+      if (isSize1) return t('selectSizeFirst');
+      return t('selectVariantFirst');
+    } else if (hasMultipleOption2) {
+      if (isColor2) return t('selectColorFirst');
+      return t('selectVariantFirst');
     }
 
     return t('selectVariantFirst');
@@ -735,139 +730,135 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* Variants - Separate Size and Color */}
+            {/* Dynamic Variant Selection */}
             {(() => {
-              // Separate variants into sizes and colors
-              const sizeVariants = product.variants.filter(v =>
-                v.option1_name?.toLowerCase() === 'size' && v.option1_value
-              );
-              const colorVariants = product.variants.filter(v =>
-                v.option2_name?.toLowerCase() === 'color' && v.option2_value
-              );
+              const uniqueOption1Values = Array.from(new Set(product.variants.map(v => v.option1_value).filter(Boolean))) as string[];
+              const uniqueOption2Values = Array.from(new Set(product.variants.map(v => v.option2_value).filter(Boolean))) as string[];
 
-              // Get unique sizes and colors
-              const uniqueSizes = Array.from(new Set(sizeVariants.map(v => v.option1_value).filter((s): s is string => Boolean(s))));
-
-              // Extract colors - try to get name from variant name or use hex
-              const uniqueColors = colorVariants.map(v => {
-                const hex = v.option2_value || '#000000';
-                // Try to extract color name from variant name
-                let name = locale === 'sv'
-                  ? (v.name_sv || v.name_en || '')
-                  : (v.name_en || v.name_sv || '');
-
-                // If no name from variant, try to get from hex color mapping
-                if (!name && hex.startsWith('#')) {
-                  // Common color names mapping
-                  const colorMap: Record<string, string> = {
-                    '#000000': 'Black',
-                    '#FFFFFF': 'White',
-                    '#FF0000': 'Red',
-                    '#00FF00': 'Green',
-                    '#0000FF': 'Blue',
-                    '#FFFF00': 'Yellow',
-                    '#FF00FF': 'Magenta',
-                    '#00FFFF': 'Cyan',
-                    '#FFA500': 'Orange',
-                    '#800080': 'Purple',
-                    '#FFC0CB': 'Pink',
-                    '#A52A2A': 'Brown',
-                    '#808080': 'Gray',
-                    '#000080': 'Navy',
-                    '#008000': 'Dark Green',
-                    '#800000': 'Maroon',
-                    '#FFD700': 'Gold',
-                    '#C0C0C0': 'Silver',
-                  };
-                  name = colorMap[hex.toUpperCase()] || hex;
-                }
-
-                return {
-                  variant: v,
-                  hex: hex,
-                  name: name || hex,
-                };
-              }).filter((v, i, self) =>
-                i === self.findIndex(t => t.hex === v.hex)
-              );
+              const option1Name = product.variants.find(v => v.option1_name)?.option1_name || 'Size';
+              const option2Name = product.variants.find(v => v.option2_name)?.option2_name || 'Color';
 
               return (
                 <>
-                  {/* Size Selection - Only show if multiple sizes */}
-                  {uniqueSizes.length > 1 && (
+                  {/* Option 1 Selection (e.g. Size) */}
+                  {uniqueOption1Values.length > 0 && (
                     <div className="mb-10">
                       <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                        {t('size') || 'Size'}
+                        {option1Name}
                       </label>
-                      <select
-                        value={selectedOption1 || ''}
-                        onChange={(e) => setSelectedOption1(e.target.value)}
-                        className="w-full px-5 py-3 border border-neutral-200/50 bg-white/50 backdrop-blur-sm text-neutral-900 text-sm font-light tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
-                      >
-                        <option value="">{t('selectSize') || 'Select Size'}</option>
-                        {uniqueSizes.map((size) => {
-                          const sizeVariant = sizeVariants.find(v => v.option1_value === size);
-                          const inStock = sizeVariant && (sizeVariant.stock_quantity > 0 || !sizeVariant.track_inventory);
-                          return (
-                            <option
-                              key={size}
-                              value={size}
-                              disabled={!inStock}
-                            >
-                              {size} {!inStock && '(Out of Stock)'}
-                            </option>
-                          );
-                        })}
-                      </select>
+                      {uniqueOption1Values.length > 5 ? (
+                        // Use Select for many options
+                        <select
+                          value={selectedOption1 || ''}
+                          onChange={(e) => setSelectedOption1(e.target.value)}
+                          className="w-full px-5 py-3 border border-neutral-200/50 bg-white/50 backdrop-blur-sm text-neutral-900 text-sm font-light tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
+                        >
+                          <option value="">{t('select')} {option1Name}</option>
+                          {uniqueOption1Values.map((value) => {
+                            // Check stock for this option combined with current selectedOption2
+                            const variant = product.variants.find(v =>
+                              v.option1_value === value &&
+                              (!selectedOption2 || !v.option2_value || v.option2_value === selectedOption2)
+                            );
+                            const inStock = variant && (!variant.track_inventory || variant.stock_quantity > 0);
+                            return (
+                              <option key={value} value={value} disabled={!inStock}>
+                                {value} {!inStock && '(Out of Stock)'}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      ) : (
+                        // Use Buttons for few options
+                        <div className="flex flex-wrap gap-2">
+                          {uniqueOption1Values.map((value) => {
+                            const isSelected = selectedOption1 === value;
+                            // Check if this option is valid with current selection of other option
+                            const variant = product.variants.find(v =>
+                              v.option1_value === value &&
+                              (!selectedOption2 || !v.option2_value || v.option2_value === selectedOption2)
+                            );
+                            // Fallback check: is there ANY variant with this value?
+                            const existsAtAll = product.variants.some(v => v.option1_value === value);
+                            const inStock = variant && (!variant.track_inventory || variant.stock_quantity > 0);
+
+                            return (
+                              <button
+                                key={value}
+                                onClick={() => setSelectedOption1(value)}
+                                disabled={!existsAtAll}
+                                className={`px-6 py-3 border text-sm font-light tracking-wide transition-all duration-300 ${isSelected
+                                  ? 'border-neutral-900 bg-neutral-900 text-white'
+                                  : 'border-neutral-200/50 bg-white/50 text-neutral-600 hover:border-neutral-400'
+                                  } ${!existsAtAll ? 'opacity-50 cursor-not-allowed' : ''}`}
+                              >
+                                {value}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {/* Color Selection - Show color swatches */}
-                  {uniqueColors.length > 0 && (
+                  {/* Option 2 Selection (e.g. Color) */}
+                  {uniqueOption2Values.length > 0 && (
                     <div className="mb-10">
                       <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                        {t('color') || 'Color'}
+                        {option2Name}
                       </label>
                       <div className="flex flex-wrap items-center gap-3">
-                        {uniqueColors.map((colorItem) => {
-                          const isHex = colorItem.hex.startsWith('#');
-                          const hexColor = isHex ? colorItem.hex : '#000000';
-                          const isSelected = selectedOption2 === colorItem.hex;
-                          const colorVariant = colorVariants.find(v => v.option2_value === colorItem.hex);
-                          const inStock = colorVariant && (colorVariant.stock_quantity > 0 || !colorVariant.track_inventory);
+                        {uniqueOption2Values.map((value) => {
+                          const isHex = value.startsWith('#');
+                          const hexColor = isHex ? value : '#000000'; // Default if not hex
+                          const isSelected = selectedOption2 === value;
 
-                          return (
-                            <div key={colorItem.hex} className="relative group">
+                          // Check compatibility with selectedOption1
+                          const variant = product.variants.find(v =>
+                            v.option2_value === value &&
+                            (!selectedOption1 || !v.option1_value || v.option1_value === selectedOption1)
+                          );
+                          const existsAtAll = product.variants.some(v => v.option2_value === value);
+                          const inStock = variant && (!variant.track_inventory || variant.stock_quantity > 0);
+
+                          return isHex ? (
+                            <div key={value} className="relative group">
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setSelectedOption2(colorItem.hex);
-                                  setSelectedColorName(colorItem.name);
-                                  // Hide name after 2 seconds
-                                  setTimeout(() => setSelectedColorName(null), 2000);
+                                  setSelectedOption2(value);
+                                  // Find name if possible
+                                  const v = product.variants.find(v => v.option2_value === value);
+                                  const name = locale === 'sv' ? v?.name_sv : v?.name_en;
+                                  if (name) {
+                                    setSelectedColorName(name);
+                                    setTimeout(() => setSelectedColorName(null), 2000);
+                                  }
                                 }}
-                                disabled={!inStock}
+                                disabled={!existsAtAll}
                                 className={`
-                                  relative w-12 h-12 border transition-all duration-300
-                                  ${isSelected
+                                        relative w-12 h-12 border transition-all duration-300
+                                        ${isSelected
                                     ? 'border-neutral-900'
                                     : 'border-neutral-200/50 hover:border-neutral-300'
                                   }
-                                  ${!inStock ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
-                                `}
+                                        ${!existsAtAll ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
+                                      `}
                                 style={{ backgroundColor: hexColor }}
-                                title={colorItem.name}
+                                title={value}
                               />
-                              {/* Color name tooltip - appears on click */}
-                              {selectedColorName === colorItem.name && (
-                                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
-                                  <div className="bg-neutral-900 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg">
-                                    {colorItem.name}
-                                    <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-neutral-900 rotate-45"></div>
-                                  </div>
-                                </div>
-                              )}
                             </div>
+                          ) : (
+                            <button
+                              key={value}
+                              onClick={() => setSelectedOption2(value)}
+                              className={`px-6 py-3 border text-sm font-light tracking-wide transition-all duration-300 ${isSelected
+                                ? 'border-neutral-900 bg-neutral-900 text-white'
+                                : 'border-neutral-200/50 bg-white/50 text-neutral-600 hover:border-neutral-400'
+                                }`}
+                            >
+                              {value}
+                            </button>
                           );
                         })}
                       </div>
