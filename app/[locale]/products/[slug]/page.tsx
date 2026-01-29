@@ -803,7 +803,7 @@ export default function ProductPage() {
                             // Check if this option is valid with current selection of other option
                             const variant = product.variants.find(v =>
                               format(v.option1_value) === format(value) &&
-                              (!selectedOption2 || !v.option2_value || format(v.option2_value) === format(selectedOption2))
+                              (!selectedOption2 || format(v.option2_value) === format(selectedOption2))
                             );
                             // Fallback check: is there ANY variant with this value?
                             const existsAtAll = product.variants.some(v => format(v.option1_value) === format(value));
@@ -843,7 +843,7 @@ export default function ProductPage() {
                           // Check compatibility with selectedOption1
                           const variant = product.variants.find(v =>
                             format(v.option2_value) === format(value) &&
-                            (!selectedOption1 || !v.option1_value || format(v.option1_value) === format(selectedOption1))
+                            (!selectedOption1 || format(v.option1_value) === format(selectedOption1))
                           );
                           const existsAtAll = product.variants.some(v => v.option2_value === value);
                           const inStock = variant && (!variant.track_inventory || variant.stock_quantity > 0);
