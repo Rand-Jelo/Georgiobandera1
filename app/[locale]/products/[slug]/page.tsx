@@ -79,33 +79,27 @@ export default function ProductPage() {
     // Check Option 1
     const v1 = v.option1_value;
     const s1 = selectedOption1;
-    const match1 = (v1 === s1) || (!v1 && !s1);
+    // Robust matching: check for nulls, then trim strings
+    const format = (val: string | null | undefined) => val ? String(val).trim() : '';
+    const match1 = format(v1) === format(s1) || (!v1 && !s1);
 
     // Check Option 2
     const v2 = v.option2_value;
     const s2 = selectedOption2;
-    const match2 = (v2 === s2) || (!v2 && !s2);
-
-    if (typeof window !== 'undefined' && product) {
-      // console.log(`Variant ${v.id}: v1='${v1}' s1='${s1}' match1=${match1}, v2='${v2}' s2='${s2}' match2=${match2}`);
-    }
+    const match2 = format(v2) === format(s2) || (!v2 && !s2);
 
     return match1 && match2;
   }) || null;
 
+  // Debug toggle (can be hidden in production later)
+  const [showDebug, setShowDebug] = useState(false);
+
   useEffect(() => {
-    if (product) {
-      // Core debug to help identify issues if specific variants aren't matching
-      const variantDebug = product.variants.map(v => ({
-        id: v.id,
-        o1: v.option1_value,
-        o2: v.option2_value,
-        match: (v.option1_value === selectedOption1 || (!v.option1_value && !selectedOption1)) &&
-          (v.option2_value === selectedOption2 || (!v.option2_value && !selectedOption2))
-      }));
-      // console.log('Variant Matching Debug:', { selectedOption1, selectedOption2 }, variantDebug);
+    // Auto-enable debug if query param exists (optional)
+    if (typeof window !== 'undefined' && window.location.search.includes('debug=true')) {
+      setShowDebug(true);
     }
-  }, [product, selectedOption1, selectedOption2]);
+  }, []);
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -1330,6 +1324,35 @@ export default function ProductPage() {
           </div>
         )}
       </div>
+      {/* Debug View */}
+      {showDebug && product && (
+        <div className="fixed bottom-0 left-0 right-0 bg-black/90 text-white p-4 max-h-64 overflow-y-auto z-50 text-xs font-mono">
+          <div className="flex justify-between items-center mb-2 border-b border-gray-700 pb-2">
+            <h3 className="font-bold text-amber-500">DEBUG CONSOLE</h3>
+            <button onClick={() => setShowDebug(false)} className="text-gray-400 hover:text-white">Close</button>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-gray-400 mb-1">State:</div>
+              <div>Selected Opt 1: <span className="text-green-400">"{selectedOption1}"</span></div>
+              <div>Selected Opt 2: <span className="text-green-400">"{selectedOption2}"</span></div>
+              <div>Variant Found: <span className={selectedVariant ? "text-green-400" : "text-red-500"}>{selectedVariant ? "YES" : "NO"}</span></div>
+              {selectedVariant && <div>ID: {selectedVariant.id}</div>}
+            </div>
+            <div>
+              <div className="text-gray-400 mb-1">Raw Variants (Top 3):</div>
+              {product.variants.slice(0, 3).map(v => (
+                <div key={v.id} className="mb-1 border-b border-gray-800 pb-1">
+                  <div>ID: {v.id}</div>
+                  <div>O1: "{v.option1_value}"</div>
+                  <div>O2: "{v.option2_value}"</div>
+                </div>
+              ))}
+              <div className="mt-2 text-gray-500">Total variants: {product.variants.length}</div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

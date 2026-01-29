@@ -101,11 +101,13 @@ export default function VariantSelectionModal({
     const selectedVariant = product?.variants.find(v => {
         const v1 = v.option1_value;
         const s1 = selectedOption1;
-        const match1 = (v1 === s1) || (!v1 && !s1);
+        // Robust matching: check for nulls, then trim strings
+        const format = (val: string | null | undefined) => val ? String(val).trim() : '';
+        const match1 = format(v1) === format(s1) || (!v1 && !s1);
 
         const v2 = v.option2_value;
         const s2 = selectedOption2;
-        const match2 = (v2 === s2) || (!v2 && !s2);
+        const match2 = format(v2) === format(s2) || (!v2 && !s2);
 
         return match1 && match2;
     }) || null;
