@@ -119,15 +119,8 @@ export default function VariantSelectionModal({
             ? format(v2) === format(s2)
             : true;
 
-        if (match1 && match2) console.log('Found variant:', v.id, v.option1_value, v.option2_value);
         return match1 && match2;
     }) || null;
-
-    console.log('--- Debug Modal ---');
-    console.log('Selected:', selectedOption1, selectedOption2);
-    console.log('Formatted:', format(selectedOption1), format(selectedOption2));
-    console.log('Variant:', selectedVariant?.id);
-    console.log('HasOpt:', product?.variants.some(pv => pv.option1_value), product?.variants.some(pv => pv.option2_value));
 
     // Fetch product details with variants
     useEffect(() => {

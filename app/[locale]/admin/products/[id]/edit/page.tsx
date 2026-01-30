@@ -133,8 +133,8 @@ export default function EditProductPage() {
       const data = await response.json() as { product?: Product; variants?: any[]; collections?: string[] };
       if (data.product) {
         // Convert database boolean values (0/1) to actual booleans
-        const featured = typeof data.product.featured === 'number' 
-          ? data.product.featured === 1 
+        const featured = typeof data.product.featured === 'number'
+          ? data.product.featured === 1
           : Boolean(data.product.featured);
         const trackInventory = typeof data.product.track_inventory === 'number'
           ? data.product.track_inventory === 1
@@ -161,43 +161,65 @@ export default function EditProductPage() {
           setSelectedCollections(data.collections);
         }
 
-        // Load variants - separate sizes and colors
+        // Load variants - extract unique sizes and colors
+        // Handles both combined variants (Size+Color) and single-option variants
         if (data.variants) {
-          const sizes: typeof sizeVariants = [];
-          const colors: typeof colorVariants = [];
-          
+          const sizeMap = new Map<string, typeof sizeVariants[0]>();
+          const colorMap = new Map<string, typeof colorVariants[0]>();
+
           data.variants.forEach((v: any) => {
-            // Check if it's a size variant (option1_name is "Size" or similar)
-            if (v.option1_name && (v.option1_name.toLowerCase() === 'size' || v.option1_name.toLowerCase() === 'sizes')) {
-              sizes.push({
-                id: v.id,
-                value: v.option1_value || '',
-                sku: v.sku || '',
-                price: v.price ? v.price.toString() : '',
-                stock_quantity: v.stock_quantity?.toString() || '0',
-                track_inventory: v.track_inventory !== false,
-              });
+            // Extract Size from option1 if present
+            if (v.option1_name && v.option1_name.toLowerCase() === 'size' && v.option1_value) {
+              const sizeKey = v.option1_value.toLowerCase();
+              if (!sizeMap.has(sizeKey)) {
+                sizeMap.set(sizeKey, {
+                  id: v.id, // Use first occurrence's ID
+                  value: v.option1_value,
+                  sku: v.sku || '',
+                  price: v.price ? v.price.toString() : '',
+                  stock_quantity: v.stock_quantity?.toString() || '0',
+                  track_inventory: v.track_inventory !== false,
+                });
+              }
             }
-            // Check if it's a color variant (option2_name is "Color" or similar, or option1_name is "Color")
-            else if ((v.option2_name && (v.option2_name.toLowerCase() === 'color' || v.option2_name.toLowerCase() === 'colors')) ||
-                     (v.option1_name && (v.option1_name.toLowerCase() === 'color' || v.option1_name.toLowerCase() === 'colors'))) {
-              const colorValue = v.option2_value || v.option1_value || '';
-              // Check if it's a hex color
-              const hexMatch = colorValue.match(/^#([0-9A-Fa-f]{6})$/);
-              colors.push({
-                id: v.id,
-                name: hexMatch ? colorValue : colorValue,
-                hex: hexMatch ? colorValue : '#000000',
-                sku: v.sku || '',
-                price: v.price ? v.price.toString() : '',
-                stock_quantity: v.stock_quantity?.toString() || '0',
-                track_inventory: v.track_inventory !== false,
-              });
+
+            // Extract Color from option2 if present
+            if (v.option2_name && v.option2_name.toLowerCase() === 'color' && v.option2_value) {
+              const colorKey = v.option2_value.toLowerCase();
+              if (!colorMap.has(colorKey)) {
+                const hexMatch = v.option2_value.match(/^#([0-9A-Fa-f]{6})$/);
+                colorMap.set(colorKey, {
+                  id: v.id,
+                  name: hexMatch ? v.option2_value : v.option2_value,
+                  hex: hexMatch ? v.option2_value : '#000000',
+                  sku: v.sku || '',
+                  price: v.price ? v.price.toString() : '',
+                  stock_quantity: v.stock_quantity?.toString() || '0',
+                  track_inventory: v.track_inventory !== false,
+                });
+              }
+            }
+
+            // Also handle color-only variants where Color is in option1
+            if (v.option1_name && v.option1_name.toLowerCase() === 'color' && v.option1_value && !v.option2_name) {
+              const colorKey = v.option1_value.toLowerCase();
+              if (!colorMap.has(colorKey)) {
+                const hexMatch = v.option1_value.match(/^#([0-9A-Fa-f]{6})$/);
+                colorMap.set(colorKey, {
+                  id: v.id,
+                  name: hexMatch ? v.option1_value : v.option1_value,
+                  hex: hexMatch ? v.option1_value : '#000000',
+                  sku: v.sku || '',
+                  price: v.price ? v.price.toString() : '',
+                  stock_quantity: v.stock_quantity?.toString() || '0',
+                  track_inventory: v.track_inventory !== false,
+                });
+              }
             }
           });
-          
-          setSizeVariants(sizes);
-          setColorVariants(colors);
+
+          setSizeVariants(Array.from(sizeMap.values()));
+          setColorVariants(Array.from(colorMap.values()));
         }
       }
     } catch (error) {
@@ -226,7 +248,7 @@ export default function EditProductPage() {
       // Optimize image before upload
       const originalSize = file.size;
       console.log(`Original image size: ${formatFileSize(originalSize)}`);
-      
+
       const optimizedBlob = await optimizeImage(file, {
         maxWidth: 1920,
         maxHeight: 1920,
@@ -381,32 +403,69 @@ export default function EditProductPage() {
           featured: Boolean(formData.featured),
           stock_quantity: parseInt(formData.stock_quantity) || 0,
           track_inventory: Boolean(formData.track_inventory),
-          variants: [
-            // Size variants
-            ...sizeVariants.map(v => ({
-              id: v.id,
-              option1_name: 'Size',
-              option1_value: v.value || null,
-              option2_name: null,
-              option2_value: null,
-              sku: v.sku || null,
-              price: v.price && !isNaN(parseFloat(v.price)) ? parseFloat(v.price) : null,
-              stock_quantity: parseInt(v.stock_quantity) || 0,
-              track_inventory: Boolean(v.track_inventory),
-            })),
-            // Color variants
-            ...colorVariants.map(v => ({
-              id: v.id,
-              option1_name: null,
-              option1_value: null,
-              option2_name: 'Color',
-              option2_value: v.hex || v.name || null,
-              sku: v.sku || null,
-              price: v.price && !isNaN(parseFloat(v.price)) ? parseFloat(v.price) : null,
-              stock_quantity: parseInt(v.stock_quantity) || 0,
-              track_inventory: Boolean(v.track_inventory),
-            })),
-          ],
+          variants: (() => {
+            // Determine which options have values
+            const hasSizes = sizeVariants.length > 0 && sizeVariants.some(v => v.value);
+            const hasColors = colorVariants.length > 0 && colorVariants.some(v => v.hex || v.name);
+
+            const variants: any[] = [];
+
+            if (hasSizes && hasColors) {
+              // COMBINED MATRIX: Create Size × Color combinations
+              for (const size of sizeVariants) {
+                if (!size.value) continue;
+                for (const color of colorVariants) {
+                  if (!color.hex && !color.name) continue;
+                  variants.push({
+                    // Note: We don't preserve IDs for combined variants as the structure changes
+                    option1_name: 'Size',
+                    option1_value: size.value,
+                    option2_name: 'Color',
+                    option2_value: color.hex || color.name,
+                    sku: size.sku && color.sku ? `${size.sku}-${color.sku}` : (size.sku || color.sku || null),
+                    price: size.price && !isNaN(parseFloat(size.price)) ? parseFloat(size.price) :
+                      (color.price && !isNaN(parseFloat(color.price)) ? parseFloat(color.price) : null),
+                    stock_quantity: parseInt(size.stock_quantity) || parseInt(color.stock_quantity) || 0,
+                    track_inventory: Boolean(size.track_inventory ?? color.track_inventory ?? true),
+                  });
+                }
+              }
+            } else if (hasSizes) {
+              // SIZE ONLY
+              for (const size of sizeVariants) {
+                if (!size.value) continue;
+                variants.push({
+                  id: size.id,
+                  option1_name: 'Size',
+                  option1_value: size.value,
+                  option2_name: null,
+                  option2_value: null,
+                  sku: size.sku || null,
+                  price: size.price && !isNaN(parseFloat(size.price)) ? parseFloat(size.price) : null,
+                  stock_quantity: parseInt(size.stock_quantity) || 0,
+                  track_inventory: Boolean(size.track_inventory),
+                });
+              }
+            } else if (hasColors) {
+              // COLOR ONLY
+              for (const color of colorVariants) {
+                if (!color.hex && !color.name) continue;
+                variants.push({
+                  id: color.id,
+                  option1_name: null,
+                  option1_value: null,
+                  option2_name: 'Color',
+                  option2_value: color.hex || color.name,
+                  sku: color.sku || null,
+                  price: color.price && !isNaN(parseFloat(color.price)) ? parseFloat(color.price) : null,
+                  stock_quantity: parseInt(color.stock_quantity) || 0,
+                  track_inventory: Boolean(color.track_inventory),
+                });
+              }
+            }
+
+            return variants;
+          })(),
           collection_ids: selectedCollections,
         }),
       });
@@ -463,11 +522,10 @@ export default function EditProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('basic')}
-                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
-                  activeTab === 'basic'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-neutral-300'
-                }`}
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'basic'
+                  ? 'text-white'
+                  : 'text-neutral-400 hover:text-neutral-300'
+                  }`}
               >
                 <span>{t('basicInfo')}</span>
                 {activeTab === 'basic' && (
@@ -477,11 +535,10 @@ export default function EditProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('pricing')}
-                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
-                  activeTab === 'pricing'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-neutral-300'
-                }`}
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'pricing'
+                  ? 'text-white'
+                  : 'text-neutral-400 hover:text-neutral-300'
+                  }`}
               >
                 <span>{t('pricingInventory')}</span>
                 {activeTab === 'pricing' && (
@@ -491,11 +548,10 @@ export default function EditProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('variants')}
-                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
-                  activeTab === 'variants'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-neutral-300'
-                }`}
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'variants'
+                  ? 'text-white'
+                  : 'text-neutral-400 hover:text-neutral-300'
+                  }`}
               >
                 <span>{t('variants')}</span>
                 {activeTab === 'variants' && (
@@ -505,11 +561,10 @@ export default function EditProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('images')}
-                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
-                  activeTab === 'images'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-neutral-300'
-                }`}
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'images'
+                  ? 'text-white'
+                  : 'text-neutral-400 hover:text-neutral-300'
+                  }`}
               >
                 <span>{t('images')}</span>
                 {activeTab === 'images' && (
@@ -534,167 +589,167 @@ export default function EditProductPage() {
                   <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productInformation')}</h2>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('productNameEn')} *
-              </label>
-              <input
-                type="text"
-                id="name_en"
-                name="name_en"
-                required
-                value={formData.name_en}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
+                      <div>
+                        <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('productNameEn')} *
+                        </label>
+                        <input
+                          type="text"
+                          id="name_en"
+                          name="name_en"
+                          required
+                          value={formData.name_en}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
 
-            <div>
-              <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('productNameSv')} *
-              </label>
-              <input
-                type="text"
-                id="name_sv"
-                name="name_sv"
-                required
-                value={formData.name_sv}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-          </div>
+                      <div>
+                        <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('productNameSv')} *
+                        </label>
+                        <input
+                          type="text"
+                          id="name_sv"
+                          name="name_sv"
+                          required
+                          value={formData.name_sv}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
 
-          <div>
-            <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
-              {t('slug')} *
-            </label>
-            <input
-              type="text"
-              id="slug"
-              name="slug"
-              required
-              value={formData.slug}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-            />
-            <p className="mt-1 text-xs text-neutral-500">{t('slugHint')}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('descriptionEn')}
-              </label>
-              <textarea
-                id="description_en"
-                name="description_en"
-                rows={4}
-                value={formData.description_en}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('descriptionSv')}
-              </label>
-              <textarea
-                id="description_sv"
-                name="description_sv"
-                rows={4}
-                value={formData.description_sv}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="category_id" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('category')}
-              </label>
-              <select
-                id="category_id"
-                name="category_id"
-                value={formData.category_id}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              >
-                <option value="">{t('noCategory')}</option>
-                {categories.map((cat) => {
-                  const name = locale === 'sv' ? cat.name_sv : cat.name_en;
-                  return (
-                    <option key={cat.id} value={cat.id}>
-                      {name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="sku" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('sku')}
-              </label>
-              <input
-                type="text"
-                id="sku"
-                name="sku"
-                value={formData.sku}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                name="featured"
-                checked={formData.featured}
-                onChange={handleChange}
-                className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
-              />
-              <span className="text-sm text-neutral-300">{t('featuredProduct')}</span>
-            </label>
-          </div>
-
-          <div className="mt-6">
-            <label className="block text-sm font-medium text-neutral-300 mb-2">
-              {t('collections')}
-            </label>
-            <div className="space-y-2 max-h-48 overflow-y-auto border border-white/20 bg-black/50 rounded-lg p-4">
-              {collections.length === 0 ? (
-                <p className="text-sm text-neutral-500">{t('noCollectionsAvailable')}</p>
-              ) : (
-                collections.map((collection) => {
-                  const name = locale === 'sv' ? collection.name_sv : collection.name_en;
-                  return (
-                    <label key={collection.id} className="flex items-center space-x-3 cursor-pointer hover:bg-white/5 p-2 rounded">
+                    <div>
+                      <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
+                        {t('slug')} *
+                      </label>
                       <input
-                        type="checkbox"
-                        checked={selectedCollections.includes(collection.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedCollections([...selectedCollections, collection.id]);
-                          } else {
-                            setSelectedCollections(selectedCollections.filter(id => id !== collection.id));
-                          }
-                        }}
-                        className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                        type="text"
+                        id="slug"
+                        name="slug"
+                        required
+                        value={formData.slug}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                       />
-                      <span className="text-sm text-neutral-300">{name}</span>
-                    </label>
-                  );
-                })
-              )}
-            </div>
-            <p className="mt-2 text-xs text-neutral-500">{t('selectCollectionsHint')}</p>
-          </div>
+                      <p className="mt-1 text-xs text-neutral-500">{t('slugHint')}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('descriptionEn')}
+                        </label>
+                        <textarea
+                          id="description_en"
+                          name="description_en"
+                          rows={4}
+                          value={formData.description_en}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('descriptionSv')}
+                        </label>
+                        <textarea
+                          id="description_sv"
+                          name="description_sv"
+                          rows={4}
+                          value={formData.description_sv}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="category_id" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('category')}
+                        </label>
+                        <select
+                          id="category_id"
+                          name="category_id"
+                          value={formData.category_id}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        >
+                          <option value="">{t('noCategory')}</option>
+                          {categories.map((cat) => {
+                            const name = locale === 'sv' ? cat.name_sv : cat.name_en;
+                            return (
+                              <option key={cat.id} value={cat.id}>
+                                {name}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="sku" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('sku')}
+                        </label>
+                        <input
+                          type="text"
+                          id="sku"
+                          name="sku"
+                          value={formData.sku}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-6">
+                      <label className="flex items-center space-x-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="featured"
+                          checked={formData.featured}
+                          onChange={handleChange}
+                          className="w-5 h-5 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                        />
+                        <span className="text-sm text-neutral-300">{t('featuredProduct')}</span>
+                      </label>
+                    </div>
+
+                    <div className="mt-6">
+                      <label className="block text-sm font-medium text-neutral-300 mb-2">
+                        {t('collections')}
+                      </label>
+                      <div className="space-y-2 max-h-48 overflow-y-auto border border-white/20 bg-black/50 rounded-lg p-4">
+                        {collections.length === 0 ? (
+                          <p className="text-sm text-neutral-500">{t('noCollectionsAvailable')}</p>
+                        ) : (
+                          collections.map((collection) => {
+                            const name = locale === 'sv' ? collection.name_sv : collection.name_en;
+                            return (
+                              <label key={collection.id} className="flex items-center space-x-3 cursor-pointer hover:bg-white/5 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedCollections.includes(collection.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedCollections([...selectedCollections, collection.id]);
+                                    } else {
+                                      setSelectedCollections(selectedCollections.filter(id => id !== collection.id));
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded border-white/20 bg-black/50 text-white focus:ring-2 focus:ring-white/30"
+                                />
+                                <span className="text-sm text-neutral-300">{name}</span>
+                              </label>
+                            );
+                          })
+                        )}
+                      </div>
+                      <p className="mt-2 text-xs text-neutral-500">{t('selectCollectionsHint')}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -798,7 +853,7 @@ export default function EditProductPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productVariants')}</h2>
-                  
+
                   {/* Size Variants */}
                   <div className="mb-8">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
@@ -1033,7 +1088,7 @@ export default function EditProductPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productImages')}</h2>
-                  
+
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
@@ -1074,10 +1129,10 @@ export default function EditProductPage() {
                               className="absolute top-2 right-2 px-2 py-1 text-xs font-medium rounded bg-red-500/80 text-white hover:bg-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               {t('delete')}
-                              </button>
-                              <div className="mt-1 text-xs text-neutral-400 text-center">
-                                {t('sort')}: {image.sort_order}
-                              </div>
+                            </button>
+                            <div className="mt-1 text-xs text-neutral-400 text-center">
+                              {t('sort')}: {image.sort_order}
+                            </div>
                           </div>
                         ))}
                       </div>
