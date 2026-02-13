@@ -35,6 +35,8 @@ export interface Product {
   slug: string;
   description_en: string | null;
   description_sv: string | null;
+  instructions_en: string | null;
+  instructions_sv: string | null;
   category_id: string | null;
   price: number;
   compare_at_price: number | null;

@@ -33,6 +33,8 @@ const updateProductSchema = z.object({
   slug: z.string().min(1).optional(),
   description_en: z.string().nullable().optional(),
   description_sv: z.string().nullable().optional(),
+  instructions_en: z.string().nullable().optional(),
+  instructions_sv: z.string().nullable().optional(),
   category_id: z.string().nullable().optional(),
   price: z.number().min(0).optional(), // Allow 0, just not negative
   compare_at_price: z.number().min(0).nullable().optional(), // Allow 0 or null
@@ -168,6 +170,8 @@ export async function PATCH(
     if (validated.slug !== undefined) { fields.push('slug = ?'); values.push(validated.slug); }
     if (validated.description_en !== undefined) { fields.push('description_en = ?'); values.push(validated.description_en); }
     if (validated.description_sv !== undefined) { fields.push('description_sv = ?'); values.push(validated.description_sv); }
+    if (validated.instructions_en !== undefined) { fields.push('instructions_en = ?'); values.push(validated.instructions_en); }
+    if (validated.instructions_sv !== undefined) { fields.push('instructions_sv = ?'); values.push(validated.instructions_sv); }
     if (validated.category_id !== undefined) { fields.push('category_id = ?'); values.push(validated.category_id); }
     if (validated.price !== undefined) { fields.push('price = ?'); values.push(validated.price); }
     if (validated.compare_at_price !== undefined) { fields.push('compare_at_price = ?'); values.push(validated.compare_at_price); }

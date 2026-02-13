@@ -30,6 +30,8 @@ export default function NewProductPage() {
     slug: '',
     description_en: '',
     description_sv: '',
+    instructions_en: '',
+    instructions_sv: '',
     category_id: '',
     price: '',
     compare_at_price: '',
@@ -285,7 +287,7 @@ export default function NewProductPage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!createdProductId) return;
-    
+
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -295,7 +297,7 @@ export default function NewProductPage() {
       // Optimize image before upload
       const originalSize = file.size;
       console.log(`Original image size: ${formatFileSize(originalSize)}`);
-      
+
       const optimizedBlob = await optimizeImage(file, {
         maxWidth: 1920,
         maxHeight: 1920,
@@ -344,7 +346,7 @@ export default function NewProductPage() {
 
   const handleDeleteImage = async (imageId: string) => {
     if (!createdProductId) return;
-    
+
     if (!confirm(t('confirmDeleteImage'))) {
       return;
     }
@@ -409,11 +411,10 @@ export default function NewProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('basic')}
-                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
-                  activeTab === 'basic'
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'basic'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
-                }`}
+                  }`}
               >
                 <span>{t('basicInfo')}</span>
                 {activeTab === 'basic' && (
@@ -423,11 +424,10 @@ export default function NewProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('pricing')}
-                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
-                  activeTab === 'pricing'
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'pricing'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
-                }`}
+                  }`}
               >
                 <span>{t('pricingInventory')}</span>
                 {activeTab === 'pricing' && (
@@ -437,11 +437,10 @@ export default function NewProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('variants')}
-                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
-                  activeTab === 'variants'
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'variants'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
-                }`}
+                  }`}
               >
                 <span>{t('variants')}</span>
                 {activeTab === 'variants' && (
@@ -451,11 +450,10 @@ export default function NewProductPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('images')}
-                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${
-                  activeTab === 'images'
+                className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'images'
                     ? 'text-white'
                     : 'text-neutral-400 hover:text-neutral-300'
-                }`}
+                  }`}
               >
                 <span>{t('images')}</span>
                 {activeTab === 'images' && (
@@ -480,120 +478,152 @@ export default function NewProductPage() {
                   <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productInformation')}</h2>
                   <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('productNameEn')} *
-              </label>
-              <input
-                type="text"
-                id="name_en"
-                name="name_en"
-                required
-                value={formData.name_en}
-                onChange={(e) => handleNameChange('name_en', e.target.value)}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
+                      <div>
+                        <label htmlFor="name_en" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('productNameEn')} *
+                        </label>
+                        <input
+                          type="text"
+                          id="name_en"
+                          name="name_en"
+                          required
+                          value={formData.name_en}
+                          onChange={(e) => handleNameChange('name_en', e.target.value)}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
 
-            <div>
-              <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('productNameSv')} *
-              </label>
-              <input
-                type="text"
-                id="name_sv"
-                name="name_sv"
-                required
-                value={formData.name_sv}
-                onChange={(e) => handleNameChange('name_sv', e.target.value)}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-          </div>
+                      <div>
+                        <label htmlFor="name_sv" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('productNameSv')} *
+                        </label>
+                        <input
+                          type="text"
+                          id="name_sv"
+                          name="name_sv"
+                          required
+                          value={formData.name_sv}
+                          onChange={(e) => handleNameChange('name_sv', e.target.value)}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
 
-          <div>
-            <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
-              {t('slug')} *
-            </label>
-            <input
-              type="text"
-              id="slug"
-              name="slug"
-              required
-              value={formData.slug}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-            />
-            <p className="mt-1 text-xs text-neutral-500">{t('slugHint')}</p>
-          </div>
+                    <div>
+                      <label htmlFor="slug" className="block text-sm font-medium text-neutral-300 mb-2">
+                        {t('slug')} *
+                      </label>
+                      <input
+                        type="text"
+                        id="slug"
+                        name="slug"
+                        required
+                        value={formData.slug}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                      />
+                      <p className="mt-1 text-xs text-neutral-500">{t('slugHint')}</p>
+                    </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('descriptionEn')}
-              </label>
-              <textarea
-                id="description_en"
-                name="description_en"
-                rows={4}
-                value={formData.description_en}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="description_en" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('descriptionEn')}
+                        </label>
+                        <textarea
+                          id="description_en"
+                          name="description_en"
+                          rows={4}
+                          value={formData.description_en}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
 
-            <div>
-              <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('descriptionSv')}
-              </label>
-              <textarea
-                id="description_sv"
-                name="description_sv"
-                rows={4}
-                value={formData.description_sv}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
-          </div>
+                      <div>
+                        <label htmlFor="description_sv" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('descriptionSv')}
+                        </label>
+                        <textarea
+                          id="description_sv"
+                          name="description_sv"
+                          rows={4}
+                          value={formData.description_sv}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="category_id" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('category')}
-              </label>
-              <select
-                id="category_id"
-                name="category_id"
-                value={formData.category_id}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              >
-                <option value="">{t('noCategory')}</option>
-                {categories.map((cat) => {
-                  const name = locale === 'sv' ? cat.name_sv : cat.name_en;
-                  return (
-                    <option key={cat.id} value={cat.id}>
-                      {name}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="instructions_en" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('instructionsEn')}
+                        </label>
+                        <textarea
+                          id="instructions_en"
+                          name="instructions_en"
+                          rows={4}
+                          value={formData.instructions_en}
+                          onChange={handleChange}
+                          placeholder={locale === 'sv' ? 'T.ex. applicera på fuktigt hår...' : 'E.g. apply to damp hair...'}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
 
-            <div>
-              <label htmlFor="sku" className="block text-sm font-medium text-neutral-300 mb-2">
-                {t('sku')}
-              </label>
-              <input
-                type="text"
-                id="sku"
-                name="sku"
-                value={formData.sku}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
-              />
-            </div>
+                      <div>
+                        <label htmlFor="instructions_sv" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('instructionsSv')}
+                        </label>
+                        <textarea
+                          id="instructions_sv"
+                          name="instructions_sv"
+                          rows={4}
+                          value={formData.instructions_sv}
+                          onChange={handleChange}
+                          placeholder={locale === 'sv' ? 'T.ex. applicera på fuktigt hår...' : 'E.g. apply to damp hair...'}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="category_id" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('category')}
+                        </label>
+                        <select
+                          id="category_id"
+                          name="category_id"
+                          value={formData.category_id}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        >
+                          <option value="">{t('noCategory')}</option>
+                          {categories.map((cat) => {
+                            const name = locale === 'sv' ? cat.name_sv : cat.name_en;
+                            return (
+                              <option key={cat.id} value={cat.id}>
+                                {name}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="sku" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('sku')}
+                        </label>
+                        <input
+                          type="text"
+                          id="sku"
+                          name="sku"
+                          value={formData.sku}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
                     </div>
 
                     <div className="mt-6">
@@ -744,7 +774,7 @@ export default function NewProductPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productVariants')}</h2>
-                  
+
                   {/* Size Variants */}
                   <div className="mb-8">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
@@ -979,7 +1009,7 @@ export default function NewProductPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">{t('productImages')}</h2>
-                  
+
                   {!createdProductId ? (
                     <div className="p-8 border border-white/10 rounded-lg bg-black/30 text-center">
                       <p className="text-neutral-400 mb-4">{t('createProductFirstForImages')}</p>

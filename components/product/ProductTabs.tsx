@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 
 interface ProductTabsProps {
   description?: string | null;
+  instructions?: string | null;
   sku?: string | null;
   stockQuantity: number;
   trackInventory: boolean;
@@ -17,6 +18,7 @@ interface ProductTabsProps {
 
 export default function ProductTabs({
   description,
+  instructions,
   sku,
   stockQuantity,
   trackInventory,
@@ -25,10 +27,11 @@ export default function ProductTabs({
   shippingContent,
 }: ProductTabsProps) {
   const t = useTranslations('product');
-  const [activeTab, setActiveTab] = useState<'description' | 'specs' | 'reviews' | 'shipping'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'instructions' | 'specs' | 'reviews' | 'shipping'>('description');
 
   const tabs = [
     { id: 'description' as const, label: t('description') || 'Description' },
+    ...(instructions ? [{ id: 'instructions' as const, label: t('instructions') || 'Instructions' }] : []),
     { id: 'specs' as const, label: t('specifications') || 'Specifications' },
     { id: 'reviews' as const, label: t('reviews') || 'Reviews' },
     { id: 'shipping' as const, label: t('shipping') || 'Shipping' },
@@ -45,10 +48,9 @@ export default function ProductTabs({
               onClick={() => setActiveTab(tab.id)}
               className={`
                 whitespace-nowrap py-4 px-1 border-b-2 text-xs font-light uppercase tracking-[0.2em] transition-colors duration-300
-                ${
-                  activeTab === tab.id
-                    ? 'border-neutral-900 text-neutral-900'
-                    : 'border-transparent text-neutral-400 hover:text-neutral-600 hover:border-neutral-300'
+                ${activeTab === tab.id
+                  ? 'border-neutral-900 text-neutral-900'
+                  : 'border-transparent text-neutral-400 hover:text-neutral-600 hover:border-neutral-300'
                 }
               `}
             >
@@ -67,6 +69,12 @@ export default function ProductTabs({
             ) : (
               <p className="text-neutral-400 italic font-light">No description available.</p>
             )}
+          </div>
+        )}
+
+        {activeTab === 'instructions' && instructions && (
+          <div className="prose prose-sm max-w-none text-neutral-600 leading-relaxed font-light">
+            <div dangerouslySetInnerHTML={{ __html: instructions }} />
           </div>
         )}
 

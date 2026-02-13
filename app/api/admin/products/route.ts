@@ -30,6 +30,8 @@ const createProductSchema = z.object({
   slug: z.string().min(1),
   description_en: z.string().optional(),
   description_sv: z.string().optional(),
+  instructions_en: z.string().optional(),
+  instructions_sv: z.string().optional(),
   category_id: z.string().nullable().optional(),
   price: z.number().positive(),
   compare_at_price: z.number().positive().nullable().optional(),
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
 
     const db = getDB();
     const user = await getUserById(db, session.userId);
-    
+
     if (!user || !user.is_admin) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     console.log('Creating product with data:', JSON.stringify(body, null, 2));
-    
+
     const validated = createProductSchema.parse(body);
     console.log('Validated product data:', JSON.stringify(validated, null, 2));
 
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
       console.error('Error checking slug:', queryError);
       // Continue anyway - if query fails, we'll catch it later
     }
-    
+
     if (existingProduct) {
       return NextResponse.json(
         { error: 'Product with this slug already exists' },
@@ -96,7 +98,7 @@ export async function POST(request: NextRequest) {
         "SELECT id, slug FROM products WHERE slug = ? AND status = 'archived'",
         [validated.slug]
       );
-      
+
       if (archivedProduct) {
         console.log('Found archived product with same slug, updating it:', archivedProduct.id);
         // Update the archived product's slug to free it up
@@ -127,9 +129,10 @@ export async function POST(request: NextRequest) {
       db,
       `INSERT INTO products (
         id, name_en, name_sv, slug, description_en, description_sv,
+        instructions_en, instructions_sv,
         category_id, price, compare_at_price, sku, status, featured,
         stock_quantity, track_inventory, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         validated.name_en,
@@ -137,6 +140,8 @@ export async function POST(request: NextRequest) {
         validated.slug,
         validated.description_en || null,
         validated.description_sv || null,
+        validated.instructions_en || null,
+        validated.instructions_sv || null,
         validated.category_id || null,
         validated.price,
         validated.compare_at_price || null,
@@ -204,9 +209,9 @@ export async function POST(request: NextRequest) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const errorStack = error instanceof Error ? error.stack : undefined;
     console.error('Error details:', { errorMessage, errorStack });
-    
+
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to create product',
         details: errorMessage,
       },

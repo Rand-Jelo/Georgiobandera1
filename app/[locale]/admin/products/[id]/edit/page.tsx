@@ -32,6 +32,8 @@ export default function EditProductPage() {
     slug: '',
     description_en: '',
     description_sv: '',
+    instructions_en: '',
+    instructions_sv: '',
     category_id: '',
     price: '',
     compare_at_price: '',
@@ -146,6 +148,8 @@ export default function EditProductPage() {
           slug: data.product.slug,
           description_en: data.product.description_en || '',
           description_sv: data.product.description_sv || '',
+          instructions_en: data.product.instructions_en || '',
+          instructions_sv: data.product.instructions_sv || '',
           category_id: data.product.category_id || '',
           price: data.product.price.toString(),
           compare_at_price: data.product.compare_at_price?.toString() || '',
@@ -395,6 +399,8 @@ export default function EditProductPage() {
           slug: formData.slug,
           description_en: formData.description_en || null,
           description_sv: formData.description_sv || null,
+          instructions_en: formData.instructions_en || null,
+          instructions_sv: formData.instructions_sv || null,
           category_id: formData.category_id || null,
           price: parseFloat(formData.price) || 0,
           compare_at_price: formData.compare_at_price ? (parseFloat(formData.compare_at_price) || null) : null,
@@ -661,6 +667,38 @@ export default function EditProductPage() {
                           rows={4}
                           value={formData.description_sv}
                           onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="instructions_en" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('instructionsEn')}
+                        </label>
+                        <textarea
+                          id="instructions_en"
+                          name="instructions_en"
+                          rows={4}
+                          value={formData.instructions_en}
+                          onChange={handleChange}
+                          placeholder={locale === 'sv' ? 'T.ex. applicera på fuktigt hår...' : 'E.g. apply to damp hair...'}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="instructions_sv" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('instructionsSv')}
+                        </label>
+                        <textarea
+                          id="instructions_sv"
+                          name="instructions_sv"
+                          rows={4}
+                          value={formData.instructions_sv}
+                          onChange={handleChange}
+                          placeholder={locale === 'sv' ? 'T.ex. applicera på fuktigt hår...' : 'E.g. apply to damp hair...'}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
                       </div>
