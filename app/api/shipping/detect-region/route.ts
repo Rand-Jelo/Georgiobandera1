@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     const validated = detectSchema.parse(body);
 
     const db = getDB();
-    
+
     // Find the shipping region that matches this country
     const region = await getShippingRegionByCountry(db, validated.country);
 
@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
         code: region.code,
         base_price: region.base_price,
         free_shipping_threshold: region.free_shipping_threshold,
+        shipping_thresholds: region.shipping_thresholds,
         active: region.active,
       },
     });

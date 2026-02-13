@@ -26,6 +26,7 @@ interface ShippingRegion {
   code: string;
   base_price: number;
   free_shipping_threshold: number | null;
+  shipping_thresholds: Array<{ min_order_amount: number; shipping_price: number }>;
   active: boolean;
   created_at: number;
   updated_at: number;
@@ -245,6 +246,7 @@ export default function CheckoutPage() {
           code: string;
           base_price: number;
           free_shipping_threshold: number | null;
+          shipping_thresholds?: Array<{ min_order_amount: number; shipping_price: number }>;
           active: boolean;
         };
         error?: string
@@ -266,6 +268,7 @@ export default function CheckoutPage() {
             code: data.region.code,
             base_price: data.region.base_price,
             free_shipping_threshold: data.region.free_shipping_threshold,
+            shipping_thresholds: data.region.shipping_thresholds || [],
             active: data.region.active,
             created_at: 0,
             updated_at: 0,
@@ -1259,21 +1262,42 @@ export default function CheckoutPage() {
                             <span className="text-sm font-medium text-gray-900">
                               {locale === 'sv' ? selectedRegion.name_sv : selectedRegion.name_en}
                             </span>
-                            {selectedRegion.free_shipping_threshold && subtotal < selectedRegion.free_shipping_threshold && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                {t('freeShippingOver', { amount: formatPrice(selectedRegion.free_shipping_threshold, 'SEK') })}
-                              </p>
-                            )}
+                            {(() => {
+                              // Find the next threshold the user could reach for a lower shipping cost
+                              const thresholds = selectedRegion.shipping_thresholds || [];
+                              if (thresholds.length > 0) {
+                                const sorted = [...thresholds].sort((a, b) => a.min_order_amount - b.min_order_amount);
+                                const nextThreshold = sorted.find(th => th.min_order_amount > subtotal);
+                                if (nextThreshold) {
+                                  const remaining = nextThreshold.min_order_amount - subtotal;
+                                  const label = nextThreshold.shipping_price === 0
+                                    ? t('freeShippingOver', { amount: formatPrice(nextThreshold.min_order_amount, 'SEK') })
+                                    : (locale === 'sv'
+                                      ? `Frakt ${formatPrice(nextThreshold.shipping_price, 'SEK')} vid ${formatPrice(nextThreshold.min_order_amount, 'SEK')}`
+                                      : `Shipping ${formatPrice(nextThreshold.shipping_price, 'SEK')} at ${formatPrice(nextThreshold.min_order_amount, 'SEK')}`);
+                                  return (
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      {label}
+                                    </p>
+                                  );
+                                }
+                                return null;
+                              }
+                              // Legacy fallback
+                              if (selectedRegion.free_shipping_threshold && subtotal < selectedRegion.free_shipping_threshold) {
+                                return (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {t('freeShippingOver', { amount: formatPrice(selectedRegion.free_shipping_threshold, 'SEK') })}
+                                  </p>
+                                );
+                              }
+                              return null;
+                            })()}
                           </div>
                         </div>
                         <span className="text-sm font-medium text-gray-900">
                           {(() => {
-                            // Calculate display price - use shippingCost if available, otherwise calculate from region
-                            const displayCost = shippingCost !== null
-                              ? shippingCost
-                              : (selectedRegion.free_shipping_threshold && subtotal >= selectedRegion.free_shipping_threshold)
-                                ? 0
-                                : selectedRegion.base_price;
+                            const displayCost = shippingCost !== null ? shippingCost : selectedRegion.base_price;
                             return displayCost === 0 ? t('free') : formatPrice(displayCost, 'SEK');
                           })()}
                         </span>
