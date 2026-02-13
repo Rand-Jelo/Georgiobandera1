@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDB } from '@/lib/db/client';
-import { queryDB } from '@/lib/db/client';
+import { getDB, queryDB } from '@/lib/db/client';
 
 /**
  * GET /api/products/related?productId=xxx&limit=4
@@ -46,9 +45,7 @@ export async function GET(request: NextRequest) {
         let parentCategoryId: string | null = null;
         if (current.category_id) {
             const catResult = await queryDB<{ parent_id: string | null }>(
-                db,
-                `SELECT parent_id FROM categories WHERE id = ?`,
-                [current.category_id]
+                db, `SELECT parent_id FROM categories WHERE id = ?`, [current.category_id]
             );
             const cats = catResult.results || [];
             if (cats.length > 0) {
@@ -56,78 +53,72 @@ export async function GET(request: NextRequest) {
             }
         }
 
-        // 3. Get sibling category IDs (categories with same parent)
+        // 3. Get sibling category IDs
         let siblingCategoryIds: string[] = [];
         if (parentCategoryId) {
             const sibResult = await queryDB<{ id: string }>(
-                db,
-                `SELECT id FROM categories WHERE parent_id = ? AND id != ?`,
+                db, `SELECT id FROM categories WHERE parent_id = ? AND id != ?`,
                 [parentCategoryId, current.category_id || '']
             );
             siblingCategoryIds = (sibResult.results || []).map((s: { id: string }) => s.id);
         }
 
-        // 4. Get collections that the current product belongs to
+        // 4. Get collections the current product belongs to
         const collResult = await queryDB<{ collection_id: string }>(
-            db,
-            `SELECT collection_id FROM product_collections WHERE product_id = ?`,
-            [productId]
+            db, `SELECT collection_id FROM product_collections WHERE product_id = ?`, [productId]
         );
         const collectionIds = (collResult.results || []).map((c: { collection_id: string }) => c.collection_id);
 
-        // 5. Build the scoring query
+        // 5. Build scoring query using a CTE so the score expression is only evaluated once
         const scoreParts: string[] = [];
-        const params: (string | number)[] = [];
+        const scoreParams: (string | number)[] = [];
 
-        // Score: same collection (weight 5)
         if (collectionIds.length > 0) {
             const placeholders = collectionIds.map(() => '?').join(',');
             scoreParts.push(`(CASE WHEN EXISTS (
-        SELECT 1 FROM product_collections pc2 
-        WHERE pc2.product_id = p.id 
+        SELECT 1 FROM product_collections pc2
+        WHERE pc2.product_id = p.id
         AND pc2.collection_id IN (${placeholders})
       ) THEN 5 ELSE 0 END)`);
-            params.push(...collectionIds);
+            scoreParams.push(...collectionIds);
         }
 
-        // Score: same category (weight 3)
         if (current.category_id) {
             scoreParts.push(`(CASE WHEN p.category_id = ? THEN 3 ELSE 0 END)`);
-            params.push(current.category_id);
+            scoreParams.push(current.category_id);
         }
 
-        // Score: sibling category (weight 2)
         if (siblingCategoryIds.length > 0) {
             const placeholders = siblingCategoryIds.map(() => '?').join(',');
             scoreParts.push(`(CASE WHEN p.category_id IN (${placeholders}) THEN 2 ELSE 0 END)`);
-            params.push(...siblingCategoryIds);
+            scoreParams.push(...siblingCategoryIds);
         }
 
-        // Score: similar price range (weight 1)
         scoreParts.push(`(CASE WHEN p.price BETWEEN ? AND ? THEN 1 ELSE 0 END)`);
-        params.push(priceMin, priceMax);
+        scoreParams.push(priceMin, priceMax);
 
-        // Score: featured (weight 2)
         scoreParts.push(`(CASE WHEN p.featured = 1 THEN 2 ELSE 0 END)`);
 
-        const scoreExpression = scoreParts.length > 0
-            ? scoreParts.join(' + ')
-            : '0';
+        const scoreExpression = scoreParts.join(' + ');
 
-        // 6. Query candidates with scores
+        // Use a CTE (WITH clause) so the score is computed once and filtered in outer query
         const sql = `
-      SELECT 
-        p.id, p.name_en, p.name_sv, p.slug, p.price, p.compare_at_price,
-        p.featured, p.status, p.category_id, p.created_at,
-        (${scoreExpression}) as relevance_score
-      FROM products p
-      WHERE p.id != ? 
-        AND p.status = 'active'
-        AND (${scoreExpression}) > 0
-      ORDER BY relevance_score DESC, p.featured DESC, p.created_at DESC
+      WITH scored AS (
+        SELECT
+          p.id, p.name_en, p.name_sv, p.slug, p.price, p.compare_at_price,
+          p.featured, p.category_id, p.created_at,
+          (${scoreExpression}) as relevance_score
+        FROM products p
+        WHERE p.id != ?
+          AND p.status = 'active'
+      )
+      SELECT * FROM scored
+      WHERE relevance_score > 0
+      ORDER BY relevance_score DESC, featured DESC, created_at DESC
       LIMIT ?
     `;
-        params.push(productId, limit + 4);
+
+        const allParams = [...scoreParams, productId, limit + 4];
 
         interface CandidateProduct {
             id: string;
@@ -137,16 +128,15 @@ export async function GET(request: NextRequest) {
             price: number;
             compare_at_price: number | null;
             featured: number;
-            status: string;
             category_id: string | null;
             created_at: number;
             relevance_score: number;
         }
 
-        const candidateResult = await queryDB<CandidateProduct>(db, sql, params);
+        const candidateResult = await queryDB<CandidateProduct>(db, sql, allParams);
         const candidates = candidateResult.results || [];
 
-        // 7. If not enough results, fill with featured products
+        // 6. If not enough results, fill with featured products
         let results: CandidateProduct[] = candidates.slice(0, limit);
 
         if (results.length < limit) {
@@ -155,7 +145,7 @@ export async function GET(request: NextRequest) {
 
             const featuredResult = await queryDB<Omit<CandidateProduct, 'relevance_score'>>(
                 db,
-                `SELECT id, name_en, name_sv, slug, price, compare_at_price, featured, status, category_id, created_at
+                `SELECT id, name_en, name_sv, slug, price, compare_at_price, featured, category_id, created_at
          FROM products
          WHERE id NOT IN (${excludePlaceholders})
            AND status = 'active'
@@ -171,7 +161,7 @@ export async function GET(request: NextRequest) {
             ];
         }
 
-        // 8. Enrich with images and category info
+        // 7. Enrich with images and category info
         const enriched = await Promise.all(
             results.map(async (product) => {
                 const imgResult = await queryDB<{ url: string; alt_text: string | null; position: number }>(
@@ -183,9 +173,7 @@ export async function GET(request: NextRequest) {
                 let category: { name_en: string; name_sv: string; slug: string } | null = null;
                 if (product.category_id) {
                     const catResult = await queryDB<{ name_en: string; name_sv: string; slug: string }>(
-                        db,
-                        `SELECT name_en, name_sv, slug FROM categories WHERE id = ?`,
-                        [product.category_id]
+                        db, `SELECT name_en, name_sv, slug FROM categories WHERE id = ?`, [product.category_id]
                     );
                     const catRows = catResult.results || [];
                     if (catRows.length > 0) category = catRows[0];
