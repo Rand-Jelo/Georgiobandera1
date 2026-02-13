@@ -38,7 +38,7 @@ interface Category {
   children?: Category[];
 }
 
-type SortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc';
+type SortOption = 'featured' | 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'name_asc' | 'name_desc';
 type ViewMode = 'grid' | 'list';
 
 const ITEMS_PER_PAGE = 12;
@@ -74,7 +74,7 @@ export default function ShopPage() {
     inStock: undefined,
   });
 
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [sortBy, setSortBy] = useState<SortOption>('featured');
   const [collectionId, setCollectionId] = useState<string | null>(null);
 
   // Load categories
@@ -95,7 +95,7 @@ export default function ShopPage() {
     const maxPrice = searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined;
     const inStockParam = searchParams.get('inStock');
     const inStock = inStockParam === 'true' ? true : inStockParam === 'false' ? false : undefined;
-    const sort = (searchParams.get('sort') as SortOption) || 'newest';
+    const sort = (searchParams.get('sort') as SortOption) || 'featured';
     const page = parseInt(searchParams.get('page') || '1');
     const collection = searchParams.get('collection') || null;
 
@@ -506,6 +506,7 @@ export default function ShopPage() {
                   onChange={(e) => handleSortChange(e.target.value as SortOption)}
                   className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white/50 backdrop-blur-sm border border-neutral-200/50 rounded-full text-neutral-900 text-[10px] sm:text-xs md:text-sm font-light tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500/30 transition-all"
                 >
+                  <option value="featured">{tProduct('sortFeatured') || 'Featured'}</option>
                   <option value="newest">{tProduct('sortNewest') || 'Newest'}</option>
                   <option value="oldest">{tProduct('sortOldest') || 'Oldest'}</option>
                   <option value="price_asc">{tProduct('sortPriceLow') || 'Price: Low to High'}</option>

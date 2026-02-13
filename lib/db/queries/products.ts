@@ -13,7 +13,7 @@ export async function getProducts(
     minPrice?: number;
     maxPrice?: number;
     inStock?: boolean;
-    sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'popularity';
+    sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'oldest' | 'name_asc' | 'name_desc' | 'popularity' | 'featured';
     limit?: number;
     offset?: number;
   } = {}
@@ -89,6 +89,9 @@ export async function getProducts(
       // For popularity, we'll need to join with order_items
       // For now, fall back to created_at DESC
       sql += ' ORDER BY p.created_at DESC';
+      break;
+    case 'featured':
+      sql += ' ORDER BY p.featured DESC, p.created_at DESC';
       break;
     default:
       sql += ' ORDER BY p.created_at DESC';
