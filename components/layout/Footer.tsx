@@ -104,7 +104,7 @@ export default function Footer() {
                   return (
                     <li key={category.id}>
                       <Link
-                        href={`/categories/${category.slug}`}
+                        href={`/shop?category=${category.slug}`}
                         className="hover:text-amber-400 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] underline decoration-transparent md:hover:decoration-amber-400 underline-offset-4 hover:gold-glow"
                       >
                         {name}
@@ -225,22 +225,20 @@ export default function Footer() {
               <Link
                 href={pathname}
                 locale="en"
-                className={`text-[11px] uppercase tracking-wide transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
-                  currentLocale === 'en'
+                className={`text-[11px] uppercase tracking-wide transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${currentLocale === 'en'
                     ? 'text-neutral-200 font-semibold'
                     : 'hover:text-amber-400'
-                }`}
+                  }`}
               >
                 EN
               </Link>
               <Link
                 href={pathname}
                 locale="sv"
-                className={`text-[11px] uppercase tracking-wide transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${
-                  currentLocale === 'sv'
+                className={`text-[11px] uppercase tracking-wide transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:gold-glow ${currentLocale === 'sv'
                     ? 'text-neutral-200 font-semibold'
                     : 'hover:text-amber-400'
-                }`}
+                  }`}
               >
                 SV
               </Link>
