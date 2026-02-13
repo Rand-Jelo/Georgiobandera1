@@ -64,10 +64,10 @@ export default function Collections() {
     }
   };
 
-  const title = locale === 'sv' 
+  const title = locale === 'sv'
     ? (content?.title_sv || 'Upptäck Vårt Sortiment')
     : (content?.title_en || 'Discover Our Range');
-  
+
   const subtitle = locale === 'sv'
     ? (content?.subtitle_sv || 'Utforska Kollektioner')
     : (content?.subtitle_en || 'Explore Collections');
@@ -102,10 +102,10 @@ export default function Collections() {
             {collections.map((collection) => {
               const name = locale === 'sv' ? collection.name_sv : collection.name_en;
               const description = locale === 'sv' ? collection.description_sv : collection.description_en;
-              
+
               // Update href to use collection parameter instead of custom href
               const collectionHref = `/shop?collection=${collection.id}`;
-              
+
               return (
                 <Link
                   key={collection.id}
@@ -145,10 +145,10 @@ export default function Collections() {
                     <p className="text-xs text-neutral-500 font-light sm:text-sm">
                       {description || ''}
                     </p>
-                    
+
                     {/* Hover indicator */}
                     <div className="mt-3 flex items-center gap-2 text-[10px] font-light tracking-wider text-neutral-400 group-hover:text-amber-600 transition-colors duration-300 sm:mt-4 sm:text-xs">
-                      <span>Explore</span>
+                      <span>{locale === 'sv' ? 'Utforska' : 'Explore'}</span>
                       <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
                     </div>
                   </div>
