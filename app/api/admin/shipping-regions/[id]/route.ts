@@ -85,6 +85,7 @@ export async function PATCH(
       code?: string;
       base_price?: number;
       free_shipping_threshold?: number | null;
+      shipping_thresholds?: Array<{ min_order_amount: number; shipping_price: number }>;
       active?: boolean;
       countries?: string[];
     };

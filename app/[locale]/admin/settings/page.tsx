@@ -126,6 +126,7 @@ export default function AdminSettingsPage() {
     free_shipping_threshold: '',
     active: true,
     countries: [] as string[],
+    shipping_thresholds: [] as Array<{ min_order_amount: string; shipping_price: string }>,
   });
 
   useEffect(() => {
@@ -257,6 +258,13 @@ export default function AdminSettingsPage() {
         free_shipping_threshold: regionForm.free_shipping_threshold ? parseFloat(regionForm.free_shipping_threshold) : null,
         active: regionForm.active,
         countries: regionForm.countries,
+        shipping_thresholds: regionForm.shipping_thresholds
+          .filter(t => t.min_order_amount && t.shipping_price !== '')
+          .map(t => ({
+            min_order_amount: parseFloat(t.min_order_amount),
+            shipping_price: parseFloat(t.shipping_price),
+          }))
+          .sort((a, b) => a.min_order_amount - b.min_order_amount),
       };
 
       let response;
@@ -290,6 +298,7 @@ export default function AdminSettingsPage() {
         free_shipping_threshold: '',
         active: true,
         countries: [],
+        shipping_thresholds: [],
       });
     } catch (error) {
       console.error('Error saving shipping region:', error);
@@ -307,6 +316,10 @@ export default function AdminSettingsPage() {
       free_shipping_threshold: region.free_shipping_threshold?.toString() || '',
       active: region.active,
       countries: region.countries || [],
+      shipping_thresholds: (region.shipping_thresholds || []).map(t => ({
+        min_order_amount: t.min_order_amount.toString(),
+        shipping_price: t.shipping_price.toString(),
+      })),
     });
     setShowRegionForm(true);
   };
@@ -366,11 +379,10 @@ export default function AdminSettingsPage() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
-                  activeTab === tab
-                    ? 'text-white border-b-2 border-white'
-                    : 'text-neutral-400 hover:text-white'
-                }`}
+                className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${activeTab === tab
+                  ? 'text-white border-b-2 border-white'
+                  : 'text-neutral-400 hover:text-white'
+                  }`}
               >
                 {tab === 'store' ? t('storeInfo') : tab === 'shipping' ? t('shippingRegions') : t('generalSettings')}
               </button>
@@ -521,6 +533,7 @@ export default function AdminSettingsPage() {
                     free_shipping_threshold: '',
                     active: true,
                     countries: [],
+                    shipping_thresholds: [],
                   });
                   setShowRegionForm(true);
                 }}
@@ -589,17 +602,75 @@ export default function AdminSettingsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-neutral-300 mb-2">
-                        {t('freeShippingThreshold')} (SEK)
+                        {t('shippingThresholds') || 'Shipping Price Thresholds'}
                       </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={regionForm.free_shipping_threshold}
-                        onChange={(e) => setRegionForm({ ...regionForm, free_shipping_threshold: e.target.value })}
-                        className="w-full px-4 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
-                        placeholder={t('leaveEmptyNoFreeShipping')}
-                      />
+                      <p className="text-xs text-neutral-500 mb-3">
+                        {t('shippingThresholdsHelpText') || 'Define shipping costs based on order total. Below the lowest threshold, the base price is used.'}
+                      </p>
+                      <div className="space-y-2">
+                        {regionForm.shipping_thresholds.map((threshold, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <div className="flex-1">
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder={t('orderMinimum') || 'Order minimum (SEK)'}
+                                value={threshold.min_order_amount}
+                                onChange={(e) => {
+                                  const updated = [...regionForm.shipping_thresholds];
+                                  updated[index] = { ...updated[index], min_order_amount: e.target.value };
+                                  setRegionForm({ ...regionForm, shipping_thresholds: updated });
+                                }}
+                                className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
+                              />
+                            </div>
+                            <span className="text-neutral-500 text-sm">→</span>
+                            <div className="flex-1">
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder={t('shippingCost') || 'Shipping cost (SEK)'}
+                                value={threshold.shipping_price}
+                                onChange={(e) => {
+                                  const updated = [...regionForm.shipping_thresholds];
+                                  updated[index] = { ...updated[index], shipping_price: e.target.value };
+                                  setRegionForm({ ...regionForm, shipping_thresholds: updated });
+                                }}
+                                className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-sm"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setRegionForm({
+                                  ...regionForm,
+                                  shipping_thresholds: regionForm.shipping_thresholds.filter((_, i) => i !== index),
+                                });
+                              }}
+                              className="px-2 py-2 text-red-400 hover:text-red-300 transition-colors"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRegionForm({
+                            ...regionForm,
+                            shipping_thresholds: [
+                              ...regionForm.shipping_thresholds,
+                              { min_order_amount: '', shipping_price: '' },
+                            ],
+                          });
+                        }}
+                        className="mt-2 px-3 py-1.5 text-xs text-neutral-300 border border-white/20 rounded-lg hover:bg-white/5 transition-colors"
+                      >
+                        + {t('addThreshold') || 'Add Threshold'}
+                      </button>
                     </div>
                     <div className="flex items-end">
                       <label className="flex items-center space-x-2 cursor-pointer">
@@ -752,18 +823,30 @@ export default function AdminSettingsPage() {
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-white">{region.base_price} SEK</div>
                         </td>
-                        <td className="hidden sm:table-cell px-4 sm:px-6 py-4 whitespace-nowrap">
+                        <td className="hidden sm:table-cell px-4 sm:px-6 py-4">
                           <div className="text-sm text-neutral-300">
-                            {region.free_shipping_threshold ? `${region.free_shipping_threshold} SEK` : '-'}
+                            {region.shipping_thresholds && region.shipping_thresholds.length > 0 ? (
+                              <div className="space-y-1">
+                                {[...region.shipping_thresholds]
+                                  .sort((a, b) => a.min_order_amount - b.min_order_amount)
+                                  .map((t, i) => (
+                                    <div key={i} className="text-xs">
+                                      <span className="text-neutral-400">≥ {t.min_order_amount} SEK</span>{' → '}
+                                      <span className="text-white">{t.shipping_price === 0 ? 'Free' : `${t.shipping_price} SEK`}</span>
+                                    </div>
+                                  ))}
+                              </div>
+                            ) : (
+                              region.free_shipping_threshold ? `${region.free_shipping_threshold} SEK` : '-'
+                            )}
                           </div>
                         </td>
                         <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              region.active
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${region.active
                                 ? 'bg-green-500/20 text-green-300 border border-green-500/30'
                                 : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
-                            }`}
+                              }`}
                           >
                             {region.active ? t('active') : t('inactive')}
                           </span>
@@ -850,7 +933,7 @@ export default function AdminSettingsPage() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 }
 

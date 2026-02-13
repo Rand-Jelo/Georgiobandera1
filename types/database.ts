@@ -109,6 +109,7 @@ export interface ShippingRegion {
   code: string;
   base_price: number;
   free_shipping_threshold: number | null;
+  shipping_thresholds: Array<{ min_order_amount: number; shipping_price: number }>;
   active: boolean;
   countries: string[]; // Array of ISO country codes (e.g., ["SE"], ["AT", "BE", "DE", ...])
   created_at: number;
