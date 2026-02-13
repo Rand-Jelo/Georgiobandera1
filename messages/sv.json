@@ -907,6 +907,7 @@
     "next": "Nästa",
     "first": "Första",
     "last": "Sista",
+    "pageOf": "Sida {current} av {total}",
     "sortBy": "Sortera efter",
     "ascending": "Stigande",
     "descending": "Fallande",

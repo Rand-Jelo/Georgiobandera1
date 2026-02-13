@@ -907,6 +907,7 @@
     "next": "Next",
     "first": "First",
     "last": "Last",
+    "pageOf": "Page {current} of {total}",
     "sortBy": "Sort by",
     "ascending": "Ascending",
     "descending": "Descending",
