@@ -55,7 +55,8 @@ export default function EditProductPage() {
   }>>([]);
   const [colorVariants, setColorVariants] = useState<Array<{
     id?: string;
-    name: string;
+    name_en: string;
+    name_sv: string;
     hex: string;
     sku: string;
     price: string;
@@ -194,7 +195,8 @@ export default function EditProductPage() {
                 const hexMatch = v.option2_value.match(/^#([0-9A-Fa-f]{6})$/);
                 colorMap.set(colorKey, {
                   id: v.id,
-                  name: hexMatch ? v.option2_value : v.option2_value,
+                  name_en: v.name_en || (hexMatch ? v.option2_value : v.option2_value),
+                  name_sv: v.name_sv || (hexMatch ? v.option2_value : v.option2_value),
                   hex: hexMatch ? v.option2_value : '#000000',
                   sku: v.sku || '',
                   price: v.price ? v.price.toString() : '',
@@ -211,7 +213,8 @@ export default function EditProductPage() {
                 const hexMatch = v.option1_value.match(/^#([0-9A-Fa-f]{6})$/);
                 colorMap.set(colorKey, {
                   id: v.id,
-                  name: hexMatch ? v.option1_value : v.option1_value,
+                  name_en: v.name_en || (hexMatch ? v.option1_value : v.option1_value),
+                  name_sv: v.name_sv || (hexMatch ? v.option1_value : v.option1_value),
                   hex: hexMatch ? v.option1_value : '#000000',
                   sku: v.sku || '',
                   price: v.price ? v.price.toString() : '',
@@ -360,7 +363,8 @@ export default function EditProductPage() {
     setColorVariants((prev) => [
       ...prev,
       {
-        name: '',
+        name_en: '',
+        name_sv: '',
         hex: '#000000',
         sku: '',
         price: '',
@@ -412,7 +416,7 @@ export default function EditProductPage() {
           variants: (() => {
             // Determine which options have values
             const hasSizes = sizeVariants.length > 0 && sizeVariants.some(v => v.value);
-            const hasColors = colorVariants.length > 0 && colorVariants.some(v => v.hex || v.name);
+            const hasColors = colorVariants.length > 0 && colorVariants.some(v => v.hex || v.name_en);
 
             const variants: any[] = [];
 
@@ -421,13 +425,15 @@ export default function EditProductPage() {
               for (const size of sizeVariants) {
                 if (!size.value) continue;
                 for (const color of colorVariants) {
-                  if (!color.hex && !color.name) continue;
+                  if (!color.hex && !color.name_en) continue;
                   variants.push({
                     // Note: We don't preserve IDs for combined variants as the structure changes
+                    name_en: color.name_en || null,
+                    name_sv: color.name_sv || null,
                     option1_name: 'Size',
                     option1_value: size.value,
                     option2_name: 'Color',
-                    option2_value: color.hex || color.name,
+                    option2_value: color.hex || color.name_en,
                     sku: size.sku && color.sku ? `${size.sku}-${color.sku}` : (size.sku || color.sku || null),
                     price: size.price && !isNaN(parseFloat(size.price)) ? parseFloat(size.price) :
                       (color.price && !isNaN(parseFloat(color.price)) ? parseFloat(color.price) : null),
@@ -455,13 +461,15 @@ export default function EditProductPage() {
             } else if (hasColors) {
               // COLOR ONLY
               for (const color of colorVariants) {
-                if (!color.hex && !color.name) continue;
+                if (!color.hex && !color.name_en) continue;
                 variants.push({
                   id: color.id,
+                  name_en: color.name_en || null,
+                  name_sv: color.name_sv || null,
                   option1_name: null,
                   option1_value: null,
                   option2_name: 'Color',
-                  option2_value: color.hex || color.name,
+                  option2_value: color.hex || color.name_en,
                   sku: color.sku || null,
                   price: color.price && !isNaN(parseFloat(color.price)) ? parseFloat(color.price) : null,
                   stock_quantity: parseInt(color.stock_quantity) || 0,
@@ -1038,16 +1046,29 @@ export default function EditProductPage() {
                               </button>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  {t('colorName')} *
+                                  {t('colorName')} (EN) *
                                 </label>
                                 <input
                                   type="text"
-                                  value={variant.name}
-                                  onChange={(e) => updateColorVariant(index, 'name', e.target.value)}
-                                  placeholder={t('colorNamePlaceholder')}
+                                  value={variant.name_en}
+                                  onChange={(e) => updateColorVariant(index, 'name_en', e.target.value)}
+                                  placeholder="e.g. Chestnut Brown"
+                                  required
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  {t('colorName')} (SV) *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={variant.name_sv}
+                                  onChange={(e) => updateColorVariant(index, 'name_sv', e.target.value)}
+                                  placeholder="t.ex. Kastanjebrun"
                                   required
                                   className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                                 />

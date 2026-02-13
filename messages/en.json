@@ -58,6 +58,7 @@
     "philosophyImagePlaceholderText": "High-end product photography or brand imagery"
   },
   "product": {
+    "home": "Home",
     "addToCart": "Add to Cart",
     "addedToCart": "Added to Cart",
     "outOfStock": "Out of Stock",

@@ -658,7 +658,7 @@ export default function ProductPage() {
           <ol className="flex items-center space-x-2 text-xs font-light uppercase tracking-[0.2em] text-neutral-500">
             <li>
               <Link href="/" className="hover:text-amber-600 transition-colors duration-300">
-                Home
+                {t('home')}
               </Link>
             </li>
             {product.category && (
@@ -770,13 +770,19 @@ export default function ProductPage() {
               const option1Name = product.variants.find(v => v.option1_name)?.option1_name || 'Size';
               const option2Name = product.variants.find(v => v.option2_name)?.option2_name || 'Color';
 
+              // Translate the option labels
+              const isSize1 = option1Name.toLowerCase() === 'size' || option1Name.toLowerCase() === 'storlek';
+              const isColor2 = option2Name.toLowerCase() === 'color' || option2Name.toLowerCase() === 'färg';
+              const translatedOption1 = isSize1 ? (t('size') || 'Size') : option1Name;
+              const translatedOption2 = isColor2 ? (t('color') || 'Color') : option2Name;
+
               return (
                 <>
-                  {/* Option 1 Selection (e.g. Size) */}
-                  {uniqueOption1Values.length > 0 && (
+                  {/* Option 1 Selection (e.g. Size) - only show when multiple values */}
+                  {uniqueOption1Values.length > 1 && (
                     <div className="mb-10">
                       <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                        {option1Name}
+                        {translatedOption1}
                       </label>
                       {uniqueOption1Values.length > 5 ? (
                         // Use Select for many options
@@ -837,7 +843,11 @@ export default function ProductPage() {
                   {uniqueOption2Values.length > 0 && (
                     <div className="mb-10">
                       <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-4">
-                        {option2Name}
+                        {translatedOption2}{selectedColorName && (
+                          <span className="ml-2 normal-case tracking-normal text-neutral-700 font-normal">
+                            — {selectedColorName}
+                          </span>
+                        )}
                       </label>
                       <div className="flex flex-wrap items-center gap-3">
                         {uniqueOption2Values.map((value) => {
@@ -864,15 +874,14 @@ export default function ProductPage() {
                                   const name = locale === 'sv' ? v?.name_sv : v?.name_en;
                                   if (name) {
                                     setSelectedColorName(name);
-                                    setTimeout(() => setSelectedColorName(null), 2000);
                                   }
                                 }}
                                 disabled={!existsAtAll}
                                 className={`
-                                        relative w-12 h-12 border transition-all duration-300
+                                        relative w-12 h-12 rounded-full transition-all duration-300
                                         ${isSelected
-                                    ? 'border-neutral-900'
-                                    : 'border-neutral-200/50 hover:border-neutral-300'
+                                    ? 'ring-2 ring-amber-500 ring-offset-2 scale-110'
+                                    : 'ring-1 ring-neutral-200/50 hover:ring-neutral-300 hover:scale-105'
                                   }
                                         ${!existsAtAll ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}
                                       `}

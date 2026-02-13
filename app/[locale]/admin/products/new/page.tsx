@@ -58,7 +58,8 @@ export default function NewProductPage() {
   }>>([]);
   const [colorVariants, setColorVariants] = useState<Array<{
     id?: string;
-    name: string;
+    name_en: string;
+    name_sv: string;
     hex: string;
     sku: string;
     price: string;
@@ -179,7 +180,8 @@ export default function NewProductPage() {
     setColorVariants((prev) => [
       ...prev,
       {
-        name: '',
+        name_en: '',
+        name_sv: '',
         hex: '#000000',
         sku: '',
         price: '',
@@ -242,10 +244,12 @@ export default function NewProductPage() {
             })),
             // Color variants
             ...colorVariants.map(v => ({
+              name_en: v.name_en || null,
+              name_sv: v.name_sv || null,
               option1_name: null,
               option1_value: null,
               option2_name: 'Color',
-              option2_value: v.hex || v.name || null,
+              option2_value: v.hex || v.name_en || null,
               sku: v.sku || null,
               price: v.price ? parseFloat(v.price) : null,
               stock_quantity: parseInt(v.stock_quantity) || 0,
@@ -412,8 +416,8 @@ export default function NewProductPage() {
                 type="button"
                 onClick={() => setActiveTab('basic')}
                 className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'basic'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-neutral-300'
+                  ? 'text-white'
+                  : 'text-neutral-400 hover:text-neutral-300'
                   }`}
               >
                 <span>{t('basicInfo')}</span>
@@ -425,8 +429,8 @@ export default function NewProductPage() {
                 type="button"
                 onClick={() => setActiveTab('pricing')}
                 className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'pricing'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-neutral-300'
+                  ? 'text-white'
+                  : 'text-neutral-400 hover:text-neutral-300'
                   }`}
               >
                 <span>{t('pricingInventory')}</span>
@@ -438,8 +442,8 @@ export default function NewProductPage() {
                 type="button"
                 onClick={() => setActiveTab('variants')}
                 className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'variants'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-neutral-300'
+                  ? 'text-white'
+                  : 'text-neutral-400 hover:text-neutral-300'
                   }`}
               >
                 <span>{t('variants')}</span>
@@ -451,8 +455,8 @@ export default function NewProductPage() {
                 type="button"
                 onClick={() => setActiveTab('images')}
                 className={`px-4 sm:px-6 py-4 text-xs sm:text-sm font-medium transition-all relative ${activeTab === 'images'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-neutral-300'
+                  ? 'text-white'
+                  : 'text-neutral-400 hover:text-neutral-300'
                   }`}
               >
                 <span>{t('images')}</span>
@@ -921,16 +925,29 @@ export default function NewProductPage() {
                               </button>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                               <div>
                                 <label className="block text-xs font-medium text-neutral-300 mb-1">
-                                  {t('colorName')} *
+                                  {t('colorName')} (EN) *
                                 </label>
                                 <input
                                   type="text"
-                                  value={variant.name}
-                                  onChange={(e) => updateColorVariant(index, 'name', e.target.value)}
-                                  placeholder={t('colorNamePlaceholder')}
+                                  value={variant.name_en}
+                                  onChange={(e) => updateColorVariant(index, 'name_en', e.target.value)}
+                                  placeholder="e.g. Chestnut Brown"
+                                  required
+                                  className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-neutral-300 mb-1">
+                                  {t('colorName')} (SV) *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={variant.name_sv}
+                                  onChange={(e) => updateColorVariant(index, 'name_sv', e.target.value)}
+                                  placeholder="t.ex. Kastanjebrun"
                                   required
                                   className="w-full px-3 py-2 border border-white/20 bg-black/50 text-white text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30"
                                 />
