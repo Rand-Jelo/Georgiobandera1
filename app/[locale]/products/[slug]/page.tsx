@@ -231,13 +231,19 @@ export default function ProductPage() {
           const uniqueSizes = new Set(sizeVariants.map(v => v.option1_value));
           const uniqueColors = new Set(colorVariants.map(v => v.option2_value));
 
-          // Auto-select only if there's at most 1 unique size AND at most 1 unique color
-          if (uniqueSizes.size <= 1 && uniqueColors.size <= 1) {
+          // Auto-select options that have only 1 unique value (no real choice needed)
+          if (uniqueSizes.size === 1) {
+            setSelectedOption1(Array.from(uniqueSizes)[0]!);
+          }
+          if (uniqueColors.size === 1) {
+            setSelectedOption2(Array.from(uniqueColors)[0]!);
+          }
+          // If both have 0 values, auto-select from first variant
+          if (uniqueSizes.size === 0 && uniqueColors.size === 0) {
             const v = data.product.variants[0];
             setSelectedOption1(v.option1_value || null);
             setSelectedOption2(v.option2_value || null);
           }
-          // Otherwise, don't auto-select - user must choose
         }
       }
     } catch (err) {
