@@ -45,7 +45,7 @@ export default function CheckoutSteps({ currentStep }: CheckoutStepsProps) {
                 `}
                             >
                                 {step.id === 'cart' ? (
-                                    <a href="/cart" className="hover:underline">Cart</a>
+                                    <a href="/cart" className="hover:underline">{step.label}</a>
                                 ) : (
                                     status === 'completed' ? step.label : step.label
                                 )}
