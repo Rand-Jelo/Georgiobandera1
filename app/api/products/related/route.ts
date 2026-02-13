@@ -63,64 +63,110 @@ export async function GET(request: NextRequest) {
             siblingCategoryIds = (sibResult.results || []).map((s: { id: string }) => s.id);
         }
 
-        // 4. Get collections the current product belongs to
-        const collResult = await queryDB<{ collection_id: string }>(
-            db, `SELECT collection_id FROM product_collections WHERE product_id = ?`, [productId]
-        );
-        const collectionIds = (collResult.results || []).map((c: { collection_id: string }) => c.collection_id);
+        // 4. Get collections (wrapped in try-catch in case table doesn't exist)
+        let collectionIds: string[] = [];
+        try {
+            const collResult = await queryDB<{ collection_id: string }>(
+                db, `SELECT collection_id FROM product_collections WHERE product_id = ?`, [productId]
+            );
+            collectionIds = (collResult.results || []).map((c: { collection_id: string }) => c.collection_id);
+        } catch {
+            // product_collections table may not exist yet
+        }
 
-        // 5. Build scoring query using a CTE so the score expression is only evaluated once
-        const scoreParts: string[] = [];
-        const scoreParams: (string | number)[] = [];
+        // 5. Score candidates using individual queries merged in JS
+        //    (avoids complex CTE parameter binding issues on D1)
+        const candidateMap = new Map<string, { score: number }>();
 
+        // Helper: fetch product IDs and assign score
+        const addScore = async (sql: string, params: (string | number)[], score: number) => {
+            try {
+                const result = await queryDB<{ id: string }>(db, sql, params);
+                for (const row of (result.results || [])) {
+                    const existing = candidateMap.get(row.id);
+                    candidateMap.set(row.id, { score: (existing?.score || 0) + score });
+                }
+            } catch {
+                // Skip this signal on error
+            }
+        };
+
+        // Same collection (weight 5)
         if (collectionIds.length > 0) {
             const placeholders = collectionIds.map(() => '?').join(',');
-            scoreParts.push(`(CASE WHEN EXISTS (
-        SELECT 1 FROM product_collections pc2
-        WHERE pc2.product_id = p.id
-        AND pc2.collection_id IN (${placeholders})
-      ) THEN 5 ELSE 0 END)`);
-            scoreParams.push(...collectionIds);
+            await addScore(
+                `SELECT DISTINCT p.id FROM products p
+         JOIN product_collections pc ON pc.product_id = p.id
+         WHERE pc.collection_id IN (${placeholders})
+         AND p.id != ? AND p.status = 'active'`,
+                [...collectionIds, productId],
+                5
+            );
         }
 
+        // Same category (weight 3)
         if (current.category_id) {
-            scoreParts.push(`(CASE WHEN p.category_id = ? THEN 3 ELSE 0 END)`);
-            scoreParams.push(current.category_id);
+            await addScore(
+                `SELECT id FROM products WHERE category_id = ? AND id != ? AND status = 'active'`,
+                [current.category_id, productId],
+                3
+            );
         }
 
+        // Sibling categories (weight 2)
         if (siblingCategoryIds.length > 0) {
             const placeholders = siblingCategoryIds.map(() => '?').join(',');
-            scoreParts.push(`(CASE WHEN p.category_id IN (${placeholders}) THEN 2 ELSE 0 END)`);
-            scoreParams.push(...siblingCategoryIds);
+            await addScore(
+                `SELECT id FROM products WHERE category_id IN (${placeholders}) AND id != ? AND status = 'active'`,
+                [...siblingCategoryIds, productId],
+                2
+            );
         }
 
-        scoreParts.push(`(CASE WHEN p.price BETWEEN ? AND ? THEN 1 ELSE 0 END)`);
-        scoreParams.push(priceMin, priceMax);
+        // Similar price (weight 1)
+        await addScore(
+            `SELECT id FROM products WHERE price BETWEEN ? AND ? AND id != ? AND status = 'active'`,
+            [priceMin, priceMax, productId],
+            1
+        );
 
-        scoreParts.push(`(CASE WHEN p.featured = 1 THEN 2 ELSE 0 END)`);
+        // Featured (weight 2)
+        await addScore(
+            `SELECT id FROM products WHERE featured = 1 AND id != ? AND status = 'active'`,
+            [productId],
+            2
+        );
 
-        const scoreExpression = scoreParts.join(' + ');
+        // 6. Sort by score and pick top N
+        const sorted = Array.from(candidateMap.entries())
+            .sort((a, b) => b[1].score - a[1].score)
+            .slice(0, limit)
+            .map(([id]) => id);
 
-        // Use a CTE (WITH clause) so the score is computed once and filtered in outer query
-        const sql = `
-      WITH scored AS (
-        SELECT
-          p.id, p.name_en, p.name_sv, p.slug, p.price, p.compare_at_price,
-          p.featured, p.category_id, p.created_at,
-          (${scoreExpression}) as relevance_score
-        FROM products p
-        WHERE p.id != ?
-          AND p.status = 'active'
-      )
-      SELECT * FROM scored
-      WHERE relevance_score > 0
-      ORDER BY relevance_score DESC, featured DESC, created_at DESC
-      LIMIT ?
-    `;
+        // 7. If not enough, fill with other active products
+        let finalIds = sorted;
+        if (finalIds.length < limit) {
+            const excludeIds = [productId, ...finalIds];
+            const excludePlaceholders = excludeIds.map(() => '?').join(',');
+            const fillResult = await queryDB<{ id: string }>(
+                db,
+                `SELECT id FROM products
+         WHERE id NOT IN (${excludePlaceholders}) AND status = 'active'
+         ORDER BY featured DESC, created_at DESC
+         LIMIT ?`,
+                [...excludeIds, limit - finalIds.length]
+            );
+            const fillIds = (fillResult.results || []).map((r: { id: string }) => r.id);
+            finalIds = [...finalIds, ...fillIds];
+        }
 
-        const allParams = [...scoreParams, productId, limit + 4];
+        if (finalIds.length === 0) {
+            return NextResponse.json({ products: [] });
+        }
 
-        interface CandidateProduct {
+        // 8. Fetch full product data for final IDs
+        const idPlaceholders = finalIds.map(() => '?').join(',');
+        const productsResult = await queryDB<{
             id: string;
             name_en: string;
             name_sv: string;
@@ -129,41 +175,17 @@ export async function GET(request: NextRequest) {
             compare_at_price: number | null;
             featured: number;
             category_id: string | null;
-            created_at: number;
-            relevance_score: number;
-        }
+        }>(
+            db,
+            `SELECT id, name_en, name_sv, slug, price, compare_at_price, featured, category_id
+       FROM products WHERE id IN (${idPlaceholders})`,
+            finalIds
+        );
+        const products = productsResult.results || [];
 
-        const candidateResult = await queryDB<CandidateProduct>(db, sql, allParams);
-        const candidates = candidateResult.results || [];
-
-        // 6. If not enough results, fill with featured products
-        let results: CandidateProduct[] = candidates.slice(0, limit);
-
-        if (results.length < limit) {
-            const existingIds = [productId, ...results.map(r => r.id)];
-            const excludePlaceholders = existingIds.map(() => '?').join(',');
-
-            const featuredResult = await queryDB<Omit<CandidateProduct, 'relevance_score'>>(
-                db,
-                `SELECT id, name_en, name_sv, slug, price, compare_at_price, featured, category_id, created_at
-         FROM products
-         WHERE id NOT IN (${excludePlaceholders})
-           AND status = 'active'
-         ORDER BY featured DESC, created_at DESC
-         LIMIT ?`,
-                [...existingIds, limit - results.length]
-            );
-
-            const featuredFill = featuredResult.results || [];
-            results = [
-                ...results,
-                ...featuredFill.map(f => ({ ...f, relevance_score: 0 }))
-            ];
-        }
-
-        // 7. Enrich with images and category info
+        // 9. Enrich with images and category, maintain score order
         const enriched = await Promise.all(
-            results.map(async (product) => {
+            products.map(async (product) => {
                 const imgResult = await queryDB<{ url: string; alt_text: string | null; position: number }>(
                     db,
                     `SELECT url, alt_text, position FROM product_images WHERE product_id = ? ORDER BY position ASC LIMIT 2`,
@@ -193,9 +215,13 @@ export async function GET(request: NextRequest) {
             })
         );
 
+        // Re-sort by the original score order
+        const idOrder = new Map(finalIds.map((id, i) => [id, i]));
+        enriched.sort((a, b) => (idOrder.get(a.id) ?? 99) - (idOrder.get(b.id) ?? 99));
+
         return NextResponse.json({ products: enriched });
     } catch (error) {
         console.error('Error fetching related products:', error);
-        return NextResponse.json({ products: [] });
+        return NextResponse.json({ products: [], error: String(error) });
     }
 }
