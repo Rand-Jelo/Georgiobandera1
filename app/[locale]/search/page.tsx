@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { useSearchParams, useRouter } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
 import ProductFilters from '@/components/product/ProductFilters';
+import VariantSelectionModal from '@/components/product/VariantSelectionModal';
 import SearchInput from '@/components/search/SearchInput';
 import { useTranslations as useTranslationsIntl } from 'next-intl';
 
@@ -53,6 +54,7 @@ export default function SearchPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [variantSelectProductSlug, setVariantSelectProductSlug] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -495,6 +497,7 @@ export default function SearchPage() {
                           product={product}
                           locale={locale as string}
                           showQuickAdd={true}
+                          onVariantSelect={(slug) => setVariantSelectProductSlug(slug)}
                         />
                       ))}
                     </div>
@@ -520,6 +523,7 @@ export default function SearchPage() {
                       locale={locale as string}
                       showQuickAdd={true}
                       viewMode={viewMode}
+                      onVariantSelect={(slug) => setVariantSelectProductSlug(slug)}
                     />
                   ))}
                 </div>
@@ -611,6 +615,14 @@ export default function SearchPage() {
           </div>
         )}
       </div>
+
+      {/* Variant Selection Modal */}
+      <VariantSelectionModal
+        productSlug={variantSelectProductSlug || ''}
+        isOpen={!!variantSelectProductSlug}
+        onClose={() => setVariantSelectProductSlug(null)}
+        onSuccess={() => setVariantSelectProductSlug(null)}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useParams } from 'next/navigation';
 import ProductCard from '@/components/product/ProductCard';
+import VariantSelectionModal from '@/components/product/VariantSelectionModal';
 
 interface Product {
   id: string;
@@ -29,11 +30,12 @@ export default function CategoryPage() {
   const locale = useLocale();
   const params = useParams();
   const slug = params?.slug as string;
-  
+
   const [category, setCategory] = useState<Category | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [variantSelectProductSlug, setVariantSelectProductSlug] = useState<string | null>(null);
 
   useEffect(() => {
     if (slug) {
@@ -44,12 +46,12 @@ export default function CategoryPage() {
   const fetchCategory = async () => {
     try {
       const response = await fetch(`/api/categories/${slug}`);
-      const data = await response.json() as { 
-        category?: Category; 
-        products?: Product[]; 
-        error?: string 
+      const data = await response.json() as {
+        category?: Category;
+        products?: Product[];
+        error?: string
       };
-      
+
       if (data.error) {
         setError(data.error);
       } else {
@@ -86,8 +88,8 @@ export default function CategoryPage() {
   }
 
   const categoryName = locale === 'sv' ? category.name_sv : category.name_en;
-  const categoryDescription = locale === 'sv' 
-    ? category.description_sv 
+  const categoryDescription = locale === 'sv'
+    ? category.description_sv
     : category.description_en;
 
   return (
@@ -105,11 +107,19 @@ export default function CategoryPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} locale={locale as string} showQuickAdd={true} />
+              <ProductCard key={product.id} product={product} locale={locale as string} showQuickAdd={true} onVariantSelect={(slug) => setVariantSelectProductSlug(slug)} />
             ))}
           </div>
         )}
       </div>
+
+      {/* Variant Selection Modal */}
+      <VariantSelectionModal
+        productSlug={variantSelectProductSlug || ''}
+        isOpen={!!variantSelectProductSlug}
+        onClose={() => setVariantSelectProductSlug(null)}
+        onSuccess={() => setVariantSelectProductSlug(null)}
+      />
     </div>
   );
 }

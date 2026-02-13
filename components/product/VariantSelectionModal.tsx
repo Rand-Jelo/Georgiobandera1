@@ -308,7 +308,7 @@ export default function VariantSelectionModal({
                             {option1 && (
                                 <div className="mb-6">
                                     <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-3">
-                                        {option1.name}
+                                        {option1.name.toLowerCase() === 'size' || option1.name.toLowerCase() === 'storlek' ? t('size') : option1.name}
                                     </label>
                                     <div className="flex flex-wrap gap-2">
                                         {option1.values.map((value) => {
@@ -344,12 +344,13 @@ export default function VariantSelectionModal({
                             {option2 && (
                                 <div className="mb-6">
                                     <label className="block text-xs font-light uppercase tracking-[0.3em] text-neutral-500 mb-3">
-                                        {option2.name}
+                                        {option2.name.toLowerCase() === 'color' || option2.name.toLowerCase() === 'färg' ? t('color') : option2.name}
                                     </label>
-                                    <div className="flex flex-wrap gap-2">
+                                    <div className="flex flex-wrap items-center gap-3">
                                         {option2.values.map((value) => {
                                             const format = (v: any) => v ? String(v).trim().toLowerCase() : '';
                                             const isSelected = format(selectedOption2) === format(value);
+                                            const isHex = value.startsWith('#');
 
                                             // Compatibility Check
                                             const hasOption1 = product.variants.some(pv => pv.option1_value);
@@ -358,7 +359,24 @@ export default function VariantSelectionModal({
                                                 (!hasOption1 || !selectedOption1 || format(v.option1_value) === format(selectedOption1))
                                             );
 
-                                            return (
+                                            return isHex ? (
+                                                <button
+                                                    key={value}
+                                                    onClick={() => setSelectedOption2(value)}
+                                                    disabled={!isCompatible}
+                                                    className={`relative w-10 h-10 rounded-full transition-all duration-300
+                                                        ${isSelected
+                                                            ? 'ring-2 ring-amber-500 ring-offset-2 scale-110'
+                                                            : 'ring-1 ring-neutral-200/50 hover:ring-neutral-300 hover:scale-105'
+                                                        }
+                                                        ${!isCompatible ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'}`}
+                                                    style={{ backgroundColor: value }}
+                                                    title={(() => {
+                                                        const v = product.variants.find(v => v.option2_value === value);
+                                                        return (locale === 'sv' ? v?.name_sv : v?.name_en) || value;
+                                                    })()}
+                                                />
+                                            ) : (
                                                 <button
                                                     key={value}
                                                     onClick={() => setSelectedOption2(value)}
