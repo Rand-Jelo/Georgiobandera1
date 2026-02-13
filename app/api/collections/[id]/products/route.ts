@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getDB } from '@/lib/db/client';
 import { getCollectionProducts } from '@/lib/db/queries/product-collections';
 import { queryDB } from '@/lib/db/client';
-import { getProductImages, getCategoryById } from '@/lib/db/queries/products';
+import { getProductImages, getCategoryById, getProductsVariantCounts } from '@/lib/db/queries/products';
 
 /**
  * GET /api/collections/[id]/products
@@ -16,12 +16,12 @@ export async function GET(
     const db = getDB();
     const { id } = await params;
     const { searchParams } = new URL(request.url);
-    
+
     // Get query parameters
     const sortBy = searchParams.get('sortBy') || 'newest';
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
     const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!) : 0;
-    
+
     const productIds = await getCollectionProducts(db, id);
 
     if (productIds.length === 0) {
@@ -59,7 +59,7 @@ export async function GET(
                  FROM products p
                  WHERE p.id IN (${placeholders}) AND p.status = 'active'
                  ORDER BY ${orderBy}`;
-    
+
     // Add limit and offset if provided
     if (limit !== undefined) {
       query += ` LIMIT ? OFFSET ?`;
@@ -79,14 +79,19 @@ export async function GET(
         query,
         [...productIds, limit, offset]
       );
-      
-      // Enrich with images and category
+
+      // Get variant counts for hasVariants
+      const allProductIds = (result.results || []).map(p => p.id);
+      const variantCounts = await getProductsVariantCounts(db, allProductIds);
+
+      // Enrich with images, category, and hasVariants
       const productsWithDetails = await Promise.all(
         (result.results || []).map(async (product) => {
           const images = await getProductImages(db, product.id);
           const category = product.category_id
             ? await getCategoryById(db, product.category_id)
             : null;
+          const variantCount = variantCounts.get(product.id) || 0;
           return {
             ...product,
             images: images.map(img => ({
@@ -100,10 +105,11 @@ export async function GET(
               name_sv: category.name_sv,
               slug: category.slug,
             } : null,
+            hasVariants: variantCount > 1,
           };
         })
       );
-      
+
       return NextResponse.json({ products: productsWithDetails });
     } else {
       // No limit/offset - return all products
@@ -123,14 +129,19 @@ export async function GET(
         query,
         productIds
       );
-      
-      // Enrich with images and category
+
+      // Get variant counts for hasVariants
+      const allProductIds = (result.results || []).map(p => p.id);
+      const variantCounts = await getProductsVariantCounts(db, allProductIds);
+
+      // Enrich with images, category, and hasVariants
       const productsWithDetails = await Promise.all(
         (result.results || []).map(async (product) => {
           const images = await getProductImages(db, product.id);
           const category = product.category_id
             ? await getCategoryById(db, product.category_id)
             : null;
+          const variantCount = variantCounts.get(product.id) || 0;
           return {
             ...product,
             images: images.map(img => ({
@@ -144,10 +155,11 @@ export async function GET(
               name_sv: category.name_sv,
               slug: category.slug,
             } : null,
+            hasVariants: variantCount > 1,
           };
         })
       );
-      
+
       return NextResponse.json({ products: productsWithDetails });
     }
   } catch (error) {
