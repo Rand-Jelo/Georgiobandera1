@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDB } from '@/lib/db/client';
-import { getCategoryBySlug, getProducts, getProductImages } from '@/lib/db/queries/products';
+import { getCategoryBySlug, getProducts, getProductImages, getProductsVariantCounts } from '@/lib/db/queries/products';
 
 export async function GET(
   request: NextRequest,
@@ -24,13 +24,19 @@ export async function GET(
       status: 'active',
     });
 
-    // Enrich with images
+    // Get variant counts for hasVariants flag
+    const productIds = products.map(p => p.id);
+    const variantCounts = await getProductsVariantCounts(db, productIds);
+
+    // Enrich with images and hasVariants
     const productsWithImages = await Promise.all(
       products.map(async (product) => {
         const images = await getProductImages(db, product.id);
+        const variantCount = variantCounts.get(product.id) || 0;
         return {
           ...product,
           images: images.slice(0, 1),
+          hasVariants: variantCount > 1,
         };
       })
     );
