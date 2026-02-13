@@ -2,8 +2,16 @@
 
 import * as React from 'react';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+
+interface ShippingRegionDisplay {
+  name_en: string;
+  name_sv: string;
+  code: string;
+  base_price: number;
+  shipping_thresholds: Array<{ min_order_amount: number; shipping_price: number }>;
+}
 
 interface ProductTabsProps {
   description?: string | null;
@@ -27,7 +35,25 @@ export default function ProductTabs({
   shippingContent,
 }: ProductTabsProps) {
   const t = useTranslations('product');
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<'description' | 'instructions' | 'specs' | 'reviews' | 'shipping'>('description');
+  const [shippingRegions, setShippingRegions] = useState<ShippingRegionDisplay[]>([]);
+
+  useEffect(() => {
+    fetch('/api/shipping/regions')
+      .then(res => res.json() as Promise<{ regions?: ShippingRegionDisplay[] }>)
+      .then((data) => {
+        setShippingRegions(data.regions || []);
+      })
+      .catch(() => { });
+  }, []);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat(locale === 'sv' ? 'sv-SE' : 'en-SE', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price) + ' SEK';
+  };
 
   const tabs = [
     { id: 'description' as const, label: t('description') || 'Description' },
@@ -149,11 +175,53 @@ export default function ProductTabs({
                 <p className="mb-6 leading-relaxed">
                   {t('shippingInfo') || 'Shipping information will be calculated at checkout based on your location.'}
                 </p>
-                <ul className="list-disc list-inside space-y-3 text-sm font-light">
-                  <li>{t('freeShippingOver') || 'Free shipping over 500 SEK'}</li>
-                  <li>{t('standardShipping') || 'Standard shipping: 2-5 business days'}</li>
-                  <li>{t('expressShipping') || 'Express shipping available'}</li>
-                </ul>
+
+                {shippingRegions.length > 0 ? (
+                  <div className="space-y-5">
+                    {shippingRegions.map((region) => {
+                      const regionName = locale === 'sv' ? region.name_sv : region.name_en;
+                      const thresholds = [...(region.shipping_thresholds || [])].sort(
+                        (a, b) => a.min_order_amount - b.min_order_amount
+                      );
+
+                      return (
+                        <div key={region.code} className="border border-neutral-200/60 rounded-lg p-4">
+                          <h4 className="text-xs font-medium uppercase tracking-[0.2em] text-neutral-800 mb-3">
+                            {regionName}
+                          </h4>
+                          <ul className="space-y-1.5 text-sm font-light">
+                            <li className="flex justify-between">
+                              <span className="text-neutral-500">
+                                {locale === 'sv' ? 'Standardfrakt' : 'Standard shipping'}
+                              </span>
+                              <span className="text-neutral-800 font-normal">
+                                {formatPrice(region.base_price)}
+                              </span>
+                            </li>
+                            {thresholds.map((th, i) => (
+                              <li key={i} className="flex justify-between">
+                                <span className="text-neutral-500">
+                                  {locale === 'sv'
+                                    ? `Beställning över ${formatPrice(th.min_order_amount)}`
+                                    : `Orders over ${formatPrice(th.min_order_amount)}`}
+                                </span>
+                                <span className={`font-normal ${th.shipping_price === 0 ? 'text-green-600' : 'text-neutral-800'}`}>
+                                  {th.shipping_price === 0
+                                    ? (locale === 'sv' ? 'Fri frakt' : 'Free')
+                                    : formatPrice(th.shipping_price)}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <ul className="list-disc list-inside space-y-3 text-sm font-light">
+                    <li>{t('standardShipping') || 'Standard shipping: 2-5 business days'}</li>
+                  </ul>
+                )}
               </div>
             )}
           </div>
