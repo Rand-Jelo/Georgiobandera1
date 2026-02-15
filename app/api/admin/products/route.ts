@@ -32,6 +32,8 @@ const createProductSchema = z.object({
   description_sv: z.string().optional(),
   instructions_en: z.string().optional(),
   instructions_sv: z.string().optional(),
+  ingredients_en: z.string().optional(),
+  ingredients_sv: z.string().optional(),
   category_id: z.string().nullable().optional(),
   price: z.number().positive(),
   compare_at_price: z.number().positive().nullable().optional(),
@@ -129,10 +131,10 @@ export async function POST(request: NextRequest) {
       db,
       `INSERT INTO products (
         id, name_en, name_sv, slug, description_en, description_sv,
-        instructions_en, instructions_sv,
+        instructions_en, instructions_sv, ingredients_en, ingredients_sv,
         category_id, price, compare_at_price, sku, status, featured,
         stock_quantity, track_inventory, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         id,
         validated.name_en,
@@ -142,6 +144,8 @@ export async function POST(request: NextRequest) {
         validated.description_sv || null,
         validated.instructions_en || null,
         validated.instructions_sv || null,
+        validated.ingredients_en || null,
+        validated.ingredients_sv || null,
         validated.category_id || null,
         validated.price,
         validated.compare_at_price || null,

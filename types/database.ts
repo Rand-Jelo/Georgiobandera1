@@ -37,6 +37,8 @@ export interface Product {
   description_sv: string | null;
   instructions_en: string | null;
   instructions_sv: string | null;
+  ingredients_en: string | null;
+  ingredients_sv: string | null;
   category_id: string | null;
   price: number;
   compare_at_price: number | null;

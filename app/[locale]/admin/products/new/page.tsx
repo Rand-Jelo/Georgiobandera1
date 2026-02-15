@@ -32,6 +32,8 @@ export default function NewProductPage() {
     description_sv: '',
     instructions_en: '',
     instructions_sv: '',
+    ingredients_en: '',
+    ingredients_sv: '',
     category_id: '',
     price: '',
     compare_at_price: '',
@@ -586,6 +588,38 @@ export default function NewProductPage() {
                           value={formData.instructions_sv}
                           onChange={handleChange}
                           placeholder={locale === 'sv' ? 'T.ex. applicera på fuktigt hår...' : 'E.g. apply to damp hair...'}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label htmlFor="ingredients_en" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('ingredientsEn')}
+                        </label>
+                        <textarea
+                          id="ingredients_en"
+                          name="ingredients_en"
+                          rows={4}
+                          value={formData.ingredients_en}
+                          onChange={handleChange}
+                          placeholder={locale === 'sv' ? 'T.ex. Aqua, Alcohol Denat...' : 'E.g. Aqua, Alcohol Denat...'}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="ingredients_sv" className="block text-sm font-medium text-neutral-300 mb-2">
+                          {t('ingredientsSv')}
+                        </label>
+                        <textarea
+                          id="ingredients_sv"
+                          name="ingredients_sv"
+                          rows={4}
+                          value={formData.ingredients_sv}
+                          onChange={handleChange}
+                          placeholder={locale === 'sv' ? 'T.ex. Aqua, Alcohol Denat...' : 'E.g. Aqua, Alcohol Denat...'}
                           className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
                       </div>

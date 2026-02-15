@@ -16,6 +16,7 @@ interface ShippingRegionDisplay {
 interface ProductTabsProps {
   description?: string | null;
   instructions?: string | null;
+  ingredients?: string | null;
   sku?: string | null;
   stockQuantity: number;
   trackInventory: boolean;
@@ -27,6 +28,7 @@ interface ProductTabsProps {
 export default function ProductTabs({
   description,
   instructions,
+  ingredients,
   sku,
   stockQuantity,
   trackInventory,
@@ -36,7 +38,7 @@ export default function ProductTabs({
 }: ProductTabsProps) {
   const t = useTranslations('product');
   const locale = useLocale();
-  const [activeTab, setActiveTab] = useState<'description' | 'instructions' | 'specs' | 'reviews' | 'shipping'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'instructions' | 'ingredients' | 'specs' | 'reviews' | 'shipping'>('description');
   const [shippingRegions, setShippingRegions] = useState<ShippingRegionDisplay[]>([]);
 
   useEffect(() => {
@@ -57,6 +59,7 @@ export default function ProductTabs({
 
   const tabs = [
     { id: 'description' as const, label: t('description') || 'Description' },
+    ...(ingredients ? [{ id: 'ingredients' as const, label: t('ingredients') || 'Ingredients' }] : []),
     ...(instructions ? [{ id: 'instructions' as const, label: t('instructions') || 'Instructions' }] : []),
     { id: 'specs' as const, label: t('specifications') || 'Specifications' },
     { id: 'reviews' as const, label: t('reviews') || 'Reviews' },
@@ -95,6 +98,12 @@ export default function ProductTabs({
             ) : (
               <p className="text-neutral-400 italic font-light">No description available.</p>
             )}
+          </div>
+        )}
+
+        {activeTab === 'ingredients' && ingredients && (
+          <div className="prose prose-sm max-w-none text-neutral-600 leading-relaxed font-light">
+            <p>{ingredients}</p>
           </div>
         )}
 

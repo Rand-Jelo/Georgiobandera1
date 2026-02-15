@@ -50,6 +50,8 @@ interface Product {
   description_sv: string | null;
   instructions_en: string | null;
   instructions_sv: string | null;
+  ingredients_en: string | null;
+  ingredients_sv: string | null;
   price: number;
   compare_at_price: number | null;
   sku: string | null;
@@ -554,6 +556,9 @@ export default function ProductPage() {
   const productInstructions = locale === 'sv'
     ? product.instructions_sv
     : product.instructions_en;
+  const productIngredients = locale === 'sv'
+    ? product.ingredients_sv
+    : product.ingredients_en;
   const hasDiscount = product.compare_at_price && product.compare_at_price > getDisplayPrice();
   const inStock = isInStock();
 
@@ -920,6 +925,7 @@ export default function ProductPage() {
         <ProductTabs
           description={productDescription}
           instructions={productInstructions}
+          ingredients={productIngredients}
           sku={product.sku}
           stockQuantity={getStockQuantity()}
           trackInventory={getTrackInventory()}
