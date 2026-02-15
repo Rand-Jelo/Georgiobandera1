@@ -410,6 +410,8 @@ export default function EditProductPage() {
           description_sv: formData.description_sv || null,
           instructions_en: formData.instructions_en || null,
           instructions_sv: formData.instructions_sv || null,
+          ingredients_en: formData.ingredients_en || null,
+          ingredients_sv: formData.ingredients_sv || null,
           category_id: formData.category_id || null,
           price: parseFloat(formData.price) || 0,
           compare_at_price: formData.compare_at_price ? (parseFloat(formData.compare_at_price) || null) : null,
@@ -711,6 +713,7 @@ export default function EditProductPage() {
                           rows={4}
                           value={formData.instructions_sv}
                           onChange={handleChange}
+                          className="w-full px-4 py-3 border border-white/20 bg-black/50 text-white placeholder-neutral-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-white/40 transition-all"
                         />
                       </div>
                     </div>
