@@ -102,8 +102,25 @@ export default function ProductTabs({
         )}
 
         {activeTab === 'ingredients' && ingredients && (
-          <div className="prose prose-sm max-w-none text-neutral-600 leading-relaxed font-light">
-            <p>{ingredients}</p>
+          <div className="space-y-4">
+            {ingredients
+              .replace(/<[^>]*>/g, '')
+              .split(/\n\s*\n/)
+              .map(block => block.trim())
+              .filter(block => block.length > 0)
+              .map((item, index) => (
+                <div key={index} className="flex gap-3 items-start">
+                  <div className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-neutral-400 mt-2.5" />
+                  <div className="text-neutral-600 font-light leading-relaxed">
+                    {item.split('\n').map((line, i) => (
+                      <span key={i}>
+                        {line.trim()}
+                        {i < item.split('\n').length - 1 && <br />}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
           </div>
         )}
 
