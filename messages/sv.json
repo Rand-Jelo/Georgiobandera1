@@ -128,7 +128,18 @@
     "removeFromWishlist": "Ta bort från önskelista",
     "optional": "Valfritt",
     "thankYouForReview": "Tack för din recension! Den kommer att granskas innan den publiceras.",
-    "close": "Stäng"
+    "close": "Stäng",
+    "page": "Sida",
+    "of": "av",
+    "perPage": "per sida",
+    "showing": "Visar",
+    "to": "Till",
+    "results": "resultat",
+    "previous": "Föregående",
+    "next": "Nästa",
+    "first": "Första",
+    "last": "Sista",
+    "pageOf": "Sida {current} av {total}"
   },
   "cart": {
     "title": "Varukorg",

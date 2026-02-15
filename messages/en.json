@@ -128,7 +128,18 @@
     "close": "Close",
     "ratingDistribution": "Rating Distribution",
     "addToWishlist": "Add to wishlist",
-    "removeFromWishlist": "Remove from wishlist"
+    "removeFromWishlist": "Remove from wishlist",
+    "page": "Page",
+    "of": "of",
+    "perPage": "per page",
+    "showing": "Showing",
+    "to": "To",
+    "results": "results",
+    "previous": "Previous",
+    "next": "Next",
+    "first": "First",
+    "last": "Last",
+    "pageOf": "Page {current} of {total}"
   },
   "cart": {
     "title": "Shopping Cart",

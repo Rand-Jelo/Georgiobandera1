@@ -581,7 +581,7 @@ export default function SearchPage() {
 
                     {/* Page indicator */}
                     <p className="text-[9px] sm:text-[10px] font-light uppercase tracking-[0.2em] text-neutral-400">
-                      Page {currentPage} of {totalPages}
+                      {t('pageOf', { current: currentPage, total: totalPages })}
                     </p>
                   </div>
                 )}
