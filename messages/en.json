@@ -61,6 +61,8 @@
   "product": {
     "home": "Home",
     "addToCart": "Add to Cart",
+    "adding": "Adding...",
+    "added": "Added",
     "addedToCart": "Added to Cart",
     "outOfStock": "Out of Stock",
     "inStock": "In Stock",

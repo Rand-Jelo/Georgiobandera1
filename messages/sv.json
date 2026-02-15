@@ -61,6 +61,8 @@
   "product": {
     "home": "Hem",
     "addToCart": "Lägg i varukorg",
+    "adding": "Lägger till...",
+    "added": "Tillagd",
     "addedToCart": "Tillagd i varukorg",
     "outOfStock": "Slut i lager",
     "inStock": "I lager",
