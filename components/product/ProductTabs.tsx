@@ -132,11 +132,11 @@ export default function ProductTabs({
               .map(block => block.trim())
               .filter(block => block.length > 0)
               .map((step, index) => (
-                <div key={index} className="flex gap-5 items-start">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-900 text-white flex items-center justify-center text-xs font-light">
-                    {index + 1}
+                <div key={index} className="flex gap-3 items-start">
+                  <div className="flex-shrink-0 text-xs font-medium text-neutral-400 mt-1">
+                    {index + 1}.
                   </div>
-                  <div className="text-neutral-600 font-light leading-relaxed pt-1">
+                  <div className="text-neutral-600 font-light leading-relaxed">
                     {step.split('\n').map((line, i) => (
                       <span key={i}>
                         {line.trim()}
