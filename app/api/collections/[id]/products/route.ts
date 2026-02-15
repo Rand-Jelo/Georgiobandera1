@@ -25,7 +25,7 @@ export async function GET(
     const productIds = await getCollectionProducts(db, id);
 
     if (productIds.length === 0) {
-      return NextResponse.json({ products: [] });
+      return NextResponse.json({ products: [], totalCount: 0 });
     }
 
     // Build ORDER BY clause based on sortBy
@@ -110,7 +110,10 @@ export async function GET(
         })
       );
 
-      return NextResponse.json({ products: productsWithDetails });
+      return NextResponse.json({
+        products: productsWithDetails,
+        totalCount: productIds.length
+      });
     } else {
       // No limit/offset - return all products
       const result = await queryDB<{
@@ -160,7 +163,10 @@ export async function GET(
         })
       );
 
-      return NextResponse.json({ products: productsWithDetails });
+      return NextResponse.json({
+        products: productsWithDetails,
+        totalCount: productIds.length
+      });
     }
   } catch (error) {
     console.error('Get collection products error:', error);

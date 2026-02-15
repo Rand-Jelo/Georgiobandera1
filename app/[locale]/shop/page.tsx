@@ -216,12 +216,15 @@ export default function ShopPage() {
           limit: ITEMS_PER_PAGE.toString(),
           offset: ((currentPage - 1) * ITEMS_PER_PAGE).toString(),
         }).toString()}`);
-        const data = await response.json() as { products?: Product[]; error?: string };
+        const data = await response.json() as { products?: Product[]; totalCount?: number; error?: string };
 
         if (data.error) {
           setError(data.error);
         } else {
           setProducts(data.products || []);
+          if (typeof data.totalCount === 'number') {
+            setTotalCount(data.totalCount);
+          }
         }
         setLoading(false);
         return;
@@ -265,6 +268,9 @@ export default function ShopPage() {
   };
 
   const fetchProductCount = async () => {
+    // If viewing a collection, the count is fetched in fetchProducts
+    if (collectionId) return;
+
     try {
       const params = new URLSearchParams();
       params.set('status', 'active');
