@@ -22,7 +22,8 @@
       "home": "Home"
     },
     "searchPlaceholder": "Search products...",
-    "viewAllResults": "View all results"
+    "viewAllResults": "View all results",
+    "pageOf": "Page {current} of {total}"
   },
   "home": {
     "title": "Welcome to Georgio Bandera",
@@ -139,8 +140,7 @@
     "previous": "Previous",
     "next": "Next",
     "first": "First",
-    "last": "Last",
-    "pageOf": "Page {current} of {total}"
+    "last": "Last"
   },
   "cart": {
     "title": "Shopping Cart",

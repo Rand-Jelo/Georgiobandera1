@@ -22,7 +22,8 @@
       "home": "Hem"
     },
     "searchPlaceholder": "Sök produkter...",
-    "viewAllResults": "Visa alla resultat"
+    "viewAllResults": "Visa alla resultat",
+    "pageOf": "Sida {current} av {total}"
   },
   "home": {
     "title": "Välkommen till Georgio Bandera",
@@ -139,8 +140,7 @@
     "previous": "Föregående",
     "next": "Nästa",
     "first": "Första",
-    "last": "Sista",
-    "pageOf": "Sida {current} av {total}"
+    "last": "Sista"
   },
   "cart": {
     "title": "Varukorg",
