@@ -52,7 +52,7 @@ Unlike standard Shopify themes, this solution offers:
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone <https://github.com/Rand-Jelo/Georgiobandera1>
 cd georgiobandera1
 ```
 
@@ -64,8 +64,14 @@ npm install
 3. Set up environment variables:
 ```bash
 cp .env.example .env
-# Edit .env with your actual values
 ```
+
+Open `.env` and configure the following required variables:
+- **Stripe**: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
+- **Email (Resend)**: `RESEND_API_KEY`
+- **Auth**: `NEXTAUTH_SECRET` (any random long string is fine for development)
+- **URLs**: `NEXT_PUBLIC_APP_URL` (e.g. `http://localhost:3000` for dev)
+- **Email**: `ADMIN_NOTIFICATION_EMAIL` (your email address)
 
 4. Set up Cloudflare D1 database:
 ```bash
