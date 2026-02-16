@@ -1,17 +1,54 @@
-# Georgio Bandera E-commerce Website
+# Georgio Bandera - Premium Headless E-commerce
 
-Full-featured e-commerce platform built with Next.js 16, Cloudflare D1, Stripe/PayPal payments, and multilingual support (English/Swedish).
+A high-performance, dual-language e-commerce platform built for scale. This project replaces generic platforms with a bespoke **Next.js 14** architecture, offering sub-second page loads, complex product logic, and a completely custom admin dashboard.
 
-## Tech Stack
+## 🚀 Project Overview
 
-- **Framework**: Next.js 16 (App Router)
-- **Styling**: Tailwind CSS
+**Georgio Bandera** is a modern fashion e-commerce store designed to provide a premium user experience. It features a custom-built backend using **Cloudflare D1** (SQLite at the Edge) and **Next.js App Router**, ensuring global low-latency access. 
+
+Unlike standard Shopify themes, this solution offers:
+- **Zero monthly platform fees** (Self-hosted on Cloudflare Pages).
+- **Complex Variant Logic**: Smart inventory tracking for Size/Color combinations.
+- **Dynamic Shipping**: Multi-threshold shipping rates per region (e.g., Free shipping over 1000 SEK).
+- **Bilingual Support**: Native English & Swedish content management.
+
+## ✨ Key Features
+
+### 🛍️ Storefront Experience
+- **Ultra-Fast Navigation**: Built with Next.js Server Components and extensive caching.
+- **Smart Search & Filtering**: Instant product filtering by category, price, and stock status.
+- **Dynamic "Ingredients" Tab**: Custom product attributes for transparent product details.
+- **Wishlist & Cart**: Persistent cart state and local-storage wishlist.
+- **Optimized Checkout**: Integrated Stripe and PayPal for secure, seamless payments.
+
+### ⚙️ Custom Admin Dashboard
+- **Product Management**: Create, edit, and archive products with rich text descriptions.
+- **Inventory Control**: Track stock levels per variant (SKU level).
+- **Order Processing**: View and manage customer orders in real-time.
+- **Shipping Configuration**: Set dynamic shipping rules and free-shipping thresholds per country.
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript (Strict Mode)
+- **Styling**: Tailwind CSS + Headless UI
 - **Database**: Cloudflare D1 (SQLite)
-- **Storage**: Cloudflare R2 (for images)
-- **Payments**: Stripe (Cards + Klarna) & PayPal
-- **Admin Panel**: AdminJS
-- **i18n**: next-intl
-- **Hosting**: Cloudflare Pages
+- **Storage**: Cloudflare R2 (Image hosting)
+- **Deploy**: Cloudflare Pages
+- **Payments**: Stripe & PayPal
+- **i18n**: next-intl (EN/SV)
+
+## 📸 Screenshots
+
+*(Place your screenshots here)*
+
+| Storefront | Product Page |
+|:---:|:---:|
+| ![Storefront Placeholder](https://via.placeholder.com/600x400?text=Storefront+Design) | ![Product Page Placeholder](https://via.placeholder.com/600x400?text=Product+Details) |
+
+| Admin Dashboard | Mobile View |
+|:---:|:---:|
+| ![Admin Placeholder](https://via.placeholder.com/600x400?text=Custom+Admin+Panel) | ![Mobile Placeholder](https://via.placeholder.com/600x400?text=Mobile+Responsive) |
 
 ## Getting Started
 
