@@ -2,7 +2,7 @@
 
 A high-performance, dual-language e-commerce platform built for scale. This project replaces generic platforms with a bespoke **Next.js 14** architecture, offering sub-second page loads, complex product logic, and a completely custom admin dashboard.
 
-## 🚀 Project Overview
+## Project Overview
 
 **Georgio Bandera** is a modern fashion e-commerce store designed to provide a premium user experience. It features a custom-built backend using **Cloudflare D1** (SQLite at the Edge) and **Next.js App Router**, ensuring global low-latency access. 
 
@@ -12,22 +12,22 @@ Unlike standard Shopify themes, this solution offers:
 - **Dynamic Shipping**: Multi-threshold shipping rates per region (e.g., Free shipping over 1000 SEK).
 - **Bilingual Support**: Native English & Swedish content management.
 
-## ✨ Key Features
+## Key Features
 
-### 🛍️ Storefront Experience
+### Storefront Experience
 - **Ultra-Fast Navigation**: Built with Next.js Server Components and extensive caching.
 - **Smart Search & Filtering**: Instant product filtering by category, price, and stock status.
 - **Dynamic "Ingredients" Tab**: Custom product attributes for transparent product details.
 - **Wishlist & Cart**: Persistent cart state and local-storage wishlist.
 - **Optimized Checkout**: Integrated Stripe and PayPal for secure, seamless payments.
 
-### ⚙️ Custom Admin Dashboard
+### Custom Admin Dashboard
 - **Product Management**: Create, edit, and archive products with rich text descriptions.
 - **Inventory Control**: Track stock levels per variant (SKU level).
 - **Order Processing**: View and manage customer orders in real-time.
 - **Shipping Configuration**: Set dynamic shipping rules and free-shipping thresholds per country.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript (Strict Mode)
@@ -37,18 +37,6 @@ Unlike standard Shopify themes, this solution offers:
 - **Deploy**: Cloudflare Pages
 - **Payments**: Stripe & PayPal
 - **i18n**: next-intl (EN/SV)
-
-## 📸 Screenshots
-
-*(Place your screenshots here)*
-
-| Storefront | Product Page |
-|:---:|:---:|
-| ![Storefront Placeholder](https://via.placeholder.com/600x400?text=Storefront+Design) | ![Product Page Placeholder](https://via.placeholder.com/600x400?text=Product+Details) |
-
-| Admin Dashboard | Mobile View |
-|:---:|:---:|
-| ![Admin Placeholder](https://via.placeholder.com/600x400?text=Custom+Admin+Panel) | ![Mobile Placeholder](https://via.placeholder.com/600x400?text=Mobile+Responsive) |
 
 ## Getting Started
 
