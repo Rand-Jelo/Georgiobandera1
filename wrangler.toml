@@ -35,7 +35,7 @@ bucket_name = "georgiobandera-images"
 [env.production.vars]
 NEXT_PUBLIC_APP_URL = "https://georgiobandera1.pages.dev"
 NEXT_PUBLIC_SITE_URL = "https://georgiobandera.se"
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_test_51R6DhzGIjrwBNt3fhi0qru3dIGPwr4St89ugs6ckHX9BNimZBO30iJdhupHR624IpKe4L7ZP21acvQRaD79Kjzbg00hqoYqDLq"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_live_51IOfe7C2wkBpVnlXb2XR8k9GX3D5cRw59vUjTh3ou11xrMuYbY7uUYZa5eQbzp0TfyreugY1uZDtw1AXLeyPLiE600KJCSLZV2"
 NEXT_PUBLIC_PAYPAL_CLIENT_ID = "AUakk-eShgnYninYF5nHTujK5lE_7MumxZBYXO2hzZxbgt7kh4C587n34F-VxiN1A2VhRYcJW_BCydNP"
 
 [env.preview]
@@ -55,7 +55,7 @@ bucket_name = "georgiobandera-images"
 [env.preview.vars]
 NEXT_PUBLIC_APP_URL = "https://georgiobandera1.pages.dev"
 NEXT_PUBLIC_SITE_URL = "https://georgiobandera1.pages.dev"
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_test_51R6DhzGIjrwBNt3fhi0qru3dIGPwr4St89ugs6ckHX9BNimZBO30iJdhupHR624IpKe4L7ZP21acvQRaD79Kjzbg00hqoYqDLq"
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = "pk_live_51IOfe7C2wkBpVnlXb2XR8k9GX3D5cRw59vUjTh3ou11xrMuYbY7uUYZa5eQbzp0TfyreugY1uZDtw1AXLeyPLiE600KJCSLZV2"
 NEXT_PUBLIC_PAYPAL_CLIENT_ID = "AUakk-eShgnYninYF5nHTujK5lE_7MumxZBYXO2hzZxbgt7kh4C587n34F-VxiN1A2VhRYcJW_BCydNP"
 
 # Development environment - uses local database only
