@@ -31,7 +31,7 @@ export default function MaintenancePage() {
             </p>
 
             <Link
-                href="mailto:info@georgiobandera.se"
+                href="mailto:contact@georgiobandera.se"
                 className="border border-white/15 text-white/50 px-7 py-3 text-xs font-light tracking-widest uppercase hover:border-amber-400 hover:text-amber-400 transition-all duration-300"
             >
                 {t('contact')}
