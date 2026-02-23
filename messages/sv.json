@@ -25,6 +25,32 @@
     "viewAllResults": "Visa alla resultat",
     "pageOf": "Sida {current} av {total}"
   },
+  "errors": {
+    "notFound": {
+      "title": "Sidan hittades inte",
+      "description": "Sidan du letar efter verkar ha försvunnit. Den kan ha flyttats, bytt namn eller helt enkelt aldrig existerat.",
+      "backHome": "Tillbaka till startsidan",
+      "shopAll": "Se alla produkter"
+    },
+    "forbidden": {
+      "title": "Åtkomst nekad",
+      "description": "Du har inte behörighet att visa denna sida. Om du tror att detta är ett fel, vänligen kontakta vårt supportteam.",
+      "backHome": "Tillbaka till startsidan",
+      "contact": "Kontakta oss"
+    },
+    "unauthorized": {
+      "title": "Inloggning krävs",
+      "description": "Den här sidan är reserverad för medlemmar. Logga in på ditt konto för att fortsätta din premiumupplevelse.",
+      "signIn": "Logga in",
+      "backHome": "Tillbaka till startsidan"
+    },
+    "maintenance": {
+      "title": "Under underhåll",
+      "description": "Vi gör förbättringar för att ge dig en ännu bättre upplevelse. Vi är tillbaka inom kort.",
+      "thankYou": "Tack för ditt tålamod.",
+      "contact": "Kontakta oss"
+    }
+  },
   "home": {
     "title": "Välkommen till Georgio Bandera",
     "subtitle": "Professionell hårvård",

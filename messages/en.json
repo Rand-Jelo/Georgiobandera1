@@ -25,6 +25,32 @@
     "viewAllResults": "View all results",
     "pageOf": "Page {current} of {total}"
   },
+  "errors": {
+    "notFound": {
+      "title": "Page Not Found",
+      "description": "The page you're looking for seems to have wandered off. Perhaps it was moved, renamed, or simply never existed.",
+      "backHome": "Back to Home",
+      "shopAll": "Shop All"
+    },
+    "forbidden": {
+      "title": "Access Forbidden",
+      "description": "You don't have permission to view this page. If you believe this is an error, please contact our support team.",
+      "backHome": "Back to Home",
+      "contact": "Contact Us"
+    },
+    "unauthorized": {
+      "title": "Sign In Required",
+      "description": "This page is reserved for members. Please sign in to your account to continue your premium experience.",
+      "signIn": "Sign In",
+      "backHome": "Back to Home"
+    },
+    "maintenance": {
+      "title": "Under Maintenance",
+      "description": "We're making some improvements to bring you an even more refined experience. We'll be back shortly.",
+      "thankYou": "Thank you for your patience.",
+      "contact": "Get in Touch"
+    }
+  },
   "home": {
     "title": "Welcome to Georgio Bandera",
     "subtitle": "Professional Hair Care",
