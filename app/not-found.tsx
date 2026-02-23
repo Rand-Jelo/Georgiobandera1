@@ -75,7 +75,7 @@ export default function NotFound() {
                         <img
                             src="/logo-white.png"
                             alt="Georgio Bandera"
-                            style={{ height: 20, objectFit: 'contain' }}
+                            style={{ height: 40, objectFit: 'contain' }}
                         />
                     </Link>
                     <Link
