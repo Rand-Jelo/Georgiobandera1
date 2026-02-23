@@ -9,6 +9,46 @@ export const metadata: Metadata = {
 export default function NotFound() {
     return (
         <html lang="en">
+            <head>
+                <style>{`
+          .btn-primary {
+            background: #ffffff;
+            color: #0a0a0a;
+            text-decoration: none;
+            padding: 12px 28px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            display: inline-block;
+            transition: background 0.3s ease;
+            border: none;
+            cursor: pointer;
+          }
+          .btn-primary:hover {
+            background: #fbbf24;
+          }
+          .btn-secondary {
+            border: 1px solid rgba(255,255,255,0.2);
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            padding: 12px 28px;
+            font-size: 13px;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            display: inline-block;
+            transition: all 0.3s ease;
+          }
+          .btn-secondary:hover {
+            border-color: #fbbf24;
+            color: #fbbf24;
+          }
+          .nav-link:hover {
+            color: rgba(255,255,255,0.8);
+          }
+        `}</style>
+            </head>
             <body
                 style={{
                     margin: 0,
@@ -40,12 +80,14 @@ export default function NotFound() {
                     </Link>
                     <Link
                         href="/"
+                        className="nav-link"
                         style={{
                             color: 'rgba(255,255,255,0.5)',
                             textDecoration: 'none',
                             fontSize: 13,
                             letterSpacing: '0.06em',
                             textTransform: 'uppercase',
+                            transition: 'color 0.3s ease',
                         }}
                     >
                         Home
@@ -71,7 +113,8 @@ export default function NotFound() {
                             fontWeight: 700,
                             lineHeight: 1,
                             letterSpacing: '-0.04em',
-                            background: 'linear-gradient(135deg, rgba(251,191,36,0.15) 0%, rgba(255,255,255,0.04) 100%)',
+                            background:
+                                'linear-gradient(135deg, rgba(251,191,36,0.15) 0%, rgba(255,255,255,0.04) 100%)',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
@@ -115,8 +158,8 @@ export default function NotFound() {
                             fontWeight: 300,
                         }}
                     >
-                        The page you&apos;re looking for seems to have wandered off. Perhaps it was
-                        moved, renamed, or simply never existed.
+                        The page you&apos;re looking for seems to have wandered off. Perhaps it
+                        was moved, renamed, or simply never existed.
                     </p>
 
                     {/* CTAs */}
@@ -129,52 +172,10 @@ export default function NotFound() {
                             justifyContent: 'center',
                         }}
                     >
-                        <Link
-                            href="/"
-                            style={{
-                                background: '#ffffff',
-                                color: '#0a0a0a',
-                                textDecoration: 'none',
-                                padding: '12px 28px',
-                                fontSize: 13,
-                                fontWeight: 600,
-                                letterSpacing: '0.1em',
-                                textTransform: 'uppercase',
-                                transition: 'all 0.3s ease',
-                                display: 'inline-block',
-                            }}
-                            onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLAnchorElement).style.background = '#fbbf24';
-                            }}
-                            onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLAnchorElement).style.background = '#ffffff';
-                            }}
-                        >
+                        <Link href="/" className="btn-primary">
                             Back to Home
                         </Link>
-                        <Link
-                            href="/shop"
-                            style={{
-                                border: '1px solid rgba(255,255,255,0.2)',
-                                color: 'rgba(255,255,255,0.7)',
-                                textDecoration: 'none',
-                                padding: '12px 28px',
-                                fontSize: 13,
-                                fontWeight: 400,
-                                letterSpacing: '0.1em',
-                                textTransform: 'uppercase',
-                                transition: 'all 0.3s ease',
-                                display: 'inline-block',
-                            }}
-                            onMouseEnter={(e) => {
-                                (e.currentTarget as HTMLAnchorElement).style.borderColor = '#fbbf24';
-                                (e.currentTarget as HTMLAnchorElement).style.color = '#fbbf24';
-                            }}
-                            onMouseLeave={(e) => {
-                                (e.currentTarget as HTMLAnchorElement).style.borderColor = 'rgba(255,255,255,0.2)';
-                                (e.currentTarget as HTMLAnchorElement).style.color = 'rgba(255,255,255,0.7)';
-                            }}
-                        >
+                        <Link href="/shop" className="btn-secondary">
                             Shop All
                         </Link>
                     </div>
