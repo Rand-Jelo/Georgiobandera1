@@ -68,20 +68,20 @@ export default function NotFound() {
             padding: 0 6px;
             transition: color 0.2s;
           }
-          .lang-btn:hover { color: rgba(255,255,255,0.8); }
+          /* Language toggle via .lang-sv class on <html> */
           #content-sv { display: none; }
+          .lang-sv #content-en { display: none; }
+          .lang-sv #content-sv { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; text-align: center; }
         `}</style>
                 <script dangerouslySetInnerHTML={{
                     __html: `
             (function() {
-              var lang = (navigator.language || '').toLowerCase();
-              var isSv = lang.startsWith('sv');
+              // Check URL path first (most reliable), fall back to browser language
+              var isSv = window.location.pathname.startsWith('/sv') ||
+                         (navigator.language || '').toLowerCase().startsWith('sv');
               if (isSv) {
                 document.documentElement.lang = 'sv';
-                var en = document.getElementById('content-en');
-                var sv = document.getElementById('content-sv');
-                if (en) en.style.display = 'none';
-                if (sv) sv.style.display = '';
+                document.documentElement.classList.add('lang-sv');
               }
             })();
           `,
