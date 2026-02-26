@@ -9,19 +9,20 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         disallow: [
-          '/admin/',
+          // Locale-prefixed private routes
+          '/*/admin/',
+          '/*/cart',
+          '/*/checkout',
+          '/*/orders/',
+          '/*/profile',
+          '/*/wishlist',
+          '/*/login',
+          '/*/register',
+          // API & internal
           '/api/',
-          '/cart',
-          '/checkout',
-          '/orders/',
-          '/profile',
-          '/wishlist',
-          '/login',
-          '/register',
         ],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }
-

@@ -7,16 +7,16 @@ import { getGeneralSettings } from './lib/db/queries/settings';
 // Custom middleware that reads default language from database
 export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  
-  // For root path, manually redirect based on database setting
+
+  // Redirect root to default locale
   if (pathname === '/') {
     let defaultLocale: 'en' | 'sv' = 'en';
-    
+
     try {
       const db = getDB();
       const settings = await getGeneralSettings(db);
       console.log('[Middleware] Root path - Fetched settings:', JSON.stringify(settings));
-      
+
       if (settings?.default_language && (settings.default_language === 'en' || settings.default_language === 'sv')) {
         defaultLocale = settings.default_language as 'en' | 'sv';
         console.log(`[Middleware] Root path - Redirecting to: /${defaultLocale}`);
@@ -26,16 +26,27 @@ export default async function middleware(request: NextRequest) {
     } catch (error: any) {
       console.error('[Middleware] Root path - Error fetching default language:', error?.message || error);
     }
-    
-    // Manually redirect to the default locale
+
     const url = request.nextUrl.clone();
     url.pathname = `/${defaultLocale}`;
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(url, 301);
   }
+
+  // Redirect bare paths (no locale prefix) → /en/... so old Google-indexed
+  // URLs don't 404. Only match known public paths without a locale segment.
+  const barePathMatch = pathname.match(
+    /^\/(shop|about|contact|products\/.+|search)(\/.*)?$/
+  );
+  if (barePathMatch) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/en${pathname}`;
+    return NextResponse.redirect(url, 301);
+  }
+
 
   // For all other paths, use next-intl middleware with dynamic default
   let defaultLocale: 'en' | 'sv' = 'en';
-  
+
   try {
     const db = getDB();
     const settings = await getGeneralSettings(db);
