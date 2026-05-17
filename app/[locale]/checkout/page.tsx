@@ -484,6 +484,15 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           paymentIntentId: paymentId,
+          shippingDetails: {
+            name: formData.shippingName,
+            addressLine1: formData.shippingAddressLine1,
+            addressLine2: formData.shippingAddressLine2 || undefined,
+            city: formData.shippingCity,
+            postalCode: formData.shippingPostalCode,
+            country: formData.shippingCountry,
+            phone: formData.shippingPhone || undefined,
+          },
         }),
       });
 

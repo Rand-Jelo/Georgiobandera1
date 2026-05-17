@@ -4,11 +4,13 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 
 export default function OrderSuccessPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const t = useTranslations('checkout');
+    const locale = useLocale();
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
     const [message, setMessage] = useState('');
 
@@ -35,7 +37,7 @@ export default function OrderSuccessPage() {
                 if (response.ok && data.orderNumber) {
                     setStatus('success');
                     // Redirect to the order confirmation page
-                    router.push(`/orders/${data.orderNumber}`);
+                    router.push(`/${locale}/orders/${data.orderNumber}`);
                 } else {
                     setStatus('error');
                     setMessage(data.error || t('paymentConfirmationFailed'));

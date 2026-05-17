@@ -12,6 +12,15 @@ import { OrderItem } from '@/types/database';
 
 const confirmPaymentSchema = z.object({
     paymentIntentId: z.string(),
+    shippingDetails: z.object({
+        name: z.string(),
+        addressLine1: z.string(),
+        addressLine2: z.string().optional(),
+        city: z.string(),
+        postalCode: z.string(),
+        country: z.string(),
+        phone: z.string().optional(),
+    }).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -41,12 +50,44 @@ export async function POST(request: NextRequest) {
 
         // 2. Extract Metadata and Shipping Details
         const metadata = paymentIntent.metadata || {};
-        const shipping = paymentIntent.shipping;
+        const piShipping = paymentIntent.shipping;
 
-        // We can't proceed without shipping info
-        if (!shipping || !shipping.address || !shipping.name) {
-            // Fallback: If for some reason shipping wasn't saved in PI, check metadata if you saved it there?
-            // For now, assume strict requirement as per our new StripePayment.tsx
+        // Build shipping address: prefer the PI's shipping field (set by Stripe during confirmation),
+        // fall back to shippingDetails sent in the request body (required for redirect-based payment
+        // methods like Klarna where stripe.confirmPayment() may not persist shipping on the PI).
+        let shippingAddress: {
+            name: string;
+            address_line1: string;
+            address_line2: string | null;
+            city: string;
+            postal_code: string;
+            country: string;
+            phone: string | null;
+        } | null = null;
+
+        if (piShipping && piShipping.address && piShipping.name) {
+            shippingAddress = {
+                name: piShipping.name,
+                address_line1: piShipping.address.line1 || '',
+                address_line2: piShipping.address.line2 || null,
+                city: piShipping.address.city || '',
+                postal_code: piShipping.address.postal_code || '',
+                country: piShipping.address.country || '',
+                phone: piShipping.phone || null,
+            };
+        } else if (validated.shippingDetails) {
+            shippingAddress = {
+                name: validated.shippingDetails.name,
+                address_line1: validated.shippingDetails.addressLine1,
+                address_line2: validated.shippingDetails.addressLine2 || null,
+                city: validated.shippingDetails.city,
+                postal_code: validated.shippingDetails.postalCode,
+                country: validated.shippingDetails.country,
+                phone: validated.shippingDetails.phone || null,
+            };
+        }
+
+        if (!shippingAddress) {
             return NextResponse.json(
                 { error: 'Missing shipping details in payment verification.' },
                 { status: 400 }
@@ -72,16 +113,7 @@ export async function POST(request: NextRequest) {
         }
 
         // 4. Construct Order Data
-        // Map Stripe address to our DB format
-        const shippingAddress = {
-            name: shipping.name,
-            address_line1: shipping.address.line1 || '',
-            address_line2: shipping.address.line2 || null,
-            city: shipping.address.city || '',
-            postal_code: shipping.address.postal_code || '',
-            country: shipping.address.country || '',
-            phone: shipping.phone || null,
-        };
+        // shippingAddress was resolved above from PI shipping or request body
 
         // Prepare line items
         const orderItems = [];
